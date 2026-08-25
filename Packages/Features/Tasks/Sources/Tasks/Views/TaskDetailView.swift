@@ -9,6 +9,7 @@ import VikunjaDesignSystem
 public struct TaskDetailView: View {
     @Bindable var viewModel: TaskDetailViewModel
     @State private var isShowingDueDatePicker = false
+    @State private var isShowingLabelPicker = false
 
     public init(viewModel: TaskDetailViewModel) {
         self.viewModel = viewModel
@@ -41,6 +42,9 @@ public struct TaskDetailView: View {
             DueDatePickerSheet(initialDate: viewModel.task.dueDate) { newDate in
                 Task { await viewModel.setDueDate(newDate) }
             }
+        }
+        .sheet(isPresented: $isShowingLabelPicker) {
+            LabelPickerSheet(viewModel: viewModel)
         }
     }
 
@@ -122,8 +126,15 @@ public struct TaskDetailView: View {
         }
         .padding(.top, VikunjaSpacing.lg)
 
-        if !task.labels.isEmpty {
-            SectionBlock(title: "Labels") {
+        SectionBlock(title: "Labels", trailing: AnyView(EditLabelsButton { isShowingLabelPicker = true })) {
+            if task.labels.isEmpty {
+                Button("Add labels…") {
+                    isShowingLabelPicker = true
+                }
+                .buttonStyle(.plain)
+                .font(VikunjaFont.subheadline)
+                .foregroundStyle(VikunjaColor.textTertiary)
+            } else {
                 LabelsWrap(labels: task.labels)
             }
         }
@@ -313,6 +324,7 @@ private struct InfoRow: View {
 private struct SectionBlock<Content: View>: View {
     let title: String
     var count: String?
+    var trailing: AnyView = AnyView(EmptyView())
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -324,6 +336,8 @@ private struct SectionBlock<Content: View>: View {
                     Text(count)
                         .fontWeight(.regular)
                 }
+                Spacer(minLength: 0)
+                trailing
             }
             .font(VikunjaFont.footnote)
             .foregroundStyle(VikunjaColor.textSecondary)
@@ -333,6 +347,25 @@ private struct SectionBlock<Content: View>: View {
             content
         }
         .padding(.top, VikunjaSpacing.xl)
+    }
+}
+
+/// The "+ Edit" affordance next to the Labels section header — always
+/// present, per the mockup, whether or not the task already has labels.
+private struct EditLabelsButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: VikunjaSpacing.xxs) {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("Edit")
+            }
+            .foregroundStyle(VikunjaColor.brandPrimary)
+        }
+        .buttonStyle(.plain)
+        .textCase(nil)
     }
 }
 
@@ -556,6 +589,184 @@ private struct DueDatePickerSheet: View {
         }
         .presentationDetents([.fraction(0.6)])
         .presentationDragIndicator(.visible)
+    }
+}
+
+/// Add/remove labels on the task, and create a new one on the fly — matches
+/// the design mockup's label sheet. A `.searchable` list rather than a
+/// custom text field, the same pattern `QuickAddSheetView`'s
+/// `ProjectPickerView` uses; unlike that picker, tapping a row here toggles
+/// membership instead of dismissing, since a task can carry more than one
+/// label.
+private struct LabelPickerSheet: View {
+    @Bindable var viewModel: TaskDetailViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
+    @State private var pickedColor = VikunjaColor.LabelPalette.swatches[0]
+
+    private var trimmedQuery: String {
+        query.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var filteredLabels: [VikunjaCore.Label] {
+        guard !trimmedQuery.isEmpty else { return viewModel.allLabels }
+        return viewModel.allLabels.filter { $0.title.localizedCaseInsensitiveContains(trimmedQuery) }
+    }
+
+    private var hasExactMatch: Bool {
+        viewModel.allLabels.contains { $0.title.caseInsensitiveCompare(trimmedQuery) == .orderedSame }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+                    ForEach(filteredLabels) { label in
+                        LabelPickerRow(label: label, isSelected: viewModel.task.labels.contains(label)) {
+                            Task { await viewModel.toggleLabel(label) }
+                        }
+                    }
+
+                    if !trimmedQuery.isEmpty, !hasExactMatch {
+                        CreateLabelCard(title: trimmedQuery, pickedColor: $pickedColor) {
+                            let title = trimmedQuery
+                            let color = pickedColor
+                            query = ""
+                            Task { await viewModel.createAndAddLabel(title: title, hexColor: color) }
+                        }
+                    }
+                }
+                .padding(.vertical, VikunjaSpacing.sm)
+            }
+            .searchable(text: $query, prompt: "Search or create label...")
+            .navigationTitle("Labels")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                        .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.75), .large])
+        .presentationDragIndicator(.visible)
+        .task { await viewModel.loadAllLabels() }
+    }
+}
+
+private struct LabelPickerRow: View {
+    let label: VikunjaCore.Label
+    let isSelected: Bool
+    let action: () -> Void
+
+    private var color: Color {
+        Color(vikunjaHex: label.hexColor) ?? VikunjaColor.textSecondary
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: VikunjaSpacing.sm) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 10, height: 10)
+                Text(label.title)
+                    .font(.system(size: 15.5))
+                    .foregroundStyle(Color.primary)
+                Spacer()
+                // An explicit checkbox rather than a checkmark that only
+                // appears once selected — an empty circle makes it obvious
+                // up front that rows are multi-select, not "pick one".
+                LabelSelectionIndicator(isSelected: isSelected)
+            }
+            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
+            .background(
+                isSelected ? VikunjaColor.Surface.field : Color.clear,
+                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous)
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, VikunjaSpacing.sm)
+    }
+}
+
+/// A quieter checkbox than `TaskDetailCheckbox` — a thin, low-opacity ring
+/// that fills with a soft gray tint (not a solid color) and a muted
+/// checkmark, matching the mockup's subtler treatment for "is this label
+/// picked" versus the task's own bold completion toggle.
+private struct LabelSelectionIndicator: View {
+    let isSelected: Bool
+    var size: CGFloat = 22
+
+    var body: some View {
+        Circle()
+            .strokeBorder(VikunjaColor.textTertiary.opacity(isSelected ? 0 : 0.4), lineWidth: 1.5)
+            .background(Circle().fill(VikunjaColor.textTertiary.opacity(isSelected ? 0.22 : 0)))
+            .frame(width: size, height: size)
+            .overlay {
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: size * 0.46, weight: .bold))
+                        .foregroundStyle(VikunjaColor.textSecondary)
+                }
+            }
+    }
+}
+
+/// Offered only once the search query doesn't match any existing label
+/// exactly — lets the user pick a swatch from `VikunjaColor.LabelPalette`
+/// and create+attach the label in one tap.
+private struct CreateLabelCard: View {
+    let title: String
+    @Binding var pickedColor: String
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
+            Text("Create New Label")
+                .font(VikunjaFont.footnote)
+                .fontWeight(.semibold)
+                .foregroundStyle(VikunjaColor.textSecondary)
+
+            HStack(spacing: VikunjaSpacing.sm) {
+                Circle()
+                    .fill(Color(vikunjaHex: pickedColor) ?? VikunjaColor.brandPrimary)
+                    .frame(width: 12, height: 12)
+                Text("\"\(title)\"")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.primary)
+            }
+
+            HStack(spacing: VikunjaSpacing.sm) {
+                ForEach(VikunjaColor.LabelPalette.swatches, id: \.self) { swatch in
+                    Circle()
+                        .fill(Color(vikunjaHex: swatch) ?? VikunjaColor.brandPrimary)
+                        .frame(width: 24, height: 24)
+                        .overlay {
+                            if swatch == pickedColor {
+                                Circle().strokeBorder(Color.primary, lineWidth: 2)
+                            }
+                        }
+                        .onTapGesture { pickedColor = swatch }
+                }
+            }
+
+            Button(action: action) {
+                Text("Create and Add")
+                    .font(.system(size: 14.5, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, VikunjaSpacing.sm)
+                    .background(VikunjaColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(VikunjaSpacing.md - VikunjaSpacing.xxs)
+        .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .padding(.horizontal, VikunjaSpacing.sm)
+        .padding(.top, VikunjaSpacing.xs)
     }
 }
 
