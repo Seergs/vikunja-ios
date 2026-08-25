@@ -64,7 +64,8 @@ final class AppContainer {
         }
         return QuickAddTaskViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            toastPresenter: toastCenter
         )
     }
 }

@@ -62,3 +62,11 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
         projects.removeAll { $0.id == id }
     }
 }
+
+final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
+    private(set) var shownMessages: [(message: String, style: ToastStyle)] = []
+
+    func show(_ message: String, style: ToastStyle) {
+        shownMessages.append((message, style))
+    }
+}

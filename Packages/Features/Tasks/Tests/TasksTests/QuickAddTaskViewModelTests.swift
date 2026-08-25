@@ -8,7 +8,8 @@ struct QuickAddTaskViewModelTests {
     func startsWithNoProjectSelectedAndCannotSave() {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
-            projectRepository: FakeProjectRepository()
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         #expect(viewModel.selectedProjectID == nil)
@@ -23,7 +24,11 @@ struct QuickAddTaskViewModelTests {
             Project(id: 2, title: "Archived", isArchived: true, position: 0),
             Project(id: 3, title: "First", isArchived: false, position: 1),
         ]
-        let viewModel = QuickAddTaskViewModel(taskRepository: FakeTaskRepository(), projectRepository: projectRepository)
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
 
         await viewModel.load()
 
@@ -35,7 +40,11 @@ struct QuickAddTaskViewModelTests {
     func loadSurfacesAFriendlyMessageOnFailure() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.fetchError = .network("offline")
-        let viewModel = QuickAddTaskViewModel(taskRepository: FakeTaskRepository(), projectRepository: projectRepository)
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
 
         await viewModel.load()
 
@@ -44,7 +53,11 @@ struct QuickAddTaskViewModelTests {
 
     @Test
     func canSaveRequiresBothATitleAndAProject() {
-        let viewModel = QuickAddTaskViewModel(taskRepository: FakeTaskRepository(), projectRepository: FakeProjectRepository())
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FakeTaskRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
 
         viewModel.title = "   "
         viewModel.selectedProjectID = 1
@@ -61,7 +74,11 @@ struct QuickAddTaskViewModelTests {
     @Test
     func saveCreatesATaskWithTheChosenProjectAndPriority() async {
         let taskRepository = FakeTaskRepository()
-        let viewModel = QuickAddTaskViewModel(taskRepository: taskRepository, projectRepository: FakeProjectRepository())
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: taskRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
         viewModel.title = "  Buy milk  "
         viewModel.selectedProjectID = 7
         viewModel.priority = .high
@@ -76,9 +93,32 @@ struct QuickAddTaskViewModelTests {
     }
 
     @Test
+    func saveShowsASuccessToast() async {
+        let taskRepository = FakeTaskRepository()
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: taskRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+        viewModel.title = "Buy milk"
+        viewModel.selectedProjectID = 7
+
+        _ = await viewModel.save()
+
+        #expect(toastPresenter.shownMessages.count == 1)
+        #expect(toastPresenter.shownMessages.first?.message == "Task created")
+        #expect(toastPresenter.shownMessages.first?.style == .success)
+    }
+
+    @Test
     func saveDoesNothingWhenTheFormIsIncomplete() async {
         let taskRepository = FakeTaskRepository()
-        let viewModel = QuickAddTaskViewModel(taskRepository: taskRepository, projectRepository: FakeProjectRepository())
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: taskRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
         viewModel.title = "Buy milk"
 
         let created = await viewModel.save()
@@ -95,7 +135,11 @@ struct QuickAddTaskViewModelTests {
             Project(id: 3, title: "Personal", parentProjectID: nil, position: 1),
             Project(id: 4, title: "Launch", parentProjectID: 1, position: 0),
         ]
-        let viewModel = QuickAddTaskViewModel(taskRepository: FakeTaskRepository(), projectRepository: projectRepository)
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
 
         await viewModel.load()
 
@@ -108,7 +152,11 @@ struct QuickAddTaskViewModelTests {
     func selectedProjectResolvesTheChosenIDAgainstTheLoadedProjects() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 1, title: "Work")]
-        let viewModel = QuickAddTaskViewModel(taskRepository: FakeTaskRepository(), projectRepository: projectRepository)
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
         await viewModel.load()
 
         #expect(viewModel.selectedProject == nil)
@@ -120,7 +168,11 @@ struct QuickAddTaskViewModelTests {
 
     @Test
     func saveSurfacesAFriendlyMessageOnFailure() async {
-        let viewModel = QuickAddTaskViewModel(taskRepository: FailingTaskRepository(), projectRepository: FakeProjectRepository())
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FailingTaskRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
         viewModel.title = "Buy milk"
         viewModel.selectedProjectID = 1
 

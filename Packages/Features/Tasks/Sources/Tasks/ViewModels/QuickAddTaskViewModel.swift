@@ -49,10 +49,16 @@ public final class QuickAddTaskViewModel {
 
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
+    private let toastPresenter: ToastPresenting
 
-    public init(taskRepository: TaskRepositoryProtocol, projectRepository: ProjectRepositoryProtocol) {
+    public init(
+        taskRepository: TaskRepositoryProtocol,
+        projectRepository: ProjectRepositoryProtocol,
+        toastPresenter: ToastPresenting
+    ) {
         self.taskRepository = taskRepository
         self.projectRepository = projectRepository
+        self.toastPresenter = toastPresenter
     }
 
     public func load() async {
@@ -89,6 +95,7 @@ public final class QuickAddTaskViewModel {
                     projectID: selectedProjectID
                 )
             )
+            toastPresenter.show("Task created", style: .success)
             return created
         } catch let error as VikunjaError {
             saveErrorMessage = error.displayMessage
