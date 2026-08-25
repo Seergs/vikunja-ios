@@ -13,4 +13,34 @@ public enum VikunjaColor {
         public static let medium = Color(hex: 0x196AFF)
         public static let low = Color(hex: 0x79818D)
     }
+
+    /// Grouped-content backgrounds, one step apart in elevation. Backed by
+    /// adaptive iOS system colors so light/dark mode and increased-contrast
+    /// settings are handled for free — see `Color+Platform.swift`.
+    public enum Surface {
+        /// Card background, e.g. a grouped section of rows.
+        public static let card = Color.platformCardBackground
+        /// Input field / chip background, one step lighter than `card`.
+        public static let field = Color.platformFieldBackground
+    }
+
+    /// Darker, more legible than the system `.secondary`/`.tertiary` text
+    /// styles — matches the design source's own gray scale. Adapts to
+    /// light/dark automatically, see `Color+Platform.swift`.
+    public static let textSecondary = Color.platformTextSecondary
+    public static let textTertiary = Color.platformTextTertiary
+
+    /// Status colors for inline feedback (banners, connection results).
+    public enum Semantic {
+        public static let success = Color(hex: 0x1FA669)
+        /// Kept as its own literal even though it currently matches
+        /// `Priority.urgent`, so the two can diverge independently later.
+        public static let danger = Color(hex: 0xDF202E)
+
+        /// Darker variants of `success`/`danger`, for text/icons drawn on top
+        /// of the low-opacity tinted banner background — `success`/`danger`
+        /// themselves are too bright to read comfortably as text.
+        public static let successText = Color(hex: 0x15753F)
+        public static let dangerText = Color(hex: 0x9E1620)
+    }
 }
