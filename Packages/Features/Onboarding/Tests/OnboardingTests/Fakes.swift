@@ -56,4 +56,11 @@ final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked
         requestedBaseURLs.append(baseURL)
         return FakeCapabilityProvider(result: result)
     }
+
+    func makeProjectRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> ProjectRepositoryProtocol {
+        fatalError("not exercised by Onboarding tests")
+    }
 }
