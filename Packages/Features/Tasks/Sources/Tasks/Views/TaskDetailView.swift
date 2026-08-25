@@ -28,6 +28,7 @@ public struct TaskDetailView: View {
             }
             .padding(.horizontal, VikunjaSpacing.md)
             .padding(.bottom, VikunjaSpacing.xl)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(VikunjaColor.Surface.page)
         .navigationTitle("Task Details")
