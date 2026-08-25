@@ -128,6 +128,56 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
+    func canTestConnectionIsFalseUntilAnAddressIsTyped() {
+        let viewModel = makeViewModel()
+        #expect(viewModel.canTestConnection == false)
+
+        viewModel.urlText = "   "
+        #expect(viewModel.canTestConnection == false)
+
+        viewModel.urlText = "tasks.example.com"
+        #expect(viewModel.canTestConnection == true)
+    }
+
+    @Test
+    func testingAValidAddressProbesItWithoutPersistingAnAccount() async {
+        let accountStore = FakeAccountStore()
+        let clientFactory = FakeInstanceClientFactory()
+        let viewModel = makeViewModel(accountStore: accountStore, clientFactory: clientFactory)
+        viewModel.urlText = "tasks.example.com"
+
+        await viewModel.testConnection()
+
+        #expect(viewModel.validationState == .success)
+        #expect(clientFactory.requestedBaseURLs == [URL(string: "https://tasks.example.com")!])
+        #expect(accountStore.addAccountCallCount == 0)
+        #expect(viewModel.urlText == "tasks.example.com")
+    }
+
+    @Test
+    func testingWhenTheServerProbeFailsSurfacesAFriendlyMessage() async {
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.result = .failure(.network("offline"))
+        let viewModel = makeViewModel(clientFactory: clientFactory)
+        viewModel.urlText = "tasks.example.com"
+
+        await viewModel.testConnection()
+
+        #expect(viewModel.validationState == .failure("Couldn't reach that server. Check the address and your connection."))
+    }
+
+    @Test
+    func testingWithNoAddressDoesNothing() async {
+        let clientFactory = FakeInstanceClientFactory()
+        let viewModel = makeViewModel(clientFactory: clientFactory)
+
+        await viewModel.testConnection()
+
+        #expect(viewModel.validationState == .idle)
+        #expect(clientFactory.requestedBaseURLs.isEmpty)
+    }
+
+    @Test
     func loadSavedAccountsPopulatesFromTheStore() async {
         let accountStore = FakeAccountStore()
         let existing = InstanceAccount(displayName: "Work", baseURL: URL(string: "https://work.example.com")!)

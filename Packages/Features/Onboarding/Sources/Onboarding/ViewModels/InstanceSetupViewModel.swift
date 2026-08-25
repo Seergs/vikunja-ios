@@ -31,8 +31,27 @@ public final class InstanceSetupViewModel {
         !trimmedDisplayName.isEmpty && !trimmedURLText.isEmpty && !trimmedToken.isEmpty
     }
 
+    public var canTestConnection: Bool { !trimmedURLText.isEmpty }
+
     public func loadSavedAccounts() async {
         savedAccounts = (try? await accountStore.fetchAccounts()) ?? []
+    }
+
+    /// Probes the typed address without persisting anything — backs a
+    /// standalone "test connection" action, distinct from `saveConnection()`.
+    public func testConnection() async {
+        guard canTestConnection, !isSaving else { return }
+        validationState = .validating
+
+        do {
+            let baseURL = try InstanceURL.normalize(urlText)
+            _ = try await clientFactory.makeCapabilityProvider(baseURL: baseURL).serverInfo()
+            validationState = .success
+        } catch let error as VikunjaError {
+            validationState = .failure(Self.message(for: error))
+        } catch {
+            validationState = .failure(error.localizedDescription)
+        }
     }
 
     public func saveConnection() async {
