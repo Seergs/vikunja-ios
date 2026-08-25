@@ -12,6 +12,7 @@ import VikunjaCore
 /// it as a separated glass pill instead of grouping it with the others.
 struct MainTabView: View {
     let account: InstanceAccount
+    let container: AppContainer
 
     @State private var selection: AppTab = .home
 
@@ -22,7 +23,7 @@ struct MainTabView: View {
             }
 
             Tab(AppTab.projects.title, systemImage: AppTab.projects.systemImage, value: .projects) {
-                ProjectsRootView()
+                ProjectsRootView(viewModel: container.makeProjectsListViewModel(account: account))
             }
 
             Tab(AppTab.settings.title, systemImage: AppTab.settings.systemImage, value: .settings) {

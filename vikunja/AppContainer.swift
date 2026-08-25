@@ -1,5 +1,6 @@
 import Foundation
 import Onboarding
+import Projects
 import VikunjaAuth
 import VikunjaCore
 import VikunjaNetworking
@@ -23,5 +24,13 @@ final class AppContainer {
 
     func makeInstanceSetupViewModel() -> InstanceSetupViewModel {
         InstanceSetupViewModel(accountStore: accountStore, clientFactory: clientFactory)
+    }
+
+    func makeProjectsListViewModel(account: InstanceAccount) -> ProjectsListViewModel {
+        let accountStore = self.accountStore
+        let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL) {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        return ProjectsListViewModel(repository: repository)
     }
 }
