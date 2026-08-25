@@ -11,15 +11,21 @@ public final class TaskDetailViewModel {
     public let project: Project
     public private(set) var task: VikunjaTask
     public private(set) var loadState: ScreenLoadState = .idle
+    /// Every label on the instance, for the label picker sheet to offer —
+    /// loaded lazily via `loadAllLabels()` rather than alongside `load()`,
+    /// since most task views are never opened.
+    public private(set) var allLabels: [Label] = []
 
     public var isLoading: Bool { loadState == .loading }
 
     private let repository: TaskRepositoryProtocol
+    private let labelRepository: LabelRepositoryProtocol
 
-    public init(task: VikunjaTask, project: Project, repository: TaskRepositoryProtocol) {
+    public init(task: VikunjaTask, project: Project, repository: TaskRepositoryProtocol, labelRepository: LabelRepositoryProtocol) {
         self.task = task
         self.project = project
         self.repository = repository
+        self.labelRepository = labelRepository
     }
 
     public func load() async {
@@ -59,6 +65,47 @@ public final class TaskDetailViewModel {
         let previous = task
         task.priority = priority
         await persist(previous: previous)
+    }
+
+    /// Loads every label on the instance, for the label picker sheet. Failures
+    /// leave `allLabels` at whatever it already was (empty on first failure),
+    /// rather than surfacing an error — the sheet just shows fewer/no
+    /// suggestions to pick from.
+    public func loadAllLabels() async {
+        allLabels = (try? await labelRepository.fetchLabels()) ?? allLabels
+    }
+
+    /// Adds or removes `label` from the task, optimistically, rolling back if
+    /// the server rejects it — mirrors `toggleDone()`.
+    public func toggleLabel(_ label: Label) async {
+        let previous = task
+        if task.labels.contains(label) {
+            task.labels.removeAll { $0.id == label.id }
+            do {
+                try await labelRepository.removeLabel(label.id, fromTask: task.id)
+            } catch {
+                task = previous
+            }
+        } else {
+            task.labels.append(label)
+            do {
+                try await labelRepository.addLabel(label.id, toTask: task.id)
+            } catch {
+                task = previous
+            }
+        }
+    }
+
+    /// Creates a new label on the instance and attaches it to the task.
+    /// Rolls back to no-op if either the create or the attach request fails —
+    /// there's no partial state to reconcile since `allLabels` is reloaded
+    /// from the create response rather than guessed at.
+    public func createAndAddLabel(title: String, hexColor: String) async {
+        guard let created = try? await labelRepository.create(Label(id: 0, title: title, hexColor: hexColor)) else {
+            return
+        }
+        allLabels.append(created)
+        await toggleLabel(created)
     }
 
     /// Persists the currently-staged `task` edit, rolling back to `previous`

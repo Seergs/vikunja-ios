@@ -63,6 +63,46 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     }
 }
 
+final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
+    var labels: [Label] = []
+    var addedLabelIDs: [(labelID: Int, taskID: Int)] = []
+    var removedLabelIDs: [(labelID: Int, taskID: Int)] = []
+    var fetchError: VikunjaError?
+    var createError: VikunjaError?
+    var addError: VikunjaError?
+    var removeError: VikunjaError?
+    private var nextID = 100
+
+    func fetchLabels() async throws -> [Label] {
+        if let fetchError { throw fetchError }
+        return labels
+    }
+
+    func create(_ label: Label) async throws -> Label {
+        if let createError { throw createError }
+        let created = Label(id: nextID, title: label.title, hexColor: label.hexColor)
+        nextID += 1
+        labels.append(created)
+        return created
+    }
+
+    func update(_ label: Label) async throws -> Label { label }
+
+    func delete(id: Int) async throws {
+        labels.removeAll { $0.id == id }
+    }
+
+    func addLabel(_ labelID: Int, toTask taskID: Int) async throws {
+        if let addError { throw addError }
+        addedLabelIDs.append((labelID, taskID))
+    }
+
+    func removeLabel(_ labelID: Int, fromTask taskID: Int) async throws {
+        if let removeError { throw removeError }
+        removedLabelIDs.append((labelID, taskID))
+    }
+}
+
 final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
     private(set) var shownMessages: [(message: String, style: ToastStyle)] = []
 
