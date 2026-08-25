@@ -5,12 +5,17 @@ import Settings
 import SwiftUI
 import Tasks
 import VikunjaCore
+import VikunjaDesignSystem
 
 /// The app's main navigation shell once a connection exists: a floating,
 /// Liquid Glass tab bar (the default look for `TabView` on iOS 26+) with one
 /// independent `NavigationStack` per tab, each owned by its own feature
 /// module. `Search` uses iOS 26's dedicated `.search` tab role, which renders
-/// it as a separated glass pill instead of grouping it with the others.
+/// it as a separated glass pill instead of grouping it with the others. The
+/// quick-add button is a plain `.overlay`, not `.tabViewBottomAccessory` —
+/// that API always paints a system glass background behind its content and
+/// centers it over the tab bar, which can't be suppressed or anchored to a
+/// corner, so it can't match the mockup's bare floating FAB.
 struct MainTabView: View {
     let account: InstanceAccount
     let container: AppContainer
@@ -46,11 +51,13 @@ struct MainTabView: View {
                 SearchRootView()
             }
         }
-        .tabViewBottomAccessory {
-            // TODO: wire to real task creation once a Tasks feature exists.
-            QuickAddAccessoryView()
-        }
         .tabBarMinimizeBehavior(.onScrollDown)
+        .overlay(alignment: .bottomTrailing) {
+            // TODO: wire to real task creation once a Tasks feature exists.
+            QuickAddButton()
+                .padding(.trailing, VikunjaSpacing.md)
+                .padding(.bottom, VikunjaSpacing.xxl + VikunjaSpacing.lg)
+        }
     }
 
     /// Temporary stand-in for real "edit connection" support: wipes the
