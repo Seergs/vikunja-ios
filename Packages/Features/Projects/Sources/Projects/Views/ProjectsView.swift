@@ -1,12 +1,14 @@
 import SwiftUI
 import VikunjaCore
 import VikunjaDesignSystem
+import VikunjaNavigation
 
 /// The Projects tab's list screen: a flattened, indented rendering of
 /// `ProjectsListViewModel.rootNodes` (a parent/child tree keyed by
 /// `parentProjectID`), with per-project expand/collapse.
 struct ProjectsView: View {
     @Bindable var viewModel: ProjectsListViewModel
+    let router: Router<ProjectsRoute>
     @State private var expandedProjectIDs: Set<Int> = []
 
     var body: some View {
@@ -65,10 +67,10 @@ struct ProjectsView: View {
                             project: row.node.project,
                             level: row.level,
                             hasChildren: !row.node.children.isEmpty,
-                            isExpanded: expandedProjectIDs.contains(row.node.id)
-                        ) {
-                            toggleExpanded(row.node.id)
-                        }
+                            isExpanded: expandedProjectIDs.contains(row.node.id),
+                            onSelect: { router.push(.projectOverview(row.node)) },
+                            onToggleExpand: { toggleExpanded(row.node.id) }
+                        )
                     }
                 } header: {
                     Text(Self.countText(for: viewModel.rootNodes))
@@ -132,13 +134,17 @@ private struct ProjectDisplayRow: Identifiable {
 
 /// A single row: a color swatch (from the project's `hexColor`, falling back
 /// to the brand color when unset), title, and — only when the project has
-/// children — a disclosure chevron.
+/// children — a disclosure chevron. Tapping the row itself opens that
+/// project's overview; the chevron is its own tap target that only
+/// expands/collapses the children, so opening a parent project doesn't
+/// require first collapsing it.
 private struct ProjectRow: View {
     let project: Project
     let level: Int
     let hasChildren: Bool
     let isExpanded: Bool
-    let onToggle: () -> Void
+    let onSelect: () -> Void
+    let onToggleExpand: () -> Void
 
     private var swatchColor: Color {
         Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
@@ -163,21 +169,24 @@ private struct ProjectRow: View {
             Spacer(minLength: VikunjaSpacing.sm)
 
             if hasChildren {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
-                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                Button(action: onToggleExpand) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isExpanded ? "Collapse" : "Expand")
             }
         }
         .padding(.leading, CGFloat(level) * VikunjaSpacing.lg)
         .contentShape(Rectangle())
-        .onTapGesture {
-            guard hasChildren else { return }
-            onToggle()
-        }
-        .accessibilityAddTraits(hasChildren ? [.isButton] : [])
+        .onTapGesture(perform: onSelect)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
         .accessibilityLabel(project.title)
-        .accessibilityValue(hasChildren ? (isExpanded ? "Expanded" : "Collapsed") : "")
     }
 }
 

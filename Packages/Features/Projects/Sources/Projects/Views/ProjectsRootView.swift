@@ -8,16 +8,28 @@ import VikunjaNavigation
 public struct ProjectsRootView: View {
     @State private var router = Router<ProjectsRoute>()
     private let viewModel: ProjectsListViewModel
+    private let makeOverviewViewModel: (ProjectNode) -> ProjectOverviewViewModel
 
-    public init(viewModel: ProjectsListViewModel) {
+    /// `makeOverviewViewModel` comes from the app target's `AppContainer`,
+    /// which is the only place allowed to know about the concrete task
+    /// repository a `ProjectOverviewViewModel` needs.
+    public init(
+        viewModel: ProjectsListViewModel,
+        makeOverviewViewModel: @escaping (ProjectNode) -> ProjectOverviewViewModel
+    ) {
         self.viewModel = viewModel
+        self.makeOverviewViewModel = makeOverviewViewModel
     }
 
     public var body: some View {
-        // `.navigationDestination(for: ProjectsRoute.self)` lands here once
-        // `ProjectsRoute` has its first real case.
         NavigationStack(path: $router.path) {
-            ProjectsView(viewModel: viewModel)
+            ProjectsView(viewModel: viewModel, router: router)
+                .navigationDestination(for: ProjectsRoute.self) { route in
+                    switch route {
+                    case let .projectOverview(node):
+                        ProjectOverviewView(viewModel: makeOverviewViewModel(node), router: router)
+                    }
+                }
         }
     }
 }

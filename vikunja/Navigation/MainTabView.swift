@@ -23,7 +23,12 @@ struct MainTabView: View {
             }
 
             Tab(AppTab.projects.title, systemImage: AppTab.projects.systemImage, value: .projects) {
-                ProjectsRootView(viewModel: container.makeProjectsListViewModel(account: account))
+                ProjectsRootView(
+                    viewModel: container.makeProjectsListViewModel(account: account),
+                    makeOverviewViewModel: { node in
+                        container.makeProjectOverviewViewModel(node: node, account: account)
+                    }
+                )
             }
 
             Tab(AppTab.settings.title, systemImage: AppTab.settings.systemImage, value: .settings) {
