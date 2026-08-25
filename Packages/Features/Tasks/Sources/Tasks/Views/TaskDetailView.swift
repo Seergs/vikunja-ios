@@ -126,6 +126,27 @@ public struct TaskDetailView: View {
                 }
             }
         }
+
+        ForEach(orderedOtherRelations(task), id: \.kind) { entry in
+            SectionBlock(title: entry.kind.displayName) {
+                VStack(spacing: VikunjaSpacing.sm) {
+                    ForEach(entry.relations) { relation in
+                        DependencyRow(relation: relation, projectTitle: projectTitle(for: relation))
+                    }
+                }
+            }
+        }
+    }
+
+    /// `task.otherRelations` is a dictionary — iterate `RelationKind.allCases`
+    /// instead of the dictionary directly so section order stays stable
+    /// across renders rather than following Swift's unordered `Dictionary`
+    /// iteration.
+    private func orderedOtherRelations(_ task: VikunjaTask) -> [(kind: RelationKind, relations: [TaskRelation])] {
+        RelationKind.allCases.compactMap { kind in
+            guard let relations = task.otherRelations[kind], !relations.isEmpty else { return nil }
+            return (kind, relations)
+        }
     }
 
     /// `TaskRelation` only carries a `projectID` (not a title, since a

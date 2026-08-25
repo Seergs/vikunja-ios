@@ -41,9 +41,10 @@ public final class TaskDetailViewModel {
     ///
     /// Vikunja manages relations through their own endpoint rather than the
     /// task update body (see `TaskDTO.relatedTasks`), so `update(_:)`'s
-    /// response doesn't carry `subtasks`/`dependsOn`/`blocks` back — carrying
-    /// over what's already loaded instead of taking the response as-is is
-    /// what keeps those sections from disappearing after a toggle.
+    /// response doesn't carry `subtasks`/`dependsOn`/`blocks`/`otherRelations`
+    /// back — carrying over what's already loaded instead of taking the
+    /// response as-is is what keeps those sections from disappearing after a
+    /// toggle.
     public func toggleDone() async {
         let previous = task
         task.isDone.toggle()
@@ -52,6 +53,7 @@ public final class TaskDetailViewModel {
             updated.subtasks = previous.subtasks
             updated.dependsOn = previous.dependsOn
             updated.blocks = previous.blocks
+            updated.otherRelations = previous.otherRelations
             task = updated
         } catch {
             task = previous

@@ -29,6 +29,7 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
         updated.subtasks = []
         updated.dependsOn = []
         updated.blocks = []
+        updated.otherRelations = [:]
         return updated
     }
 

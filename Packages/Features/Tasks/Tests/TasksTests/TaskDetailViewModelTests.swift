@@ -71,7 +71,8 @@ struct TaskDetailViewModelTests {
             projectID: 1,
             subtasks: [TaskRelation(id: 2, title: "Outline", isDone: true, projectID: 1)],
             dependsOn: [TaskRelation(id: 3, title: "Approve brief", isDone: false, projectID: 1)],
-            blocks: [TaskRelation(id: 4, title: "Publish", isDone: false, projectID: 1)]
+            blocks: [TaskRelation(id: 4, title: "Publish", isDone: false, projectID: 1)],
+            otherRelations: [.related: [TaskRelation(id: 5, title: "Related memo", isDone: false, projectID: 1)]]
         )
         let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository)
 
@@ -81,6 +82,7 @@ struct TaskDetailViewModelTests {
         #expect(viewModel.task.subtasks == task.subtasks)
         #expect(viewModel.task.dependsOn == task.dependsOn)
         #expect(viewModel.task.blocks == task.blocks)
+        #expect(viewModel.task.otherRelations == task.otherRelations)
     }
 
     @Test
