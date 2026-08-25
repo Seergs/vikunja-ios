@@ -4,6 +4,7 @@ import VikunjaCore
 final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     var tasks: [VikunjaTask] = []
     var fetchError: VikunjaError?
+    var updateError: VikunjaError?
 
     func fetchTasks(projectID: Int) async throws -> [VikunjaTask] {
         if let fetchError { throw fetchError }
@@ -20,7 +21,10 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
 
     func create(_ task: VikunjaTask) async throws -> VikunjaTask { task }
 
-    func update(_ task: VikunjaTask) async throws -> VikunjaTask { task }
+    func update(_ task: VikunjaTask) async throws -> VikunjaTask {
+        if let updateError { throw updateError }
+        return task
+    }
 
     func delete(id: Int) async throws {
         tasks.removeAll { $0.id == id }

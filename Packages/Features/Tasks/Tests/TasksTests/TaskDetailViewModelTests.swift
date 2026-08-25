@@ -8,7 +8,7 @@ struct TaskDetailViewModelTests {
     func startsWithTheTaskPassedInAtConstruction() {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
-        let viewModel = TaskDetailViewModel(task: task, repository: repository)
+        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository)
 
         #expect(viewModel.task == task)
         #expect(viewModel.loadState == .idle)
@@ -22,6 +22,7 @@ struct TaskDetailViewModelTests {
         ]
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
             repository: repository
         )
 
@@ -37,11 +38,41 @@ struct TaskDetailViewModelTests {
         repository.fetchError = .network("offline")
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
             repository: repository
         )
 
         await viewModel.load()
 
         #expect(viewModel.loadState == .failure("Couldn't reach that server. Check the address and your connection."))
+    }
+
+    @Test
+    func toggleDonePersistsTheFlippedStateThroughTheRepository() async {
+        let repository = FakeTaskRepository()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository
+        )
+
+        await viewModel.toggleDone()
+
+        #expect(viewModel.task.isDone == true)
+    }
+
+    @Test
+    func toggleDoneRevertsWhenTheServerRejectsTheUpdate() async {
+        let repository = FakeTaskRepository()
+        repository.updateError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository
+        )
+
+        await viewModel.toggleDone()
+
+        #expect(viewModel.task.isDone == false)
     }
 }
