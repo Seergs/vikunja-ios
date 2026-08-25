@@ -23,7 +23,13 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
 
     func update(_ task: VikunjaTask) async throws -> VikunjaTask {
         if let updateError { throw updateError }
-        return task
+        // Mirrors the real API: an update's response doesn't echo relations
+        // back (see `TaskDetailViewModel.toggleDone()`'s doc comment).
+        var updated = task
+        updated.subtasks = []
+        updated.dependsOn = []
+        updated.blocks = []
+        return updated
     }
 
     func delete(id: Int) async throws {
