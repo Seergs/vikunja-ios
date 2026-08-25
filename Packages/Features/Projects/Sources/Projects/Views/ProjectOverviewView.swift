@@ -373,6 +373,8 @@ private struct ProjectTaskCard: View {
 }
 
 private struct ProjectTaskRow: View {
+    static let labelDisplayLimit = 2
+
     let task: VikunjaTask
     let projectColor: Color
     let onToggle: () -> Void
@@ -426,8 +428,13 @@ private struct ProjectTaskRow: View {
 
                 if !task.labels.isEmpty {
                     HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
-                        ForEach(task.labels) { label in
+                        ForEach(task.labels.prefix(Self.labelDisplayLimit)) { label in
                             LabelPill(label: label)
+                        }
+
+                        let remainingLabelCount = task.labels.count - Self.labelDisplayLimit
+                        if remainingLabelCount > 0 {
+                            ExtraLabelsPill(count: remainingLabelCount)
                         }
                     }
                 }
@@ -464,6 +471,19 @@ private struct LabelPill: View {
             .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
             .padding(.vertical, VikunjaSpacing.xxs)
             .background(Capsule().fill(color.opacity(0.14)))
+    }
+}
+
+private struct ExtraLabelsPill: View {
+    let count: Int
+
+    var body: some View {
+        Text("+\(count)")
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(VikunjaColor.textTertiary)
+            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+            .padding(.vertical, VikunjaSpacing.xxs)
+            .background(Capsule().fill(VikunjaColor.textSecondary.opacity(0.14)))
     }
 }
 
