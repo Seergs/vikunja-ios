@@ -9,6 +9,16 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
     public var priority: Priority
     public var projectID: Int
     public var labels: [Label]
+    /// Other tasks related to this one, keyed by relation direction rather
+    /// than Vikunja's raw relation-kind strings ("subtask", "blocked",
+    /// "blocking", ...) — this is the subset the app surfaces today; more
+    /// kinds (e.g. "related", "duplicates") can be added the same way once a
+    /// screen needs them.
+    public var subtasks: [TaskRelation]
+    /// Tasks this one is blocked by (Vikunja's "blocked" relation kind).
+    public var dependsOn: [TaskRelation]
+    /// Tasks waiting on this one (Vikunja's "blocking" relation kind).
+    public var blocks: [TaskRelation]
 
     public init(
         id: Int,
@@ -18,7 +28,10 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
         dueDate: Date? = nil,
         priority: Priority = .unset,
         projectID: Int,
-        labels: [Label] = []
+        labels: [Label] = [],
+        subtasks: [TaskRelation] = [],
+        dependsOn: [TaskRelation] = [],
+        blocks: [TaskRelation] = []
     ) {
         self.id = id
         self.title = title
@@ -28,6 +41,14 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
         self.priority = priority
         self.projectID = projectID
         self.labels = labels
+        self.subtasks = subtasks
+        self.dependsOn = dependsOn
+        self.blocks = blocks
+    }
+
+    /// Whether this task is still waiting on an incomplete `dependsOn` task.
+    public var isBlocked: Bool {
+        dependsOn.contains { !$0.isDone }
     }
 
     public enum Priority: Int, Sendable, CaseIterable, Hashable {
