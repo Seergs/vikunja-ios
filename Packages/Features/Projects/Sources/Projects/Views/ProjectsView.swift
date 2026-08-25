@@ -24,9 +24,6 @@ struct ProjectsView: View {
             .navigationTitle("Projects")
             .task {
                 await viewModel.load()
-                if expandedProjectIDs.isEmpty {
-                    expandedProjectIDs = Self.parentIDs(in: viewModel.rootNodes)
-                }
             }
     }
 
@@ -89,16 +86,6 @@ struct ProjectsView: View {
             } else {
                 expandedProjectIDs.insert(id)
             }
-        }
-    }
-
-    /// All ids that have at least one child, so the tree starts fully
-    /// expanded — nothing is hidden from the user by default.
-    private static func parentIDs(in nodes: [ProjectNode]) -> Set<Int> {
-        nodes.reduce(into: Set<Int>()) { ids, node in
-            guard !node.children.isEmpty else { return }
-            ids.insert(node.id)
-            ids.formUnion(parentIDs(in: node.children))
         }
     }
 
