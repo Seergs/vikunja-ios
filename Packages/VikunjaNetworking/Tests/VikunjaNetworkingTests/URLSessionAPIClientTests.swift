@@ -96,4 +96,83 @@ struct URLSessionAPIClientTests {
         #expect(sentJSON["repeat_mode"] as? Int == 1)
         #expect(sentJSON["cover_image_attachment_id"] as? Int == 42)
     }
+
+    // `VikunjaLabelRepository` is tested here rather than in its own suite
+    // for the same reason as `VikunjaTaskRepository.update(_:)` above: it
+    // shares `MockURLProtocol`'s static state with this suite, and only
+    // tests *within* one `.serialized` suite are guaranteed not to run
+    // concurrently with each other.
+
+    @Test
+    func fetchLabelsDecodesTheLabelList() async throws {
+        let (session, _) = MockURLProtocol.makeSession(
+            statusCode: 200,
+            body: #"[{"id":10,"title":"home","hex_color":"ff00ff"}]"#
+        )
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaLabelRepository(client: client)
+
+        let labels = try await repository.fetchLabels()
+
+        #expect(labels == [Label(id: 10, title: "home", hexColor: "ff00ff")])
+    }
+
+    @Test
+    func createLabelPUTsToTheLabelsEndpoint() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(
+            statusCode: 200,
+            body: #"{"id":11,"title":"work","hex_color":"00ff00"}"#
+        )
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaLabelRepository(client: client)
+
+        let created = try await repository.create(Label(id: 0, title: "work", hexColor: "00ff00"))
+
+        #expect(created == Label(id: 11, title: "work", hexColor: "00ff00"))
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "PUT")
+        #expect(request.url?.path == "/api/v1/labels")
+    }
+
+    @Test
+    func deleteLabelDELETEsTheLabelByID() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaLabelRepository(client: client)
+
+        try await repository.delete(id: 11)
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/api/v1/labels/11")
+    }
+
+    @Test
+    func addLabelPUTsTheLabelIDOntoTheTasksLabelsEndpoint() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaLabelRepository(client: client)
+
+        try await repository.addLabel(10, toTask: 1)
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "PUT")
+        #expect(request.url?.path == "/api/v1/tasks/1/labels")
+        let sentBody = try #require(request.httpBody)
+        let sentJSON = try #require(JSONSerialization.jsonObject(with: sentBody) as? [String: Any])
+        #expect(sentJSON["label_id"] as? Int == 10)
+    }
+
+    @Test
+    func removeLabelDELETEsTheLabelFromTheTask() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaLabelRepository(client: client)
+
+        try await repository.removeLabel(10, fromTask: 1)
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/api/v1/tasks/1/labels/10")
+    }
 }

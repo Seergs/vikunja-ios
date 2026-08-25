@@ -29,4 +29,13 @@ public struct VikunjaInstanceClientFactory: InstanceClientFactoryProtocol {
             client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
         )
     }
+
+    public func makeLabelRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> LabelRepositoryProtocol {
+        VikunjaLabelRepository(
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+        )
+    }
 }
