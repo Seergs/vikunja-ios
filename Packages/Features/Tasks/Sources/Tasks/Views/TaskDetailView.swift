@@ -8,6 +8,7 @@ import VikunjaDesignSystem
 /// owns no `NavigationStack`/`Router` of its own.
 public struct TaskDetailView: View {
     @Bindable var viewModel: TaskDetailViewModel
+    @State private var isShowingDueDatePicker = false
 
     public init(viewModel: TaskDetailViewModel) {
         self.viewModel = viewModel
@@ -36,6 +37,11 @@ public struct TaskDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .task { await viewModel.load() }
+        .sheet(isPresented: $isShowingDueDatePicker) {
+            DueDatePickerSheet(initialDate: viewModel.task.dueDate) { newDate in
+                Task { await viewModel.setDueDate(newDate) }
+            }
+        }
     }
 
     @ViewBuilder
@@ -75,24 +81,44 @@ public struct TaskDetailView: View {
         }
 
         VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
-            if let dueDate = task.dueDate {
+            Button {
+                isShowingDueDatePicker = true
+            } label: {
                 InfoRow(
                     systemImage: "calendar",
-                    iconColor: VikunjaColor.textSecondary,
+                    iconColor: task.dueDate == nil ? VikunjaColor.textTertiary : VikunjaColor.textSecondary,
                     title: "Due",
-                    value: TaskDueDateFormatter.string(for: dueDate),
-                    valueColor: isOverdue(task) ? VikunjaColor.Semantic.dangerText : nil
+                    value: task.dueDate.map(TaskDueDateFormatter.string(for:)) ?? "Set due date",
+                    valueColor: task.dueDate == nil ? VikunjaColor.textTertiary : (isOverdue(task) ? VikunjaColor.Semantic.dangerText : nil),
+                    showsChevron: true
                 )
             }
-            if let priority = priorityDisplay(task.priority) {
+            .buttonStyle(.plain)
+
+            Menu {
+                ForEach(VikunjaTask.Priority.allCases.filter { $0 != .doNow }, id: \.self) { priority in
+                    Button {
+                        Task { await viewModel.setPriority(priority) }
+                    } label: {
+                        HStack {
+                            Text(priorityMenuLabel(priority))
+                            if task.priority == priority {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
                 InfoRow(
                     systemImage: "flag",
-                    iconColor: priority.color,
+                    iconColor: priorityDisplay(task.priority)?.color ?? VikunjaColor.textTertiary,
                     title: "Priority",
-                    value: priority.label,
-                    valueColor: priority.color
+                    value: priorityDisplay(task.priority)?.label ?? "Set priority",
+                    valueColor: priorityDisplay(task.priority)?.color ?? VikunjaColor.textTertiary,
+                    showsChevron: true
                 )
             }
+            .buttonStyle(.plain)
         }
         .padding(.top, VikunjaSpacing.lg)
 
@@ -183,6 +209,10 @@ public struct TaskDetailView: View {
         case .urgent, .doNow: return PriorityDisplay(label: "Urgent", color: VikunjaColor.Priority.urgent)
         }
     }
+
+    private func priorityMenuLabel(_ priority: VikunjaTask.Priority) -> String {
+        priorityDisplay(priority)?.label ?? "None"
+    }
 }
 
 private struct ProjectPill: View {
@@ -252,6 +282,7 @@ private struct InfoRow: View {
     let title: String
     let value: String
     var valueColor: Color?
+    var showsChevron: Bool = false
 
     var body: some View {
         HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
@@ -267,6 +298,11 @@ private struct InfoRow: View {
                 .font(VikunjaFont.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(valueColor ?? Color.primary)
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(VikunjaColor.textTertiary)
+            }
         }
         .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
         .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
@@ -463,6 +499,63 @@ private struct TaskDetailStatusView: View {
         }
         .padding(VikunjaSpacing.lg)
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// Lets the user pick (or clear) a due date/time. A small sheet rather than
+/// an inline `DatePicker`, matching `QuickAddSheetView`'s pattern of pushing
+/// pickers into their own sheet — `TaskDetailView` has no toolbar of its own
+/// to host a "Done" button otherwise.
+private struct DueDatePickerSheet: View {
+    @State private var date: Date
+    @Environment(\.dismiss) private var dismiss
+    private let hadInitialDate: Bool
+    private let onSave: (Date?) -> Void
+
+    init(initialDate: Date?, onSave: @escaping (Date?) -> Void) {
+        _date = State(initialValue: initialDate ?? Date())
+        self.hadInitialDate = initialDate != nil
+        self.onSave = onSave
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack {
+                DatePicker("Due date", selection: $date)
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+
+                if hadInitialDate {
+                    Button("Remove Due Date", role: .destructive) {
+                        onSave(nil)
+                        dismiss()
+                    }
+                    .padding(.top, VikunjaSpacing.sm)
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.top, VikunjaSpacing.sm)
+            .navigationTitle("Due Date")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave(date)
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.6)])
+        .presentationDragIndicator(.visible)
     }
 }
 

@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import VikunjaCore
 @testable import Tasks
@@ -98,5 +99,64 @@ struct TaskDetailViewModelTests {
         await viewModel.toggleDone()
 
         #expect(viewModel.task.isDone == false)
+    }
+
+    @Test
+    func setDueDatePersistsTheChosenDate() async {
+        let repository = FakeTaskRepository()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository
+        )
+        let dueDate = Date(timeIntervalSince1970: 1_700_000_000)
+
+        await viewModel.setDueDate(dueDate)
+
+        #expect(viewModel.task.dueDate == dueDate)
+    }
+
+    @Test
+    func setDueDateRevertsWhenTheServerRejectsTheUpdate() async {
+        let repository = FakeTaskRepository()
+        repository.updateError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository
+        )
+
+        await viewModel.setDueDate(Date())
+
+        #expect(viewModel.task.dueDate == nil)
+    }
+
+    @Test
+    func setPriorityPersistsTheChosenPriority() async {
+        let repository = FakeTaskRepository()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository
+        )
+
+        await viewModel.setPriority(.urgent)
+
+        #expect(viewModel.task.priority == .urgent)
+    }
+
+    @Test
+    func setPriorityRevertsWhenTheServerRejectsTheUpdate() async {
+        let repository = FakeTaskRepository()
+        repository.updateError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository
+        )
+
+        await viewModel.setPriority(.high)
+
+        #expect(viewModel.task.priority == .unset)
     }
 }
