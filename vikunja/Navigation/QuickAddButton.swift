@@ -8,8 +8,8 @@ import VikunjaDesignSystem
 /// background behind its content and centers it over the tab bar — there's
 /// no way to make that background disappear or anchor it to a corner — so
 /// this is placed via a plain `.overlay(alignment: .bottomTrailing)` on
-/// `MainTabView` instead. `onTap` is a no-op placeholder until a Tasks
-/// feature exists to create a task from it.
+/// `MainTabView` instead. `onTap` is supplied by `MainTabView` to present
+/// `Tasks`' `QuickAddSheetView`.
 struct QuickAddButton: View {
     private let diameter: CGFloat = 56
 

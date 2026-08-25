@@ -87,6 +87,38 @@ struct QuickAddTaskViewModelTests {
     }
 
     @Test
+    func projectGroupsArrangesTopLevelProjectsWithTheirDirectChildren() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [
+            Project(id: 1, title: "Work", parentProjectID: nil, position: 0),
+            Project(id: 2, title: "Redesign", parentProjectID: 1, position: 1),
+            Project(id: 3, title: "Personal", parentProjectID: nil, position: 1),
+            Project(id: 4, title: "Launch", parentProjectID: 1, position: 0),
+        ]
+        let viewModel = QuickAddTaskViewModel(taskRepository: FakeTaskRepository(), projectRepository: projectRepository)
+
+        await viewModel.load()
+
+        #expect(viewModel.projectGroups.map(\.root.id) == [1, 3])
+        #expect(viewModel.projectGroups[0].children.map(\.id) == [4, 2])
+        #expect(viewModel.projectGroups[1].children.isEmpty)
+    }
+
+    @Test
+    func selectedProjectResolvesTheChosenIDAgainstTheLoadedProjects() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [Project(id: 1, title: "Work")]
+        let viewModel = QuickAddTaskViewModel(taskRepository: FakeTaskRepository(), projectRepository: projectRepository)
+        await viewModel.load()
+
+        #expect(viewModel.selectedProject == nil)
+
+        viewModel.selectedProjectID = 1
+
+        #expect(viewModel.selectedProject?.title == "Work")
+    }
+
+    @Test
     func saveSurfacesAFriendlyMessageOnFailure() async {
         let viewModel = QuickAddTaskViewModel(taskRepository: FailingTaskRepository(), projectRepository: FakeProjectRepository())
         viewModel.title = "Buy milk"

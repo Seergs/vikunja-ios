@@ -24,6 +24,7 @@ struct MainTabView: View {
     let onDisconnect: () -> Void
 
     @State private var selection: AppTab = .home
+    @State private var isShowingQuickAdd = false
 
     var body: some View {
         TabView(selection: $selection) {
@@ -53,10 +54,14 @@ struct MainTabView: View {
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .overlay(alignment: .bottomTrailing) {
-            // TODO: wire to real task creation once a Tasks feature exists.
-            QuickAddButton()
-                .padding(.trailing, VikunjaSpacing.md)
-                .padding(.bottom, VikunjaSpacing.xxl + VikunjaSpacing.lg)
+            QuickAddButton {
+                isShowingQuickAdd = true
+            }
+            .padding(.trailing, VikunjaSpacing.md)
+            .padding(.bottom, VikunjaSpacing.xxl + VikunjaSpacing.lg)
+        }
+        .sheet(isPresented: $isShowingQuickAdd) {
+            QuickAddSheetView(viewModel: container.makeQuickAddTaskViewModel(account: account))
         }
     }
 

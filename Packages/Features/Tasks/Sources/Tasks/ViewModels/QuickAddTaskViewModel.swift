@@ -23,6 +23,30 @@ public final class QuickAddTaskViewModel {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && selectedProjectID != nil && !isSaving
     }
 
+    public var selectedProject: Project? {
+        guard let selectedProjectID else { return nil }
+        return projects.first { $0.id == selectedProjectID }
+    }
+
+    /// `projects` arranged for the project picker: one group per top-level
+    /// project, each carrying its direct children — only one level deep
+    /// (matching the design mockup's picker, which doesn't nest grandchildren)
+    /// rather than `ProjectsListViewModel`'s fully recursive tree.
+    public var projectGroups: [ProjectGroup] {
+        let childrenByParentID = Dictionary(grouping: projects, by: \.parentProjectID)
+        return (childrenByParentID[nil] ?? [])
+            .sorted { $0.position < $1.position }
+            .map { root in
+                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
+            }
+    }
+
+    public struct ProjectGroup: Identifiable, Hashable {
+        public let root: Project
+        public let children: [Project]
+        public var id: Int { root.id }
+    }
+
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
 
