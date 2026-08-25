@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "title": "Buy coffee",
+  "description": "Whole beans, not ground",
+  "done": false,
+  "due_date": "2026-08-30T00:00:00Z",
+  "priority": 3,
+  "project_id": 4,
+  "labels": [
+    { "id": 10, "title": "home", "hex_color": "ff00ff" }
+  ]
+}
