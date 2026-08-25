@@ -24,8 +24,16 @@ struct TaskDTOTests {
         #expect(task.labels.first?.title == "home")
     }
 
-    private func loadTaskDTO() throws -> TaskDTO {
-        let url = try #require(Bundle.module.url(forResource: "task", withExtension: "json"))
+    @Test
+    func mapsZeroValueDueDateToNil() throws {
+        let dto = try loadTaskDTO(named: "task-no-due-date")
+        let task = TaskMapper.toDomain(dto)
+
+        #expect(task.dueDate == nil)
+    }
+
+    private func loadTaskDTO(named name: String = "task") throws -> TaskDTO {
+        let url = try #require(Bundle.module.url(forResource: name, withExtension: "json"))
         let data = try Data(contentsOf: url)
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
