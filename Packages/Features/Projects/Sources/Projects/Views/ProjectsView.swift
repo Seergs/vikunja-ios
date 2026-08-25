@@ -10,7 +10,15 @@ struct ProjectsView: View {
     @State private var expandedProjectIDs: Set<Int> = []
 
     var body: some View {
+        // `List` stays the root container across every load state — not just
+        // `.loaded` — so the container backing the large title never swaps
+        // out for a plain centered `VStack` mid-transition (which used to
+        // drop the "Projects" title down the screen) and so the
+        // `.refreshable` task, owned by this `List`, never gets torn down
+        // and cancelled by a state change mid-refresh.
         content
+            .projectsListStyle()
+            .refreshable { await viewModel.load() }
             .navigationTitle("Projects")
             .task {
                 await viewModel.load()
@@ -22,26 +30,35 @@ struct ProjectsView: View {
 
     @ViewBuilder
     private var content: some View {
-        switch viewModel.loadState {
-        case .idle, .loading:
-            ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        case let .failure(message):
-            ProjectsStatusView(
-                systemImage: "exclamationmark.triangle.fill",
-                title: "Couldn't load projects",
-                message: message
-            ) {
-                Task { await viewModel.load() }
-            }
-        case .loaded where viewModel.rootNodes.isEmpty:
-            ProjectsStatusView(
-                systemImage: "folder.badge.plus",
-                title: "No projects yet",
-                message: "Projects you create on your Vikunja instance will show up here."
-            )
-        case .loaded:
-            List {
+        List {
+            switch viewModel.loadState {
+            case .idle, .loading:
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, VikunjaSpacing.xxl)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+            case let .failure(message):
+                ProjectsStatusView(
+                    systemImage: "exclamationmark.triangle.fill",
+                    title: "Couldn't load projects",
+                    message: message
+                ) {
+                    Task { await viewModel.load() }
+                }
+                .padding(.top, VikunjaSpacing.xxl)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+            case .loaded where viewModel.rootNodes.isEmpty:
+                ProjectsStatusView(
+                    systemImage: "folder.badge.plus",
+                    title: "No projects yet",
+                    message: "Projects you create on your Vikunja instance will show up here."
+                )
+                .padding(.top, VikunjaSpacing.xxl)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+            case .loaded:
                 Section {
                     ForEach(Self.flatten(viewModel.rootNodes, expandedProjectIDs: expandedProjectIDs)) { row in
                         ProjectRow(
@@ -60,8 +77,6 @@ struct ProjectsView: View {
                         .textCase(nil)
                 }
             }
-            .projectsListStyle()
-            .refreshable { await viewModel.load() }
         }
     }
 
