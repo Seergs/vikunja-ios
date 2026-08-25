@@ -1,0 +1,493 @@
+import SwiftUI
+import VikunjaCore
+import VikunjaDesignSystem
+
+/// A single task's detail screen: completion, due date, priority, labels,
+/// subtasks, and dependencies. Pushed as a leaf screen inside whichever
+/// feature's `NavigationStack` opened it (Projects, today) — this package
+/// owns no `NavigationStack`/`Router` of its own.
+public struct TaskDetailView: View {
+    @Bindable var viewModel: TaskDetailViewModel
+
+    public init(viewModel: TaskDetailViewModel) {
+        self.viewModel = viewModel
+    }
+
+    public var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                switch viewModel.loadState {
+                case .failure(let message):
+                    TaskDetailStatusView(message: message) {
+                        Task { await viewModel.load() }
+                    }
+                    .padding(.top, VikunjaSpacing.xxl)
+                default:
+                    loadedContent
+                }
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.bottom, VikunjaSpacing.xl)
+        }
+        .background(VikunjaColor.Surface.page)
+        .navigationTitle("Task Details")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .task { await viewModel.load() }
+    }
+
+    @ViewBuilder
+    private var loadedContent: some View {
+        let task = viewModel.task
+        let project = viewModel.project
+
+        ProjectPill(project: project)
+            .padding(.top, VikunjaSpacing.sm)
+
+        HStack(alignment: .top, spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+            Button {
+                Task { await viewModel.toggleDone() }
+            } label: {
+                TaskDetailCheckbox(isDone: task.isDone, color: swatchColor(project))
+            }
+            .buttonStyle(.plain)
+            .padding(.top, VikunjaSpacing.xxs)
+
+            Text(task.title)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(Color.primary)
+                .strikethrough(task.isDone)
+        }
+        .padding(.top, VikunjaSpacing.sm)
+
+        if dummyIsBlocked {
+            BlockedBanner(waitingOn: dummyBlockers.filter { !$0.isDone }.count)
+                .padding(.top, VikunjaSpacing.md)
+        }
+
+        if let description = task.description, !description.isEmpty {
+            Text(description)
+                .font(VikunjaFont.callout)
+                .foregroundStyle(VikunjaColor.textSecondary)
+                .padding(.top, VikunjaSpacing.md)
+        }
+
+        VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
+            if let dueDate = task.dueDate {
+                InfoRow(
+                    systemImage: "calendar",
+                    iconColor: VikunjaColor.textSecondary,
+                    title: "Due",
+                    value: TaskDueDateFormatter.string(for: dueDate),
+                    valueColor: isOverdue(task) ? VikunjaColor.Semantic.dangerText : nil
+                )
+            }
+            if let priority = priorityDisplay(task.priority) {
+                InfoRow(
+                    systemImage: "flag",
+                    iconColor: priority.color,
+                    title: "Priority",
+                    value: priority.label,
+                    valueColor: priority.color
+                )
+            }
+        }
+        .padding(.top, VikunjaSpacing.lg)
+
+        if !task.labels.isEmpty {
+            SectionBlock(title: "Labels") {
+                LabelsWrap(labels: task.labels)
+            }
+        }
+
+        if !dummySubtasks.isEmpty {
+            SectionBlock(title: "Subtasks", count: "\(dummySubtasks.filter(\.isDone).count)/\(dummySubtasks.count)") {
+                SubtasksCard(subtasks: $dummySubtasks, color: swatchColor(project))
+            }
+        }
+
+        if !dummyBlockers.isEmpty {
+            SectionBlock(title: "Depends on") {
+                VStack(spacing: VikunjaSpacing.sm) {
+                    ForEach(dummyBlockers) { item in
+                        DependencyRow(item: item)
+                    }
+                }
+            }
+        }
+
+        if !dummyBlockedBy.isEmpty {
+            SectionBlock(title: "Blocks") {
+                VStack(spacing: VikunjaSpacing.sm) {
+                    ForEach(dummyBlockedBy) { item in
+                        DependencyRow(item: item)
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Dummy data
+    //
+    // Subtasks and task relations ("depends on" / "blocks") aren't modeled in
+    // VikunjaCore/VikunjaNetworking yet. These are placeholder examples so this
+    // screen's layout can be reviewed end-to-end; see the chat summary for the
+    // list of what's missing to make them real.
+
+    @State private var dummySubtasks: [DummySubtask] = [
+        DummySubtask(title: "Draft outline", isDone: true),
+        DummySubtask(title: "Add screenshots", isDone: false),
+        DummySubtask(title: "Proofread", isDone: false),
+    ]
+
+    private var dummyBlockers: [DummyRelatedTask] {
+        [DummyRelatedTask(title: "Approve design direction", projectTitle: viewModel.project.title, isDone: false)]
+    }
+
+    private var dummyBlockedBy: [DummyRelatedTask] {
+        [DummyRelatedTask(title: "Ship release notes", projectTitle: viewModel.project.title, isDone: false)]
+    }
+
+    private var dummyIsBlocked: Bool {
+        dummyBlockers.contains { !$0.isDone }
+    }
+
+    private func isOverdue(_ task: VikunjaTask) -> Bool {
+        guard let dueDate = task.dueDate, !task.isDone else { return false }
+        return dueDate < Date()
+    }
+
+    private func swatchColor(_ project: Project) -> Color {
+        Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
+    }
+
+    private struct PriorityDisplay {
+        let label: String
+        let color: Color
+    }
+
+    private func priorityDisplay(_ priority: VikunjaTask.Priority) -> PriorityDisplay? {
+        switch priority {
+        case .unset: return nil
+        case .low: return PriorityDisplay(label: "Low", color: VikunjaColor.Priority.low)
+        case .medium: return PriorityDisplay(label: "Medium", color: VikunjaColor.Priority.medium)
+        case .high: return PriorityDisplay(label: "High", color: VikunjaColor.Priority.high)
+        case .urgent, .doNow: return PriorityDisplay(label: "Urgent", color: VikunjaColor.Priority.urgent)
+        }
+    }
+}
+
+private struct DummySubtask: Identifiable {
+    let id = UUID()
+    let title: String
+    var isDone: Bool
+}
+
+private struct DummyRelatedTask: Identifiable {
+    let id = UUID()
+    let title: String
+    let projectTitle: String
+    let isDone: Bool
+}
+
+private struct ProjectPill: View {
+    let project: Project
+
+    private var swatchColor: Color {
+        Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
+    }
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(swatchColor)
+                .frame(width: 10, height: 10)
+            Text(project.title)
+                .font(VikunjaFont.footnote)
+                .fontWeight(.semibold)
+                .foregroundStyle(VikunjaColor.textSecondary)
+        }
+    }
+}
+
+private struct TaskDetailCheckbox: View {
+    let isDone: Bool
+    let color: Color
+    var size: CGFloat = 28
+
+    var body: some View {
+        Circle()
+            .strokeBorder(isDone ? Color.clear : color, lineWidth: 2)
+            .background(Circle().fill(isDone ? color : Color.clear))
+            .frame(width: size, height: size)
+            .overlay {
+                if isDone {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: size * 0.46, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+            }
+    }
+}
+
+private struct BlockedBanner: View {
+    let waitingOn: Int
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+            Image(systemName: "link")
+                .font(.system(size: 11))
+                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+            Text("Blocked · waiting on \(waitingOn) task\(waitingOn == 1 ? "" : "s")")
+                .font(VikunjaFont.footnote)
+                .fontWeight(.bold)
+                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
+        .padding(.vertical, VikunjaSpacing.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(VikunjaColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+    }
+}
+
+private struct InfoRow: View {
+    let systemImage: String
+    let iconColor: Color
+    let title: String
+    let value: String
+    var valueColor: Color?
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+            Image(systemName: systemImage)
+                .font(.system(size: 14))
+                .foregroundStyle(iconColor)
+                .frame(width: 18)
+            Text(title)
+                .font(VikunjaFont.subheadline)
+                .foregroundStyle(Color.primary)
+            Spacer()
+            Text(value)
+                .font(VikunjaFont.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(valueColor ?? Color.primary)
+        }
+        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
+        .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+    }
+}
+
+private struct SectionBlock<Content: View>: View {
+    let title: String
+    var count: String?
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikunjaSpacing.xs) {
+                Text(title)
+                    .fontWeight(.bold)
+                if let count {
+                    Text(count)
+                        .fontWeight(.regular)
+                }
+            }
+            .font(VikunjaFont.footnote)
+            .foregroundStyle(VikunjaColor.textSecondary)
+            .textCase(.uppercase)
+            .kerning(0.3)
+
+            content
+        }
+        .padding(.top, VikunjaSpacing.xl)
+    }
+}
+
+private struct LabelsWrap: View {
+    let labels: [VikunjaCore.Label]
+
+    var body: some View {
+        FlowLayout(spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+            ForEach(labels) { label in
+                LabelPill(label: label)
+            }
+        }
+    }
+}
+
+private struct LabelPill: View {
+    let label: VikunjaCore.Label
+
+    private var color: Color {
+        Color(vikunjaHex: label.hexColor) ?? VikunjaColor.textSecondary
+    }
+
+    var body: some View {
+        Text(label.title)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+            .padding(.vertical, VikunjaSpacing.xxs)
+            .background(Capsule().fill(color.opacity(0.14)))
+    }
+}
+
+/// Simple wrapping row layout for labels — SwiftUI has no built-in flow
+/// layout, and labels can't be forced onto a single scrollable row here the
+/// way `ProjectOverviewView`'s filter chips are.
+private struct FlowLayout: Layout {
+    var spacing: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var rowWidth: CGFloat = 0
+        var totalHeight: CGFloat = 0
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if rowWidth + size.width > maxWidth, rowWidth > 0 {
+                totalHeight += rowHeight + spacing
+                rowWidth = 0
+                rowHeight = 0
+            }
+            rowWidth += size.width + (rowWidth > 0 ? spacing : 0)
+            rowHeight = max(rowHeight, size.height)
+        }
+        totalHeight += rowHeight
+        return CGSize(width: maxWidth == .infinity ? rowWidth : maxWidth, height: totalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > bounds.maxX, x > bounds.minX {
+                x = bounds.minX
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            subview.place(at: CGPoint(x: x, y: y), proposal: .unspecified)
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+    }
+}
+
+private struct SubtasksCard: View {
+    @Binding var subtasks: [DummySubtask]
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(subtasks.enumerated()), id: \.element.id) { index, subtask in
+                if index > 0 {
+                    Divider().padding(.leading, VikunjaSpacing.md - VikunjaSpacing.xxs)
+                }
+                Button {
+                    subtasks[index].isDone.toggle()
+                } label: {
+                    HStack(spacing: VikunjaSpacing.sm) {
+                        TaskDetailCheckbox(isDone: subtask.isDone, color: color, size: 20)
+                        Text(subtask.title)
+                            .font(VikunjaFont.subheadline)
+                            .foregroundStyle(subtask.isDone ? VikunjaColor.textTertiary : Color.primary)
+                            .strikethrough(subtask.isDone)
+                        Spacer()
+                    }
+                    .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
+                    .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+    }
+}
+
+private struct DependencyRow: View {
+    let item: DummyRelatedTask
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.sm) {
+            Circle()
+                .strokeBorder(item.isDone ? Color.clear : VikunjaColor.textTertiary, lineWidth: 2)
+                .background(Circle().fill(item.isDone ? VikunjaColor.Semantic.success : Color.clear))
+                .frame(width: 20, height: 20)
+                .overlay {
+                    if item.isDone {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+
+            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                Text(item.title)
+                    .font(.system(size: 14.5, weight: .medium))
+                    .foregroundStyle(Color.primary)
+                    .strikethrough(item.isDone)
+                Text(item.projectTitle)
+                    .font(VikunjaFont.caption)
+                    .foregroundStyle(VikunjaColor.textTertiary)
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+        .padding(.vertical, VikunjaSpacing.sm)
+        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+    }
+}
+
+private struct TaskDetailStatusView: View {
+    let message: String
+    let retryAction: () -> Void
+
+    var body: some View {
+        VStack(spacing: VikunjaSpacing.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(VikunjaColor.textTertiary)
+            Text("Couldn't load this task")
+                .font(VikunjaFont.headline)
+            Text(message)
+                .font(VikunjaFont.subheadline)
+                .foregroundStyle(VikunjaColor.textSecondary)
+                .multilineTextAlignment(.center)
+            Button("Try Again", action: retryAction)
+                .buttonStyle(.bordered)
+                .padding(.top, VikunjaSpacing.xs)
+        }
+        .padding(VikunjaSpacing.lg)
+        .frame(maxWidth: .infinity)
+    }
+}
+
+/// Formats a due date the way the design mirrors relative-day phrasing
+/// (today/tomorrow/yesterday/weekday) before falling back to an absolute date.
+private enum TaskDueDateFormatter {
+    static func string(for date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "Today, \(date.formatted(date: .omitted, time: .shortened))"
+        }
+        if calendar.isDateInTomorrow(date) {
+            return "Tomorrow"
+        }
+        if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        }
+        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: Date()), to: calendar.startOfDay(for: date)).day ?? 0
+        if abs(days) <= 6 {
+            return date.formatted(.dateTime.weekday(.wide))
+        }
+        return date.formatted(date: .abbreviated, time: .omitted)
+    }
+}

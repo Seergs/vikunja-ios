@@ -3,6 +3,7 @@ import Projects
 import Search
 import Settings
 import SwiftUI
+import Tasks
 import VikunjaCore
 
 /// The app's main navigation shell once a connection exists: a floating,
@@ -30,6 +31,9 @@ struct MainTabView: View {
                     viewModel: container.makeProjectsListViewModel(account: account),
                     makeOverviewViewModel: { node in
                         container.makeProjectOverviewViewModel(node: node, account: account)
+                    },
+                    taskDetailDestination: { task, project in
+                        AnyView(TaskDetailView(viewModel: container.makeTaskDetailViewModel(task: task, project: project, account: account)))
                     }
                 )
             }

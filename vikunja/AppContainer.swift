@@ -43,11 +43,11 @@ final class AppContainer {
         return ProjectOverviewViewModel(project: node.project, subprojects: node.children, repository: repository)
     }
 
-    func makeTaskDetailViewModel(task: VikunjaTask, account: InstanceAccount) -> TaskDetailViewModel {
+    func makeTaskDetailViewModel(task: VikunjaTask, project: Project, account: InstanceAccount) -> TaskDetailViewModel {
         let accountStore = self.accountStore
         let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL) {
             try? await accountStore.token(forAccountID: account.id)
         }
-        return TaskDetailViewModel(task: task, repository: repository)
+        return TaskDetailViewModel(task: task, project: project, repository: repository)
     }
 }

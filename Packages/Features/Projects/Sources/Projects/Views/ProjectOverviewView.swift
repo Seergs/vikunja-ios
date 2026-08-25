@@ -119,6 +119,8 @@ struct ProjectOverviewView: View {
 
                     ProjectTaskCard(tasks: section.tasks, projectColor: swatchColor) { task in
                         Task { await viewModel.toggleDone(task) }
+                    } onOpen: { task in
+                        router.push(.taskDetail(task, viewModel.project))
                     }
                     // Only the card itself gets breathing room from the
                     // screen edges — the label above it stays flush with
@@ -348,6 +350,7 @@ private struct ProjectTaskCard: View {
     let tasks: [VikunjaTask]
     let projectColor: Color
     let onToggle: (VikunjaTask) -> Void
+    let onOpen: (VikunjaTask) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -358,6 +361,8 @@ private struct ProjectTaskCard: View {
                 }
                 ProjectTaskRow(task: task, projectColor: projectColor) {
                     onToggle(task)
+                } onOpen: {
+                    onOpen(task)
                 }
                 .padding(.horizontal, VikunjaSpacing.md)
                 .padding(.vertical, VikunjaSpacing.sm)
@@ -371,6 +376,7 @@ private struct ProjectTaskRow: View {
     let task: VikunjaTask
     let projectColor: Color
     let onToggle: () -> Void
+    let onOpen: () -> Void
 
     private var isOverdue: Bool {
         guard let dueDate = task.dueDate, !task.isDone else { return false }
@@ -436,6 +442,11 @@ private struct ProjectTaskRow: View {
                     .padding(.top, VikunjaSpacing.xs)
             }
         }
+        // The checkbox is its own `Button` above, so a tap landing on it is
+        // handled there instead of bubbling up to this one — this only
+        // catches taps on the rest of the row (title, due date, labels...).
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onOpen)
     }
 }
 
