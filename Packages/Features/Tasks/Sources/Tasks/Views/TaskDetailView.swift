@@ -10,6 +10,7 @@ public struct TaskDetailView: View {
     @Bindable var viewModel: TaskDetailViewModel
     @State private var isShowingDueDatePicker = false
     @State private var isShowingLabelPicker = false
+    @State private var relationSheetStep: RelationSheetStep?
 
     public init(viewModel: TaskDetailViewModel) {
         self.viewModel = viewModel
@@ -45,6 +46,20 @@ public struct TaskDetailView: View {
         }
         .sheet(isPresented: $isShowingLabelPicker) {
             LabelPickerSheet(viewModel: viewModel)
+        }
+        .sheet(item: $relationSheetStep) { step in
+            switch step {
+            case .pickKind:
+                RelationKindPickerSheet { kind in
+                    relationSheetStep = .pickTask(kind)
+                }
+            case .pickTask(let kind):
+                RelationTaskPickerSheet(viewModel: viewModel, kind: kind) { candidate in
+                    let relation = TaskRelation(id: candidate.id, title: candidate.title, isDone: candidate.isDone, projectID: candidate.projectID)
+                    Task { await viewModel.addRelation(relation, kind: kind) }
+                    relationSheetStep = nil
+                }
+            }
         }
     }
 
@@ -145,35 +160,44 @@ public struct TaskDetailView: View {
             }
         }
 
-        if !task.dependsOn.isEmpty {
-            SectionBlock(title: "Depends on") {
-                VStack(spacing: VikunjaSpacing.sm) {
-                    ForEach(task.dependsOn) { relation in
-                        DependencyRow(relation: relation, projectTitle: projectTitle(for: relation))
+        SectionBlock(title: "Relations", trailing: AnyView(AddRelationButton { relationSheetStep = .pickKind })) {
+            let groups = relationGroups(for: task)
+            if groups.isEmpty {
+                Text("No relations with other tasks.")
+                    .font(VikunjaFont.subheadline)
+                    .foregroundStyle(VikunjaColor.textTertiary)
+            } else {
+                VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+                    ForEach(groups, id: \.kind) { group in
+                        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+                            Text(group.kind.displayName)
+                                .font(VikunjaFont.caption)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(VikunjaColor.textTertiary)
+                            VStack(spacing: VikunjaSpacing.sm) {
+                                ForEach(group.relations) { relation in
+                                    DependencyRow(relation: relation, projectTitle: projectTitle(for: relation)) {
+                                        Task { await viewModel.removeRelation(relation, kind: group.kind) }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+    }
 
-        if !task.blocks.isEmpty {
-            SectionBlock(title: "Blocks") {
-                VStack(spacing: VikunjaSpacing.sm) {
-                    ForEach(task.blocks) { relation in
-                        DependencyRow(relation: relation, projectTitle: projectTitle(for: relation))
-                    }
-                }
-            }
-        }
-
-        ForEach(orderedOtherRelations(task), id: \.kind) { entry in
-            SectionBlock(title: entry.kind.displayName) {
-                VStack(spacing: VikunjaSpacing.sm) {
-                    ForEach(entry.relations) { relation in
-                        DependencyRow(relation: relation, projectTitle: projectTitle(for: relation))
-                    }
-                }
-            }
-        }
+    /// `Depends on` and `Blocks` grouped alongside every `otherRelations`
+    /// kind under one umbrella "Relations" section (matching the design
+    /// mockup's combined "Relaciones" section) — `Subtasks` stays its own
+    /// section above since it renders as a checklist, not a relation list.
+    private func relationGroups(for task: VikunjaTask) -> [(kind: RelationKind, relations: [TaskRelation])] {
+        var groups: [(kind: RelationKind, relations: [TaskRelation])] = []
+        if !task.dependsOn.isEmpty { groups.append((.blocked, task.dependsOn)) }
+        if !task.blocks.isEmpty { groups.append((.blocking, task.blocks)) }
+        groups.append(contentsOf: orderedOtherRelations(task))
+        return groups
     }
 
     /// `task.otherRelations` is a dictionary — iterate `RelationKind.allCases`
@@ -476,6 +500,7 @@ private struct SubtasksCard: View {
 private struct DependencyRow: View {
     let relation: TaskRelation
     let projectTitle: String?
+    let onRemove: () -> Void
 
     var body: some View {
         HStack(spacing: VikunjaSpacing.sm) {
@@ -504,10 +529,199 @@ private struct DependencyRow: View {
             }
 
             Spacer()
+
+            Button(action: onRemove) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .frame(width: 26, height: 26)
+                    .background(VikunjaColor.Surface.field, in: Circle())
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
         .padding(.vertical, VikunjaSpacing.sm)
         .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+    }
+}
+
+/// The "+ Add" affordance next to the Relations section header.
+private struct AddRelationButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: VikunjaSpacing.xxs) {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("Add")
+            }
+            .foregroundStyle(VikunjaColor.brandPrimary)
+        }
+        .buttonStyle(.plain)
+        .textCase(nil)
+    }
+}
+
+/// The two steps of adding a relation, matching the design mockup: first
+/// pick a relation kind, then pick the other task. Modeled as one
+/// `Identifiable` enum (rather than two independent `Bool`s) so exactly one
+/// sheet is ever presented at a time and picking a kind can hand off
+/// straight into the task picker.
+private enum RelationSheetStep: Identifiable {
+    case pickKind
+    case pickTask(RelationKind)
+
+    var id: String {
+        switch self {
+        case .pickKind: return "pickKind"
+        case .pickTask(let kind): return "pickTask-\(kind.rawValue)"
+        }
+    }
+}
+
+/// Lets the user choose which kind of relation to add — every `RelationKind`
+/// except `subtask`/`parenttask`, which are represented on this screen
+/// through the (read-only, for now) Subtasks checklist instead.
+private struct RelationKindPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let onPick: (RelationKind) -> Void
+
+    private var kinds: [RelationKind] {
+        RelationKind.allCases.filter { $0 != .subtask && $0 != .parenttask }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List(kinds, id: \.self) { kind in
+                Button {
+                    onPick(kind)
+                } label: {
+                    HStack(spacing: VikunjaSpacing.sm) {
+                        Image(systemName: "link")
+                            .font(.system(size: 15))
+                            .foregroundStyle(VikunjaColor.brandPrimary)
+                        Text(kind.displayName)
+                            .foregroundStyle(Color.primary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(VikunjaColor.textTertiary)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+            .navigationTitle("Relation Type")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+/// Searches every task on the instance (via
+/// `TaskDetailViewModel.searchTasksForRelation(query:)`) to pick the other
+/// side of a new relation of the given `kind`.
+private struct RelationTaskPickerSheet: View {
+    @Bindable var viewModel: TaskDetailViewModel
+    let kind: RelationKind
+    let onSelect: (VikunjaTask) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
+
+    private var isSearching: Bool {
+        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if viewModel.relationSearchResults.isEmpty {
+                    VStack {
+                        Spacer()
+                        Text(isSearching ? "No results" : "No other tasks in this project")
+                            .font(VikunjaFont.subheadline)
+                            .foregroundStyle(VikunjaColor.textTertiary)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List(viewModel.relationSearchResults) { candidate in
+                        Button {
+                            onSelect(candidate)
+                        } label: {
+                            RelationCandidateRow(task: candidate, projectTitle: viewModel.projectTitle(forProjectID: candidate.projectID))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .searchable(text: $query, prompt: "Search tasks...")
+            .onChange(of: query) { _, newValue in
+                Task { await viewModel.searchTasksForRelation(query: newValue) }
+            }
+            .navigationTitle(kind.displayName)
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.75), .large])
+        .presentationDragIndicator(.visible)
+        .task {
+            await viewModel.loadAllProjects()
+            await viewModel.loadRelationSuggestions()
+        }
+    }
+}
+
+private struct RelationCandidateRow: View {
+    let task: VikunjaTask
+    let projectTitle: String?
+
+    private var priorityColor: Color? {
+        switch task.priority {
+        case .unset: return nil
+        case .low: return VikunjaColor.Priority.low
+        case .medium: return VikunjaColor.Priority.medium
+        case .high: return VikunjaColor.Priority.high
+        case .urgent, .doNow: return VikunjaColor.Priority.urgent
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.sm) {
+            if let priorityColor {
+                Circle()
+                    .fill(priorityColor)
+                    .frame(width: 8, height: 8)
+            }
+            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                Text(task.title)
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.primary)
+                if let projectTitle {
+                    Text(projectTitle)
+                        .font(VikunjaFont.caption)
+                        .foregroundStyle(VikunjaColor.textTertiary)
+                }
+            }
+            Spacer()
+            Image(systemName: "plus")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(VikunjaColor.brandPrimary)
+        }
     }
 }
 
