@@ -61,8 +61,8 @@ public struct TaskDetailView: View {
         }
         .padding(.top, VikunjaSpacing.sm)
 
-        if dummyIsBlocked {
-            BlockedBanner(waitingOn: dummyBlockers.filter { !$0.isDone }.count)
+        if task.isBlocked {
+            BlockedBanner(waitingOn: task.dependsOn.filter { !$0.isDone }.count)
                 .padding(.top, VikunjaSpacing.md)
         }
 
@@ -101,56 +101,41 @@ public struct TaskDetailView: View {
             }
         }
 
-        if !dummySubtasks.isEmpty {
-            SectionBlock(title: "Subtasks", count: "\(dummySubtasks.filter(\.isDone).count)/\(dummySubtasks.count)") {
-                SubtasksCard(subtasks: $dummySubtasks, color: swatchColor(project))
+        if !task.subtasks.isEmpty {
+            SectionBlock(title: "Subtasks", count: "\(task.subtasks.filter(\.isDone).count)/\(task.subtasks.count)") {
+                SubtasksCard(subtasks: task.subtasks, color: swatchColor(project))
             }
         }
 
-        if !dummyBlockers.isEmpty {
+        if !task.dependsOn.isEmpty {
             SectionBlock(title: "Depends on") {
                 VStack(spacing: VikunjaSpacing.sm) {
-                    ForEach(dummyBlockers) { item in
-                        DependencyRow(item: item)
+                    ForEach(task.dependsOn) { relation in
+                        DependencyRow(relation: relation, projectTitle: projectTitle(for: relation))
                     }
                 }
             }
         }
 
-        if !dummyBlockedBy.isEmpty {
+        if !task.blocks.isEmpty {
             SectionBlock(title: "Blocks") {
                 VStack(spacing: VikunjaSpacing.sm) {
-                    ForEach(dummyBlockedBy) { item in
-                        DependencyRow(item: item)
+                    ForEach(task.blocks) { relation in
+                        DependencyRow(relation: relation, projectTitle: projectTitle(for: relation))
                     }
                 }
             }
         }
     }
 
-    // MARK: - Dummy data
-    //
-    // Subtasks and task relations ("depends on" / "blocks") aren't modeled in
-    // VikunjaCore/VikunjaNetworking yet. These are placeholder examples so this
-    // screen's layout can be reviewed end-to-end; see the chat summary for the
-    // list of what's missing to make them real.
-
-    @State private var dummySubtasks: [DummySubtask] = [
-        DummySubtask(title: "Draft outline", isDone: true),
-        DummySubtask(title: "Add screenshots", isDone: false),
-        DummySubtask(title: "Proofread", isDone: false),
-    ]
-
-    private var dummyBlockers: [DummyRelatedTask] {
-        [DummyRelatedTask(title: "Approve design direction", projectTitle: viewModel.project.title, isDone: false)]
-    }
-
-    private var dummyBlockedBy: [DummyRelatedTask] {
-        [DummyRelatedTask(title: "Ship release notes", projectTitle: viewModel.project.title, isDone: false)]
-    }
-
-    private var dummyIsBlocked: Bool {
-        dummyBlockers.contains { !$0.isDone }
+    /// `TaskRelation` only carries a `projectID` (not a title, since a
+    /// related task can live in any project and this screen doesn't have a
+    /// project repository to resolve arbitrary ones) — this only resolves
+    /// the name when the relation happens to sit in this task's own project,
+    /// which covers subtasks and same-project dependencies without risking a
+    /// wrong or fabricated name for the rest.
+    private func projectTitle(for relation: TaskRelation) -> String? {
+        relation.projectID == viewModel.project.id ? viewModel.project.title : nil
     }
 
     private func isOverdue(_ task: VikunjaTask) -> Bool {
@@ -176,19 +161,6 @@ public struct TaskDetailView: View {
         case .urgent, .doNow: return PriorityDisplay(label: "Urgent", color: VikunjaColor.Priority.urgent)
         }
     }
-}
-
-private struct DummySubtask: Identifiable {
-    let id = UUID()
-    let title: String
-    var isDone: Bool
-}
-
-private struct DummyRelatedTask: Identifiable {
-    let id = UUID()
-    let title: String
-    let projectTitle: String
-    let isDone: Bool
 }
 
 private struct ProjectPill: View {
@@ -380,8 +352,12 @@ private struct FlowLayout: Layout {
     }
 }
 
+/// Read-only for now: a `TaskRelation` is a thin summary (see its doc
+/// comment), not enough to safely round-trip through
+/// `TaskRepositoryProtocol.update(_:)` without first fetching the full task —
+/// an extra request per row this screen doesn't make yet.
 private struct SubtasksCard: View {
-    @Binding var subtasks: [DummySubtask]
+    let subtasks: [TaskRelation]
     let color: Color
 
     var body: some View {
@@ -390,21 +366,16 @@ private struct SubtasksCard: View {
                 if index > 0 {
                     Divider().padding(.leading, VikunjaSpacing.md - VikunjaSpacing.xxs)
                 }
-                Button {
-                    subtasks[index].isDone.toggle()
-                } label: {
-                    HStack(spacing: VikunjaSpacing.sm) {
-                        TaskDetailCheckbox(isDone: subtask.isDone, color: color, size: 20)
-                        Text(subtask.title)
-                            .font(VikunjaFont.subheadline)
-                            .foregroundStyle(subtask.isDone ? VikunjaColor.textTertiary : Color.primary)
-                            .strikethrough(subtask.isDone)
-                        Spacer()
-                    }
-                    .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-                    .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
+                HStack(spacing: VikunjaSpacing.sm) {
+                    TaskDetailCheckbox(isDone: subtask.isDone, color: color, size: 20)
+                    Text(subtask.title)
+                        .font(VikunjaFont.subheadline)
+                        .foregroundStyle(subtask.isDone ? VikunjaColor.textTertiary : Color.primary)
+                        .strikethrough(subtask.isDone)
+                    Spacer()
                 }
-                .buttonStyle(.plain)
+                .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
+                .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
             }
         }
         .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
@@ -412,16 +383,17 @@ private struct SubtasksCard: View {
 }
 
 private struct DependencyRow: View {
-    let item: DummyRelatedTask
+    let relation: TaskRelation
+    let projectTitle: String?
 
     var body: some View {
         HStack(spacing: VikunjaSpacing.sm) {
             Circle()
-                .strokeBorder(item.isDone ? Color.clear : VikunjaColor.textTertiary, lineWidth: 2)
-                .background(Circle().fill(item.isDone ? VikunjaColor.Semantic.success : Color.clear))
+                .strokeBorder(relation.isDone ? Color.clear : VikunjaColor.textTertiary, lineWidth: 2)
+                .background(Circle().fill(relation.isDone ? VikunjaColor.Semantic.success : Color.clear))
                 .frame(width: 20, height: 20)
                 .overlay {
-                    if item.isDone {
+                    if relation.isDone {
                         Image(systemName: "checkmark")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(.white)
@@ -429,13 +401,15 @@ private struct DependencyRow: View {
                 }
 
             VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                Text(item.title)
+                Text(relation.title)
                     .font(.system(size: 14.5, weight: .medium))
                     .foregroundStyle(Color.primary)
-                    .strikethrough(item.isDone)
-                Text(item.projectTitle)
-                    .font(VikunjaFont.caption)
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .strikethrough(relation.isDone)
+                if let projectTitle {
+                    Text(projectTitle)
+                        .font(VikunjaFont.caption)
+                        .foregroundStyle(VikunjaColor.textTertiary)
+                }
             }
 
             Spacer()
