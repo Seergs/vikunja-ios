@@ -1,6 +1,7 @@
 import Foundation
 import Onboarding
 import Projects
+import Tasks
 import VikunjaAuth
 import VikunjaCore
 import VikunjaNetworking
@@ -40,5 +41,13 @@ final class AppContainer {
             try? await accountStore.token(forAccountID: account.id)
         }
         return ProjectOverviewViewModel(project: node.project, subprojects: node.children, repository: repository)
+    }
+
+    func makeTaskDetailViewModel(task: VikunjaTask, account: InstanceAccount) -> TaskDetailViewModel {
+        let accountStore = self.accountStore
+        let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL) {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        return TaskDetailViewModel(task: task, repository: repository)
     }
 }

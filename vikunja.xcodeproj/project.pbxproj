@@ -16,6 +16,7 @@
 		AF1A9958F7144C64A26AE7DE /* VikunjaAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */; };
 		EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 691135973B8B496295E14896 /* Onboarding */; };
 		FCBF1C1C7651B3306CAA0FFC /* Settings in Frameworks */ = {isa = PBXBuildFile; productRef = A6110B94A9B469B91738DBE3 /* Settings */; };
+		6ACFD68581C4ED4510656534 /* Tasks in Frameworks */ = {isa = PBXBuildFile; productRef = CB1292EB9627A6D204BBA18B /* Tasks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 				0344D01DB80D7B74123FBB44 /* Projects in Frameworks */,
 				3C9B0F98E67BE7DBE14B395C /* Search in Frameworks */,
 				FCBF1C1C7651B3306CAA0FFC /* Settings in Frameworks */,
+				6ACFD68581C4ED4510656534 /* Tasks in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +99,7 @@
 				937703EA6DF786A17BC41E96 /* Projects */,
 				DF94C158DB50FABAA1B462AE /* Search */,
 				A6110B94A9B469B91738DBE3 /* Settings */,
+				CB1292EB9627A6D204BBA18B /* Tasks */,
 			);
 			productName = vikunja;
 			productReference = EC3BB466303D1EF6002753FC /* vikunja.app */;
@@ -136,6 +139,7 @@
 				FB9B84FD97A6B958D6347015 /* XCLocalSwiftPackageReference "Projects" */,
 				630BB56C29B87B52911E4F21 /* XCLocalSwiftPackageReference "Search" */,
 				CF9745CA233B841AB93A4A82 /* XCLocalSwiftPackageReference "Settings" */,
+				52D3B6C5FA358E9E99B3F700 /* XCLocalSwiftPackageReference "Tasks" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC3BB467303D1EF6002753FC /* Products */;
@@ -413,6 +417,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Features/Home;
 		};
+		52D3B6C5FA358E9E99B3F700 /* XCLocalSwiftPackageReference "Tasks" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Features/Tasks;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -460,6 +468,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "VikunjaNetworking" */;
 			productName = VikunjaNetworking;
+		};
+		CB1292EB9627A6D204BBA18B /* Tasks */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52D3B6C5FA358E9E99B3F700 /* XCLocalSwiftPackageReference "Tasks" */;
+			productName = Tasks;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
