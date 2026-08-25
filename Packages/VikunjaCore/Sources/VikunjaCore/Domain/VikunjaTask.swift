@@ -1,6 +1,6 @@
 import Foundation
 
-public struct VikunjaTask: Identifiable, Equatable, Sendable {
+public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
     public let id: Int
     public var title: String
     public var description: String?
@@ -30,7 +30,7 @@ public struct VikunjaTask: Identifiable, Equatable, Sendable {
         self.labels = labels
     }
 
-    public enum Priority: Int, Sendable, CaseIterable {
+    public enum Priority: Int, Sendable, CaseIterable, Hashable {
         case unset = 0
         case low = 1
         case medium = 2
