@@ -4,4 +4,7 @@ public protocol TaskRepositoryProtocol: Sendable {
     func create(_ task: VikunjaTask) async throws -> VikunjaTask
     func update(_ task: VikunjaTask) async throws -> VikunjaTask
     func delete(id: Int) async throws
+    /// Searches every task the account can see (not scoped to one project) —
+    /// used to find a candidate task to relate the current one to.
+    func searchTasks(query: String) async throws -> [VikunjaTask]
 }

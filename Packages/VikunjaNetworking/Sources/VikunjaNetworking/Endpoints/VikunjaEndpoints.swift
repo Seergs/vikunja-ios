@@ -1,3 +1,4 @@
+import Foundation
 import VikunjaCore
 
 enum VikunjaEndpoints {
@@ -31,6 +32,15 @@ enum VikunjaEndpoints {
 
     static func deleteTask(id: Int) -> Endpoint {
         Endpoint(path: "/api/v1/tasks/\(id)", method: .delete)
+    }
+
+    /// `GET /api/v1/tasks` (not `/tasks/all` — that path was renamed for
+    /// consistency with other collection endpoints in
+    /// go-vikunja/vikunja#1988; on a server past that change, the old path
+    /// gets matched by `/tasks/{id}` instead, with `id="all"` failing to
+    /// bind as an int — a 400 "Invalid model provided").
+    static func searchTasks(query: String) -> Endpoint {
+        Endpoint(path: "/api/v1/tasks", queryItems: [URLQueryItem(name: "s", value: query)])
     }
 
     static func projects() -> Endpoint {

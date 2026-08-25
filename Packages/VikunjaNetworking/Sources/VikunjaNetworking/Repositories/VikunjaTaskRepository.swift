@@ -40,4 +40,9 @@ public final class VikunjaTaskRepository: TaskRepositoryProtocol {
     public func delete(id: Int) async throws {
         try await client.send(VikunjaEndpoints.deleteTask(id: id))
     }
+
+    public func searchTasks(query: String) async throws -> [VikunjaTask] {
+        let dtos: [TaskDTO] = try await client.send(VikunjaEndpoints.searchTasks(query: query))
+        return dtos.map(TaskMapper.toDomain)
+    }
 }

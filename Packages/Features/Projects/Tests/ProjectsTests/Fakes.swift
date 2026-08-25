@@ -53,4 +53,8 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     func delete(id: Int) async throws {
         tasks.removeAll { $0.id == id }
     }
+
+    func searchTasks(query: String) async throws -> [VikunjaTask] {
+        tasks.filter { $0.title.localizedCaseInsensitiveContains(query) }
+    }
 }

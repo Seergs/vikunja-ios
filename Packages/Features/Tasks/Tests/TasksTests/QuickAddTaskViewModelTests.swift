@@ -189,4 +189,5 @@ private final class FailingTaskRepository: TaskRepositoryProtocol, @unchecked Se
     func create(_ task: VikunjaTask) async throws -> VikunjaTask { throw VikunjaError.network("offline") }
     func update(_ task: VikunjaTask) async throws -> VikunjaTask { task }
     func delete(id: Int) async throws {}
+    func searchTasks(query: String) async throws -> [VikunjaTask] { [] }
 }
