@@ -20,7 +20,7 @@ enum VikunjaEndpoints {
     }
 
     static func createTask(projectID: Int, dto: TaskDTO) throws -> Endpoint {
-        try .encoding(path: "/api/v1/projects/\(projectID)/tasks", method: .post, body: dto)
+        try .encoding(path: "/api/v1/projects/\(projectID)/tasks", method: .put, body: dto)
     }
 
     static func updateTask(id: Int, dto: TaskDTO) throws -> Endpoint {
