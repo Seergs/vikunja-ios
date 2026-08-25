@@ -103,6 +103,23 @@ final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
     }
 }
 
+final class FakeTaskRelationRepository: TaskRelationRepositoryProtocol, @unchecked Sendable {
+    var addedRelations: [(kind: RelationKind, otherTaskID: Int, taskID: Int)] = []
+    var removedRelations: [(kind: RelationKind, otherTaskID: Int, taskID: Int)] = []
+    var addError: VikunjaError?
+    var removeError: VikunjaError?
+
+    func addRelation(kind: RelationKind, otherTaskID: Int, toTask taskID: Int) async throws {
+        if let addError { throw addError }
+        addedRelations.append((kind, otherTaskID, taskID))
+    }
+
+    func removeRelation(kind: RelationKind, otherTaskID: Int, fromTask taskID: Int) async throws {
+        if let removeError { throw removeError }
+        removedRelations.append((kind, otherTaskID, taskID))
+    }
+}
+
 final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
     private(set) var shownMessages: [(message: String, style: ToastStyle)] = []
 

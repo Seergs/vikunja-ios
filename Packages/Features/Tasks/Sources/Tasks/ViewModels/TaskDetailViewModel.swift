@@ -20,12 +20,20 @@ public final class TaskDetailViewModel {
 
     private let repository: TaskRepositoryProtocol
     private let labelRepository: LabelRepositoryProtocol
+    private let relationRepository: TaskRelationRepositoryProtocol
 
-    public init(task: VikunjaTask, project: Project, repository: TaskRepositoryProtocol, labelRepository: LabelRepositoryProtocol) {
+    public init(
+        task: VikunjaTask,
+        project: Project,
+        repository: TaskRepositoryProtocol,
+        labelRepository: LabelRepositoryProtocol,
+        relationRepository: TaskRelationRepositoryProtocol
+    ) {
         self.task = task
         self.project = project
         self.repository = repository
         self.labelRepository = labelRepository
+        self.relationRepository = relationRepository
     }
 
     public func load() async {
@@ -106,6 +114,58 @@ public final class TaskDetailViewModel {
         }
         allLabels.append(created)
         await toggleLabel(created)
+    }
+
+    /// Adds `relation` under `kind` to the task, optimistically, rolling back
+    /// if the server rejects it — mirrors `toggleLabel(_:)`. `relation`'s
+    /// display fields (title/isDone/projectID) come from wherever the caller
+    /// found the other task (e.g. a search/picker), since Vikunja's
+    /// create-relation response only echoes ids, not those fields.
+    public func addRelation(_ relation: TaskRelation, kind: RelationKind) async {
+        let previous = task
+        insertRelation(relation, kind: kind)
+        do {
+            try await relationRepository.addRelation(kind: kind, otherTaskID: relation.id, toTask: task.id)
+        } catch {
+            task = previous
+        }
+    }
+
+    /// Removes `relation` under `kind` from the task, optimistically, rolling
+    /// back if the server rejects it — mirrors `toggleLabel(_:)`.
+    public func removeRelation(_ relation: TaskRelation, kind: RelationKind) async {
+        let previous = task
+        deleteRelation(relation, kind: kind)
+        do {
+            try await relationRepository.removeRelation(kind: kind, otherTaskID: relation.id, fromTask: task.id)
+        } catch {
+            task = previous
+        }
+    }
+
+    /// Routes `relation` into whichever of `task`'s relation properties
+    /// `kind` corresponds to — the named `subtasks`/`dependsOn`/`blocks`
+    /// fields for those three kinds, `otherRelations` for everything else.
+    private func insertRelation(_ relation: TaskRelation, kind: RelationKind) {
+        switch kind {
+        case .subtask: task.subtasks.append(relation)
+        case .blocked: task.dependsOn.append(relation)
+        case .blocking: task.blocks.append(relation)
+        default: task.otherRelations[kind, default: []].append(relation)
+        }
+    }
+
+    private func deleteRelation(_ relation: TaskRelation, kind: RelationKind) {
+        switch kind {
+        case .subtask: task.subtasks.removeAll { $0.id == relation.id }
+        case .blocked: task.dependsOn.removeAll { $0.id == relation.id }
+        case .blocking: task.blocks.removeAll { $0.id == relation.id }
+        default:
+            task.otherRelations[kind]?.removeAll { $0.id == relation.id }
+            if task.otherRelations[kind]?.isEmpty == true {
+                task.otherRelations[kind] = nil
+            }
+        }
     }
 
     /// Persists the currently-staged `task` edit, rolling back to `previous`
