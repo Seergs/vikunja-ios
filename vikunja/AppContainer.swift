@@ -50,4 +50,15 @@ final class AppContainer {
         }
         return TaskDetailViewModel(task: task, project: project, repository: repository)
     }
+
+    func makeQuickAddTaskViewModel(account: InstanceAccount) -> QuickAddTaskViewModel {
+        let accountStore = self.accountStore
+        let tokenProvider: @Sendable () async -> String? = {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        return QuickAddTaskViewModel(
+            taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        )
+    }
 }
