@@ -5,7 +5,6 @@
 //  Created by Sergio Suárez álvarez on 24/08/26.
 //
 
-import Onboarding
 import SwiftUI
 
 @main
@@ -14,9 +13,7 @@ struct vikunjaApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                InstanceSetupView(viewModel: container.makeInstanceSetupViewModel())
-            }
+            RootView(container: container)
         }
     }
 }

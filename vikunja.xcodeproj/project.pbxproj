@@ -11,6 +11,7 @@
 		A2C44E7EAB8501F032F94F77 /* VikunjaCore in Frameworks */ = {isa = PBXBuildFile; productRef = C7C86918EA5BF47E31F95689 /* VikunjaCore */; };
 		AF1A9958F7144C64A26AE7DE /* VikunjaAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */; };
 		EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 691135973B8B496295E14896 /* Onboarding */; };
+		062B1577A762434EAAEEAEAE /* Home in Frameworks */ = {isa = PBXBuildFile; productRef = 166A7A7237924DFA8CF44351 /* Home */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 				638AD6AC5148FFCCE7C85848 /* VikunjaNetworking in Frameworks */,
 				AF1A9958F7144C64A26AE7DE /* VikunjaAuth in Frameworks */,
 				EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */,
+				062B1577A762434EAAEEAEAE /* Home in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,6 +82,7 @@
 				E2386D937B2547F27D7735C9 /* VikunjaNetworking */,
 				1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */,
 				691135973B8B496295E14896 /* Onboarding */,
+				166A7A7237924DFA8CF44351 /* Home */,
 			);
 			productName = vikunja;
 			productReference = EC3BB466303D1EF6002753FC /* vikunja.app */;
@@ -114,6 +117,7 @@
 				3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "Packages/VikunjaNetworking" */,
 				06F83FC1F5114AB2B901D1D6 /* XCLocalSwiftPackageReference "Packages/VikunjaAuth" */,
 				F4ED8517F32D4805BA91B284 /* XCLocalSwiftPackageReference "Packages/Features/Onboarding" */,
+				FE450F8737274DC4914D99E8 /* XCLocalSwiftPackageReference "Packages/Features/Home" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC3BB467303D1EF6002753FC /* Products */;
@@ -371,6 +375,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Features/Onboarding;
 		};
+		FE450F8737274DC4914D99E8 /* XCLocalSwiftPackageReference "Packages/Features/Home" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Features/Home;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -393,6 +401,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "Packages/VikunjaNetworking" */;
 			productName = VikunjaNetworking;
+		};
+		166A7A7237924DFA8CF44351 /* Home */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FE450F8737274DC4914D99E8 /* XCLocalSwiftPackageReference "Packages/Features/Home" */;
+			productName = Home;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
