@@ -16,6 +16,23 @@ enum TaskMapper {
         (dto.relatedTasks?[kind] ?? []).map { TaskRelationMapper.toDomain($0, fallbackProjectID: dto.projectId) }
     }
 
+    /// The `subtask`/`blocked`/`blocking` kinds land in `VikunjaTask`'s
+    /// dedicated fields; every other kind Vikunja reports goes here,
+    /// keyed by `RelationKind`. An unrecognized kind string is dropped
+    /// rather than crashing, matching `TaskDTO.relatedTasks`'s tolerant
+    /// decoding.
+    private static let namedRelationKinds: Set<String> = ["subtask", "blocked", "blocking"]
+
+    private static func otherRelations(_ dto: TaskDTO) -> [RelationKind: [TaskRelation]] {
+        guard let relatedTasks = dto.relatedTasks else { return [:] }
+        var result: [RelationKind: [TaskRelation]] = [:]
+        for (key, dtos) in relatedTasks where !namedRelationKinds.contains(key) {
+            guard let kind = RelationKind(rawValue: key), !dtos.isEmpty else { continue }
+            result[kind] = dtos.map { TaskRelationMapper.toDomain($0, fallbackProjectID: dto.projectId) }
+        }
+        return result
+    }
+
     static func toDomain(_ dto: TaskDTO) -> VikunjaTask {
         VikunjaTask(
             id: dto.id,
@@ -28,7 +45,8 @@ enum TaskMapper {
             labels: (dto.labels ?? []).map(LabelMapper.toDomain),
             subtasks: relations(dto, kind: "subtask"),
             dependsOn: relations(dto, kind: "blocked"),
-            blocks: relations(dto, kind: "blocking")
+            blocks: relations(dto, kind: "blocking"),
+            otherRelations: otherRelations(dto)
         )
     }
 

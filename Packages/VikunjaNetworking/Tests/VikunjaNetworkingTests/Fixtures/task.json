@@ -18,6 +18,15 @@
     ],
     "blocking": [
       { "id": 5, "title": "Make espresso", "done": false, "project_id": 4 }
+    ],
+    "related": [
+      { "id": 6, "title": "Buy filters", "done": false, "project_id": 4 }
+    ],
+    "precedes": [
+      { "id": 7, "title": "Clean machine", "done": false, "project_id": 4 }
+    ],
+    "follows": [
+      { "id": 8, "title": "Descale machine", "done": true, "project_id": 4 }
     ]
   },
   "done_at": "2026-08-20T00:00:00Z",

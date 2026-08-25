@@ -37,6 +37,19 @@ struct TaskDTOTests {
     }
 
     @Test
+    func mapsOtherRelationKindsGenerically() throws {
+        let dto = try loadTaskDTO()
+        let task = TaskMapper.toDomain(dto)
+
+        #expect(task.otherRelations[.related] == [TaskRelation(id: 6, title: "Buy filters", isDone: false, projectID: 4)])
+        #expect(task.otherRelations[.precedes] == [TaskRelation(id: 7, title: "Clean machine", isDone: false, projectID: 4)])
+        #expect(task.otherRelations[.follows] == [TaskRelation(id: 8, title: "Descale machine", isDone: true, projectID: 4)])
+        #expect(task.otherRelations[.subtask] == nil)
+        #expect(task.otherRelations[.blocked] == nil)
+        #expect(task.otherRelations[.blocking] == nil)
+    }
+
+    @Test
     func toleratesAMissingRelatedTasksField() throws {
         let dto = try loadTaskDTO(named: "task-no-due-date")
         let task = TaskMapper.toDomain(dto)
@@ -44,6 +57,7 @@ struct TaskDTOTests {
         #expect(task.subtasks.isEmpty)
         #expect(task.dependsOn.isEmpty)
         #expect(task.blocks.isEmpty)
+        #expect(task.otherRelations.isEmpty)
     }
 
     @Test
