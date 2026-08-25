@@ -7,6 +7,8 @@ public struct Project: Identifiable, Equatable, Sendable {
     public var isArchived: Bool
     public var isFavorite: Bool
     public var parentProjectID: Int?
+    public var position: Double
+    public var hexColor: String
 
     public init(
         id: Int,
@@ -14,7 +16,9 @@ public struct Project: Identifiable, Equatable, Sendable {
         description: String? = nil,
         isArchived: Bool = false,
         isFavorite: Bool = false,
-        parentProjectID: Int? = nil
+        parentProjectID: Int? = nil,
+        position: Double = 0,
+        hexColor: String = ""
     ) {
         self.id = id
         self.title = title
@@ -22,5 +26,7 @@ public struct Project: Identifiable, Equatable, Sendable {
         self.isArchived = isArchived
         self.isFavorite = isFavorite
         self.parentProjectID = parentProjectID
+        self.position = position
+        self.hexColor = hexColor
     }
 }

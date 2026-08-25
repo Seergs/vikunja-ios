@@ -8,7 +8,9 @@ enum ProjectMapper {
             description: dto.description,
             isArchived: dto.isArchived ?? false,
             isFavorite: dto.isFavorite ?? false,
-            parentProjectID: dto.parentProjectId
+            parentProjectID: dto.parentProjectId,
+            position: dto.position ?? 0,
+            hexColor: dto.hexColor ?? ""
         )
     }
 
@@ -19,7 +21,9 @@ enum ProjectMapper {
             description: project.description,
             isArchived: project.isArchived,
             isFavorite: project.isFavorite,
-            parentProjectId: project.parentProjectID
+            parentProjectId: project.parentProjectID,
+            position: project.position,
+            hexColor: project.hexColor
         )
     }
 }
