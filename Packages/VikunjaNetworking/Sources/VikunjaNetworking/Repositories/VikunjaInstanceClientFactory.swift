@@ -20,4 +20,13 @@ public struct VikunjaInstanceClientFactory: InstanceClientFactoryProtocol {
             client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
         )
     }
+
+    public func makeTaskRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> TaskRepositoryProtocol {
+        VikunjaTaskRepository(
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+        )
+    }
 }

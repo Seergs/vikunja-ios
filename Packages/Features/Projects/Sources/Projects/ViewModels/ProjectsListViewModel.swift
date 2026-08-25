@@ -9,7 +9,7 @@ import VikunjaCore
 @Observable
 public final class ProjectsListViewModel {
     public private(set) var rootNodes: [ProjectNode] = []
-    public private(set) var loadState: ProjectsLoadState = .idle
+    public private(set) var loadState: ScreenLoadState = .idle
 
     public var isLoading: Bool { loadState == .loading }
 
@@ -32,7 +32,7 @@ public final class ProjectsListViewModel {
             rootNodes = Self.tree(from: projects)
             loadState = .loaded
         } catch let error as VikunjaError {
-            loadState = .failure(Self.message(for: error))
+            loadState = .failure(error.displayMessage)
         } catch {
             loadState = .failure(error.localizedDescription)
         }
@@ -57,22 +57,5 @@ public final class ProjectsListViewModel {
         }
 
         return nodes(withParentID: nil, excluding: [])
-    }
-
-    private static func message(for error: VikunjaError) -> String {
-        switch error {
-        case .invalidInstanceURL:
-            return "That doesn't look like a valid instance address."
-        case .network:
-            return "Couldn't reach that server. Check the address and your connection."
-        case .notFound, .decoding:
-            return "That address didn't respond like a Vikunja instance."
-        case .unauthorized:
-            return "That server rejected the request."
-        case let .server(_, statusCode):
-            return "The server responded with an error (\(statusCode))."
-        case let .unsupportedServerVersion(minimumRequired, _):
-            return "This app needs Vikunja \(minimumRequired) or newer."
-        }
     }
 }
