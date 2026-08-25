@@ -24,6 +24,19 @@ extension Color {
         #endif
     }
 
+    /// The page canvas behind grouped content — what `.insetGrouped` lists
+    /// use automatically, needed explicitly by a `.plain` list (paired with
+    /// `.scrollContentBackground(.hidden)`) that hand-draws its own cards.
+    static var platformPageBackground: Color {
+        #if os(iOS)
+        Color(uiColor: .systemGroupedBackground)
+        #elseif os(macOS)
+        Color(nsColor: .windowBackgroundColor)
+        #else
+        Color.gray.opacity(0.05)
+        #endif
+    }
+
     /// A darker, more legible secondary text color than `UIColor.secondaryLabel`
     /// — matches the design source's own gray scale rather than the system default.
     static var platformTextSecondary: Color {

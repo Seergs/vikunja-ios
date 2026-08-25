@@ -22,6 +22,8 @@ public enum VikunjaColor {
         public static let card = Color.platformCardBackground
         /// Input field / chip background, one step lighter than `card`.
         public static let field = Color.platformFieldBackground
+        /// The page canvas behind grouped/carded content.
+        public static let page = Color.platformPageBackground
     }
 
     /// Darker, more legible than the system `.secondary`/`.tertiary` text
