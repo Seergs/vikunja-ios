@@ -23,8 +23,16 @@ public final class VikunjaTaskRepository: TaskRepositoryProtocol {
         return TaskMapper.toDomain(dto)
     }
 
+    /// Vikunja's update endpoint replaces the whole task with the request
+    /// body — any field the body omits gets reset to zero/null server-side
+    /// rather than left alone (github.com/go-vikunja/vikunja/issues/1459).
+    /// Fetching the current state first and merging our change on top of it
+    /// (`TaskMapper.merge`) is the only way to update just one field without
+    /// silently wiping the rest — including fields `VikunjaTask` doesn't
+    /// even represent, like `percent_done` or `reminders`.
     public func update(_ task: VikunjaTask) async throws -> VikunjaTask {
-        let endpoint = try VikunjaEndpoints.updateTask(id: task.id, dto: TaskMapper.toDTO(task))
+        let current: TaskDTO = try await client.send(VikunjaEndpoints.task(id: task.id))
+        let endpoint = try VikunjaEndpoints.updateTask(id: task.id, dto: TaskMapper.merge(task, onto: current))
         let dto: TaskDTO = try await client.send(endpoint)
         return TaskMapper.toDomain(dto)
     }

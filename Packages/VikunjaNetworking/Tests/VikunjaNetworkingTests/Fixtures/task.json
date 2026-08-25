@@ -19,5 +19,20 @@
     "blocking": [
       { "id": 5, "title": "Make espresso", "done": false, "project_id": 4 }
     ]
-  }
+  },
+  "done_at": "2026-08-20T00:00:00Z",
+  "start_date": "2026-08-25T00:00:00Z",
+  "end_date": "2026-08-29T00:00:00Z",
+  "reminders": [
+    { "reminder": "2026-08-29T09:00:00Z", "relative_period": 0, "relative_to": null }
+  ],
+  "repeat_after": 604800,
+  "repeat_mode": 1,
+  "hex_color": "00ff00",
+  "percent_done": 0.5,
+  "assignees": [
+    { "id": 7, "username": "alex", "extra_field_not_yet_modeled": true }
+  ],
+  "cover_image_attachment_id": 42,
+  "is_favorite": true
 }

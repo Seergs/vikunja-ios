@@ -47,6 +47,52 @@ struct TaskDTOTests {
     }
 
     @Test
+    func mergePreservesFieldsVikunjaTaskDoesntTrack() throws {
+        let current = try loadTaskDTO()
+        var task = TaskMapper.toDomain(current)
+        task.isDone.toggle()
+
+        let merged = TaskMapper.merge(task, onto: current)
+
+        #expect(merged.done == true)
+        #expect(merged.percentDone == 0.5)
+        #expect(merged.hexColor == "00ff00")
+        #expect(merged.isFavorite == true)
+        #expect(merged.doneAt == current.doneAt)
+        #expect(merged.startDate == current.startDate)
+        #expect(merged.endDate == current.endDate)
+        #expect(merged.repeatAfter == 604_800)
+        #expect(merged.repeatMode == 1)
+        #expect(merged.coverImageAttachmentId == 42)
+        #expect(merged.reminders == current.reminders)
+        #expect(merged.assignees == current.assignees)
+        #expect(merged.relatedTasks?["subtask"]?.first?.title == "Grind beans")
+    }
+
+    @Test
+    func mergedTaskRoundTripsOpaqueFieldsThroughEncoding() throws {
+        let current = try loadTaskDTO()
+        var task = TaskMapper.toDomain(current)
+        task.isDone.toggle()
+        let merged = TaskMapper.merge(task, onto: current)
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(merged)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(TaskDTO.self, from: data)
+
+        // `assignees` carries a field ("extra_field_not_yet_modeled") this
+        // DTO doesn't know about — proving it survives the round trip is the
+        // whole point of `JSONValue` over a concretely-typed shape.
+        #expect(decoded.assignees == current.assignees)
+        #expect(decoded.reminders == current.reminders)
+        #expect(decoded.percentDone == current.percentDone)
+    }
+
+    @Test
     func mapsZeroValueDueDateToNil() throws {
         let dto = try loadTaskDTO(named: "task-no-due-date")
         let task = TaskMapper.toDomain(dto)

@@ -41,8 +41,38 @@ enum TaskMapper {
             dueDate: task.dueDate,
             priority: task.priority.rawValue,
             projectId: task.projectID,
+            labels: task.labels.map(LabelMapper.toDTO)
+        )
+    }
+
+    /// Builds the safe body for `VikunjaTaskRepository.update(_:)`: starts
+    /// from `current` (the task's just-fetched full state) and overwrites
+    /// only the fields `VikunjaTask` tracks, leaving everything else —
+    /// including fields our domain model doesn't represent at all — exactly
+    /// as the server last reported them. See `TaskDTO`'s doc comment for why
+    /// this exists.
+    static func merge(_ task: VikunjaTask, onto current: TaskDTO) -> TaskDTO {
+        TaskDTO(
+            id: current.id,
+            title: task.title,
+            description: task.description,
+            done: task.isDone,
+            dueDate: task.dueDate,
+            priority: task.priority.rawValue,
+            projectId: task.projectID,
             labels: task.labels.map(LabelMapper.toDTO),
-            relatedTasks: nil
+            relatedTasks: current.relatedTasks,
+            doneAt: current.doneAt,
+            startDate: current.startDate,
+            endDate: current.endDate,
+            reminders: current.reminders,
+            repeatAfter: current.repeatAfter,
+            repeatMode: current.repeatMode,
+            hexColor: current.hexColor,
+            percentDone: current.percentDone,
+            assignees: current.assignees,
+            coverImageAttachmentId: current.coverImageAttachmentId,
+            isFavorite: current.isFavorite
         )
     }
 }
