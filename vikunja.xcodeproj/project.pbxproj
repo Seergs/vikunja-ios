@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		638AD6AC5148FFCCE7C85848 /* VikunjaNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = E2386D937B2547F27D7735C9 /* VikunjaNetworking */; };
 		A2C44E7EAB8501F032F94F77 /* VikunjaCore in Frameworks */ = {isa = PBXBuildFile; productRef = C7C86918EA5BF47E31F95689 /* VikunjaCore */; };
+		AF1A9958F7144C64A26AE7DE /* VikunjaAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */; };
+		EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 691135973B8B496295E14896 /* Onboarding */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,8 +20,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		EC3BB468303D1EF6002753FC /* vikunja */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = vikunja;
 			sourceTree = "<group>";
 		};
@@ -32,6 +32,8 @@
 			files = (
 				A2C44E7EAB8501F032F94F77 /* VikunjaCore in Frameworks */,
 				638AD6AC5148FFCCE7C85848 /* VikunjaNetworking in Frameworks */,
+				AF1A9958F7144C64A26AE7DE /* VikunjaAuth in Frameworks */,
+				EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +78,8 @@
 			packageProductDependencies = (
 				C7C86918EA5BF47E31F95689 /* VikunjaCore */,
 				E2386D937B2547F27D7735C9 /* VikunjaNetworking */,
+				1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */,
+				691135973B8B496295E14896 /* Onboarding */,
 			);
 			productName = vikunja;
 			productReference = EC3BB466303D1EF6002753FC /* vikunja.app */;
@@ -106,8 +110,10 @@
 			mainGroup = EC3BB45D303D1EF6002753FC;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				3F7D0D7A2D8E0EC22EE402E6 /* XCLocalSwiftPackageReference "VikunjaCore" */,
-				3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "VikunjaNetworking" */,
+				3F7D0D7A2D8E0EC22EE402E6 /* XCLocalSwiftPackageReference "Packages/VikunjaCore" */,
+				3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "Packages/VikunjaNetworking" */,
+				06F83FC1F5114AB2B901D1D6 /* XCLocalSwiftPackageReference "Packages/VikunjaAuth" */,
+				F4ED8517F32D4805BA91B284 /* XCLocalSwiftPackageReference "Packages/Features/Onboarding" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EC3BB467303D1EF6002753FC /* Products */;
@@ -349,25 +355,43 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "VikunjaNetworking" */ = {
+		06F83FC1F5114AB2B901D1D6 /* XCLocalSwiftPackageReference "Packages/VikunjaAuth" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/VikunjaAuth;
+		};
+		3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "Packages/VikunjaNetworking" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/VikunjaNetworking;
 		};
-		3F7D0D7A2D8E0EC22EE402E6 /* XCLocalSwiftPackageReference "VikunjaCore" */ = {
+		3F7D0D7A2D8E0EC22EE402E6 /* XCLocalSwiftPackageReference "Packages/VikunjaCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/VikunjaCore;
+		};
+		F4ED8517F32D4805BA91B284 /* XCLocalSwiftPackageReference "Packages/Features/Onboarding" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Features/Onboarding;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 06F83FC1F5114AB2B901D1D6 /* XCLocalSwiftPackageReference "Packages/VikunjaAuth" */;
+			productName = VikunjaAuth;
+		};
+		691135973B8B496295E14896 /* Onboarding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F4ED8517F32D4805BA91B284 /* XCLocalSwiftPackageReference "Packages/Features/Onboarding" */;
+			productName = Onboarding;
+		};
 		C7C86918EA5BF47E31F95689 /* VikunjaCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3F7D0D7A2D8E0EC22EE402E6 /* XCLocalSwiftPackageReference "VikunjaCore" */;
+			package = 3F7D0D7A2D8E0EC22EE402E6 /* XCLocalSwiftPackageReference "Packages/VikunjaCore" */;
 			productName = VikunjaCore;
 		};
 		E2386D937B2547F27D7735C9 /* VikunjaNetworking */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "VikunjaNetworking" */;
+			package = 3A9FB82DE1CB8FCF7F92D8D5 /* XCLocalSwiftPackageReference "Packages/VikunjaNetworking" */;
 			productName = VikunjaNetworking;
 		};
 /* End XCSwiftPackageProductDependency section */
