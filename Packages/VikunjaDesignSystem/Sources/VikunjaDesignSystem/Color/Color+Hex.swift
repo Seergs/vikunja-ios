@@ -8,4 +8,15 @@ extension Color {
         let blue = Double(hex & 0xFF) / 255
         self.init(.sRGB, red: red, green: green, blue: blue)
     }
+
+    /// Parses a Vikunja API `hex_color` value (`"RRGGBB"`, with or without a
+    /// leading `#`) as it comes back on `Project`/`Label`. Returns `nil` for
+    /// the empty string (no color set server-side) or anything malformed,
+    /// so callers can fall back to a design-system default.
+    public init?(vikunjaHex hexString: String) {
+        var hex = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if hex.hasPrefix("#") { hex.removeFirst() }
+        guard hex.count == 6, let value = UInt32(hex, radix: 16) else { return nil }
+        self.init(hex: value)
+    }
 }
