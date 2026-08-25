@@ -32,6 +32,15 @@ public enum VikunjaColor {
     public static let textSecondary = Color.platformTextSecondary
     public static let textTertiary = Color.platformTextTertiary
 
+    /// Preset swatches offered when creating a new label. Plain hex strings
+    /// rather than `Color`, since `Label.hexColor` round-trips through the API
+    /// as a hex string and this is what a "create label" UI hands back.
+    public enum LabelPalette {
+        public static let swatches: [String] = [
+            "8B5CF6", "0EA5E9", "22C55E", "F59E0B", "EF4444", "EC4899",
+        ]
+    }
+
     /// Status colors for inline feedback (banners, connection results).
     public enum Semantic {
         public static let success = Color(hex: 0x1FA669)
