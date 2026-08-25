@@ -7,7 +7,10 @@ let package = Package(
     products: [
         .library(name: "Home", targets: ["Home"]),
     ],
+    dependencies: [
+        .package(path: "../../VikunjaNavigation"),
+    ],
     targets: [
-        .target(name: "Home"),
+        .target(name: "Home", dependencies: ["VikunjaNavigation"]),
     ]
 )
