@@ -8,7 +8,11 @@ enum ProjectMapper {
             description: dto.description,
             isArchived: dto.isArchived ?? false,
             isFavorite: dto.isFavorite ?? false,
-            parentProjectID: dto.parentProjectId,
+            // The real API's `parent_project_id` is a non-pointer `int64` on the
+            // server, so root-level projects come back as `0`, never absent/null —
+            // normalize that to `nil` so `ProjectsListViewModel` can treat "no
+            // parent" as a single, unambiguous value.
+            parentProjectID: dto.parentProjectId == 0 ? nil : dto.parentProjectId,
             position: dto.position ?? 0,
             hexColor: dto.hexColor ?? ""
         )

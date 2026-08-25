@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "title": "Inbox",
+    "description": "",
+    "hex_color": "",
+    "parent_project_id": 0,
+    "is_archived": false,
+    "is_favorite": false,
+    "position": 0
+  },
+  {
+    "id": 6,
+    "title": "QA-Test-Project-B",
+    "description": "",
+    "hex_color": "",
+    "parent_project_id": 0,
+    "is_archived": false,
+    "is_favorite": false,
+    "position": 393216
+  },
+  {
+    "id": 12,
+    "title": "QA-Test-Project-B / Subproject",
+    "description": "",
+    "hex_color": "196AFF",
+    "parent_project_id": 6,
+    "is_archived": false,
+    "is_favorite": false,
+    "position": 100
+  }
+]
