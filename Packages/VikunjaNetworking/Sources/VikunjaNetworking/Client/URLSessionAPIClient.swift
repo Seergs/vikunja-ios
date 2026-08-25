@@ -1,5 +1,8 @@
 import Foundation
+import os
 import VikunjaCore
+
+private let apiLogger = Logger(subsystem: "dev.sergiosuarez.vikunja", category: "networking")
 
 /// Concrete `APIClient` implementation on top of `URLSession`. This is the only piece
 /// of the project that knows Vikunja speaks HTTP/JSON — `baseURL` and the token are
@@ -74,13 +77,24 @@ public actor URLSessionAPIClient: APIClient {
         case 200...299:
             return data
         case 401:
+            Self.logResponseBody(data, statusCode: 401, endpoint: endpoint)
             throw VikunjaError.unauthorized
         case 404:
             throw VikunjaError.notFound
         default:
             let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+            Self.logResponseBody(data, statusCode: httpResponse.statusCode, endpoint: endpoint)
             throw VikunjaError.server(message: message, statusCode: httpResponse.statusCode)
         }
+    }
+
+    /// Surfaces the server's raw error body in the Xcode console / Console.app
+    /// (filter by subsystem `dev.sergiosuarez.vikunja`) — `VikunjaError` itself
+    /// deliberately shows the user a generic, friendly message instead of the
+    /// raw response, so this is the only place that body is visible.
+    private static func logResponseBody(_ data: Data, statusCode: Int, endpoint: Endpoint) {
+        let body = String(data: data, encoding: .utf8) ?? "<non-UTF8 body, \(data.count) bytes>"
+        apiLogger.error("\(endpoint.method.rawValue, privacy: .public) \(endpoint.path, privacy: .public) → \(statusCode, privacy: .public): \(body, privacy: .public)")
     }
 
     private func makeURL(for endpoint: Endpoint) -> URL? {
