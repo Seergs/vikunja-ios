@@ -7,8 +7,11 @@ let package = Package(
     products: [
         .library(name: "VikunjaDesignSystem", targets: ["VikunjaDesignSystem"]),
     ],
+    dependencies: [
+        .package(path: "../VikunjaCore"),
+    ],
     targets: [
-        .target(name: "VikunjaDesignSystem"),
+        .target(name: "VikunjaDesignSystem", dependencies: ["VikunjaCore"]),
         .testTarget(name: "VikunjaDesignSystemTests", dependencies: ["VikunjaDesignSystem"]),
     ]
 )
