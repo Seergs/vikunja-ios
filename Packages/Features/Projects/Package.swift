@@ -8,9 +8,12 @@ let package = Package(
         .library(name: "Projects", targets: ["Projects"]),
     ],
     dependencies: [
+        .package(path: "../../VikunjaCore"),
         .package(path: "../../VikunjaNavigation"),
+        .package(path: "../../VikunjaDesignSystem"),
     ],
     targets: [
-        .target(name: "Projects", dependencies: ["VikunjaNavigation"]),
+        .target(name: "Projects", dependencies: ["VikunjaCore", "VikunjaNavigation", "VikunjaDesignSystem"]),
+        .testTarget(name: "ProjectsTests", dependencies: ["Projects"]),
     ]
 )
