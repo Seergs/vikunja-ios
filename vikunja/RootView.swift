@@ -1,10 +1,13 @@
 import Onboarding
 import SwiftUI
 import VikunjaCore
+import VikunjaDesignSystem
 
 /// Top-level navigation between Features. Features never reference each other
 /// directly, so switching from Onboarding to the main tab bar happens only
-/// here, in the composition root.
+/// here, in the composition root. Also where the app's single toast host is
+/// attached, so a toast floats above every screen — onboarding, tabs, and
+/// sheets alike — regardless of which one triggered it.
 struct RootView: View {
     let container: AppContainer
 
@@ -39,5 +42,6 @@ struct RootView: View {
             connectedAccount = try? await container.accountStore.activeAccount()
             hasCheckedForSavedAccount = true
         }
+        .toastHost(container.toastCenter)
     }
 }

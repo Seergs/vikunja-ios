@@ -4,6 +4,7 @@ import Projects
 import Tasks
 import VikunjaAuth
 import VikunjaCore
+import VikunjaDesignSystem
 import VikunjaNetworking
 
 /// Composition root. The only type in the app target allowed to know about
@@ -14,6 +15,11 @@ import VikunjaNetworking
 final class AppContainer {
     let accountStore: AccountStoreProtocol
     let clientFactory: InstanceClientFactoryProtocol
+    /// The single toast host for the whole app — see `RootView`'s
+    /// `.toastHost(_:)`. Pass this as `ToastPresenting` to any ViewModel that
+    /// needs to surface a toast (e.g. `toastPresenter:` in a `make...ViewModel`
+    /// factory below); it never needs to import `VikunjaDesignSystem` itself.
+    let toastCenter = ToastCenter()
 
     init(
         accountStore: AccountStoreProtocol = KeychainAccountStore(),
