@@ -7,14 +7,17 @@ import VikunjaNavigation
 /// about it.
 public struct SettingsRootView: View {
     @State private var router = Router<SettingsRoute>()
+    private let onResetConnection: () -> Void
 
-    public init() {}
+    public init(onResetConnection: @escaping () -> Void) {
+        self.onResetConnection = onResetConnection
+    }
 
     public var body: some View {
         // `.navigationDestination(for: SettingsRoute.self)` lands here once
         // `SettingsRoute` has its first real case.
         NavigationStack(path: $router.path) {
-            SettingsView()
+            SettingsView(onResetConnection: onResetConnection)
         }
     }
 }

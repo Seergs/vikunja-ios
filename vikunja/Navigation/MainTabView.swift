@@ -13,6 +13,9 @@ import VikunjaCore
 struct MainTabView: View {
     let account: InstanceAccount
     let container: AppContainer
+    /// Called after the active connection is removed, so `RootView` can drop
+    /// back to onboarding.
+    let onDisconnect: () -> Void
 
     @State private var selection: AppTab = .home
 
@@ -32,7 +35,7 @@ struct MainTabView: View {
             }
 
             Tab(AppTab.settings.title, systemImage: AppTab.settings.systemImage, value: .settings) {
-                SettingsRootView()
+                SettingsRootView(onResetConnection: resetConnection)
             }
 
             Tab(value: AppTab.search, role: .search) {
@@ -44,5 +47,16 @@ struct MainTabView: View {
             QuickAddAccessoryView()
         }
         .tabBarMinimizeBehavior(.onScrollDown)
+    }
+
+    /// Temporary stand-in for real "edit connection" support: wipes the
+    /// saved account/token and drops back to onboarding so the user can
+    /// re-enter a fresh token. TODO: replace with in-place editing once
+    /// Settings has a proper account screen.
+    private func resetConnection() {
+        Task {
+            try? await container.accountStore.removeAccount(id: account.id)
+            onDisconnect()
+        }
     }
 }

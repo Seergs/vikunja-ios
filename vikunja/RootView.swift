@@ -14,7 +14,11 @@ struct RootView: View {
     var body: some View {
         Group {
             if let connectedAccount {
-                MainTabView(account: connectedAccount, container: container)
+                MainTabView(
+                    account: connectedAccount,
+                    container: container,
+                    onDisconnect: { self.connectedAccount = nil }
+                )
             } else if hasCheckedForSavedAccount {
                 NavigationStack {
                     InstanceSetupView(
