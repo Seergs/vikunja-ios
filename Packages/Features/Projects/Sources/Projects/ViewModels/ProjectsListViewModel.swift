@@ -19,8 +19,14 @@ public final class ProjectsListViewModel {
         self.repository = repository
     }
 
+    /// Skips the `.loading` transition when there's already loaded content
+    /// (i.e. this is a pull-to-refresh): swapping the list out for a
+    /// spinner mid-refresh would tear down the `List` that owns the
+    /// in-flight `.refreshable` task, cancelling its request underneath it.
     public func load() async {
-        loadState = .loading
+        if loadState != .loaded {
+            loadState = .loading
+        }
         do {
             let projects = try await repository.fetchProjects()
             rootNodes = Self.tree(from: projects)
