@@ -84,6 +84,31 @@ struct TaskDTOTests {
     }
 
     @Test
+    func mergeNeverWritesLabelsFromTheDomainModel() throws {
+        let current = try loadTaskDTO()
+        var task = TaskMapper.toDomain(current)
+        // Mutating `task.labels` must have no effect on the merged body —
+        // Vikunja manages a task's labels via the dedicated
+        // `/tasks/{id}/labels` endpoints, not this field.
+        task.labels = []
+
+        let merged = TaskMapper.merge(task, onto: current)
+
+        #expect(merged.labels?.count == current.labels?.count)
+        #expect(merged.labels?.first?.title == "home")
+    }
+
+    @Test
+    func createDTOOmitsLabels() throws {
+        let dto = try loadTaskDTO()
+        let task = TaskMapper.toDomain(dto)
+
+        let created = TaskMapper.toDTO(task)
+
+        #expect(created.labels == nil)
+    }
+
+    @Test
     func mergedTaskRoundTripsOpaqueFieldsThroughEncoding() throws {
         let current = try loadTaskDTO()
         var task = TaskMapper.toDomain(current)

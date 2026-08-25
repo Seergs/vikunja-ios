@@ -50,6 +50,9 @@ enum TaskMapper {
         )
     }
 
+    /// `labels` is omitted (see `TaskDTO.labels`'s doc comment) — a newly
+    /// created task starts with no labels; attach any via
+    /// `LabelRepositoryProtocol.addLabel(_:toTask:)` once it has an id.
     static func toDTO(_ task: VikunjaTask) -> TaskDTO {
         TaskDTO(
             id: task.id,
@@ -59,7 +62,7 @@ enum TaskMapper {
             dueDate: task.dueDate,
             priority: task.priority.rawValue,
             projectId: task.projectID,
-            labels: task.labels.map(LabelMapper.toDTO)
+            labels: nil
         )
     }
 
@@ -78,7 +81,7 @@ enum TaskMapper {
             dueDate: task.dueDate,
             priority: task.priority.rawValue,
             projectId: task.projectID,
-            labels: task.labels.map(LabelMapper.toDTO),
+            labels: current.labels,
             relatedTasks: current.relatedTasks,
             doneAt: current.doneAt,
             startDate: current.startDate,

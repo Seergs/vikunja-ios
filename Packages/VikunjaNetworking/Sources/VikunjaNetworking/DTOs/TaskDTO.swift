@@ -12,6 +12,12 @@ struct TaskDTO: Codable {
     let dueDate: Date?
     let priority: Int?
     let projectId: Int
+    /// Mirrors what the server reports; never written from
+    /// `VikunjaTask.labels`. Vikunja manages a task's labels through the
+    /// dedicated `/tasks/{id}/labels` endpoints
+    /// (`LabelRepositoryProtocol.addLabel`/`removeLabel`) rather than the
+    /// task body — same reasoning as `relatedTasks` below, and why
+    /// `TaskMapper.toDTO`/`.merge` never populate this from `VikunjaTask`.
     let labels: [LabelDTO]?
     /// Keyed by Vikunja's relation-kind strings ("subtask", "blocked",
     /// "blocking", ...) — only the kinds `TaskMapper` currently reads are
