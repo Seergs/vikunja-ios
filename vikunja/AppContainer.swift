@@ -57,12 +57,15 @@ final class AppContainer {
         let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let labelRepository = clientFactory.makeLabelRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let relationRepository = clientFactory.makeTaskRelationRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        let projectRepository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         return TaskDetailViewModel(
             task: task,
             project: project,
             repository: repository,
             labelRepository: labelRepository,
-            relationRepository: relationRepository
+            relationRepository: relationRepository,
+            projectRepository: projectRepository,
+            toastPresenter: toastCenter
         )
     }
 
