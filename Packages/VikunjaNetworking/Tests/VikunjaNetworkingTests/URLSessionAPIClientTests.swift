@@ -175,4 +175,37 @@ struct URLSessionAPIClientTests {
         #expect(request.httpMethod == "DELETE")
         #expect(request.url?.path == "/api/v1/tasks/1/labels/10")
     }
+
+    // `VikunjaTaskRelationRepository` is tested here for the same reason as
+    // `VikunjaLabelRepository` above.
+
+    @Test
+    func addRelationPUTsTheRelationKindAndOtherTaskIDOntoTheTasksRelationsEndpoint() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaTaskRelationRepository(client: client)
+
+        try await repository.addRelation(kind: .subtask, otherTaskID: 2, toTask: 1)
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "PUT")
+        #expect(request.url?.path == "/api/v1/tasks/1/relations")
+        let sentBody = try #require(request.httpBody)
+        let sentJSON = try #require(JSONSerialization.jsonObject(with: sentBody) as? [String: Any])
+        #expect(sentJSON["relation_kind"] as? String == "subtask")
+        #expect(sentJSON["other_task_id"] as? Int == 2)
+    }
+
+    @Test
+    func removeRelationDELETEsTheRelationByKindAndOtherTaskID() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaTaskRelationRepository(client: client)
+
+        try await repository.removeRelation(kind: .blocked, otherTaskID: 3, fromTask: 1)
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/api/v1/tasks/1/relations/blocked/3")
+    }
 }

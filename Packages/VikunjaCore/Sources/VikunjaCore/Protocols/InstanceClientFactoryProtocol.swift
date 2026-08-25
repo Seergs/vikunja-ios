@@ -24,4 +24,9 @@ public protocol InstanceClientFactoryProtocol: Sendable {
         baseURL: URL,
         tokenProvider: @escaping @Sendable () async -> String?
     ) -> LabelRepositoryProtocol
+
+    func makeTaskRelationRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> TaskRelationRepositoryProtocol
 }

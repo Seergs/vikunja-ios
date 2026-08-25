@@ -1,3 +1,5 @@
+import VikunjaCore
+
 enum VikunjaEndpoints {
     static func info() -> Endpoint {
         Endpoint(path: "/api/v1/info")
@@ -77,5 +79,17 @@ enum VikunjaEndpoints {
 
     static func removeLabelFromTask(taskID: Int, labelID: Int) -> Endpoint {
         Endpoint(path: "/api/v1/tasks/\(taskID)/labels/\(labelID)", method: .delete)
+    }
+
+    static func createTaskRelation(taskID: Int, kind: RelationKind, otherTaskID: Int) throws -> Endpoint {
+        try .encoding(
+            path: "/api/v1/tasks/\(taskID)/relations",
+            method: .put,
+            body: CreateTaskRelationDTO(relationKind: kind.rawValue, otherTaskId: otherTaskID)
+        )
+    }
+
+    static func deleteTaskRelation(taskID: Int, kind: RelationKind, otherTaskID: Int) -> Endpoint {
+        Endpoint(path: "/api/v1/tasks/\(taskID)/relations/\(kind.rawValue)/\(otherTaskID)", method: .delete)
     }
 }
