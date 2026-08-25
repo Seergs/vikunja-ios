@@ -1,13 +1,16 @@
 import SwiftUI
+import VikunjaCore
 
 /// "Add a connection" screen. Purely presentational — all validation, probing
 /// and persistence live in `InstanceSetupViewModel`, so future UI-only changes
 /// (copy, styling, layout, button count) only ever touch this file.
 public struct InstanceSetupView: View {
     @Bindable private var viewModel: InstanceSetupViewModel
+    private let onConnectionSaved: (InstanceAccount) -> Void
 
-    public init(viewModel: InstanceSetupViewModel) {
+    public init(viewModel: InstanceSetupViewModel, onConnectionSaved: @escaping (InstanceAccount) -> Void) {
         self.viewModel = viewModel
+        self.onConnectionSaved = onConnectionSaved
     }
 
     public var body: some View {
@@ -55,6 +58,11 @@ public struct InstanceSetupView: View {
         }
         .navigationTitle("Add Instance")
         .task { await viewModel.loadSavedAccounts() }
+        .onChange(of: viewModel.savedAccount) { _, savedAccount in
+            if let savedAccount {
+                onConnectionSaved(savedAccount)
+            }
+        }
     }
 
     private var statusText: String? {

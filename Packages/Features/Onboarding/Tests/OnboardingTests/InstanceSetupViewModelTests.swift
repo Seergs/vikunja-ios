@@ -57,6 +57,30 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
+    func savingAValidConnectionExposesTheSavedAccount() async {
+        let viewModel = makeViewModel()
+        viewModel.displayName = "Home"
+        viewModel.urlText = "tasks.example.com"
+        viewModel.apiToken = "a-token"
+        #expect(viewModel.savedAccount == nil)
+
+        await viewModel.saveConnection()
+
+        #expect(viewModel.savedAccount?.displayName == "Home")
+    }
+
+    @Test
+    func testingSuccessfullyDoesNotExposeASavedAccount() async {
+        let viewModel = makeViewModel()
+        viewModel.urlText = "tasks.example.com"
+
+        await viewModel.testConnection()
+
+        #expect(viewModel.validationState == .success)
+        #expect(viewModel.savedAccount == nil)
+    }
+
+    @Test
     func savingClearsTheInputFieldsOnSuccess() async {
         let viewModel = makeViewModel()
         viewModel.displayName = "Home"

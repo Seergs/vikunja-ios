@@ -17,6 +17,11 @@ public final class InstanceSetupViewModel {
     public private(set) var validationState: InstanceSetupValidationState = .idle
     public private(set) var savedAccounts: [InstanceAccount] = []
 
+    /// The account `saveConnection()` most recently persisted — distinct from
+    /// `validationState == .success`, which `testConnection()` also reports on
+    /// a successful probe. Drives post-save navigation.
+    public private(set) var savedAccount: InstanceAccount?
+
     public var isSaving: Bool { validationState == .validating }
 
     private let accountStore: AccountStoreProtocol
@@ -66,6 +71,7 @@ public final class InstanceSetupViewModel {
             try await accountStore.addAccount(account, token: trimmedToken)
 
             validationState = .success
+            savedAccount = account
             resetInputs()
             await loadSavedAccounts()
         } catch let error as VikunjaError {
