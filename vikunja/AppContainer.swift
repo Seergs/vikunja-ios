@@ -51,10 +51,12 @@ final class AppContainer {
 
     func makeTaskDetailViewModel(task: VikunjaTask, project: Project, account: InstanceAccount) -> TaskDetailViewModel {
         let accountStore = self.accountStore
-        let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL) {
+        let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
-        return TaskDetailViewModel(task: task, project: project, repository: repository)
+        let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        let labelRepository = clientFactory.makeLabelRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        return TaskDetailViewModel(task: task, project: project, repository: repository, labelRepository: labelRepository)
     }
 
     func makeQuickAddTaskViewModel(account: InstanceAccount) -> QuickAddTaskViewModel {
