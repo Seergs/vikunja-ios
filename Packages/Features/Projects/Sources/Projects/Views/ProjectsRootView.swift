@@ -7,14 +7,17 @@ import VikunjaNavigation
 /// about it.
 public struct ProjectsRootView: View {
     @State private var router = Router<ProjectsRoute>()
+    private let viewModel: ProjectsListViewModel
 
-    public init() {}
+    public init(viewModel: ProjectsListViewModel) {
+        self.viewModel = viewModel
+    }
 
     public var body: some View {
         // `.navigationDestination(for: ProjectsRoute.self)` lands here once
         // `ProjectsRoute` has its first real case.
         NavigationStack(path: $router.path) {
-            ProjectsView()
+            ProjectsView(viewModel: viewModel)
         }
     }
 }
