@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Project: Identifiable, Equatable, Sendable {
+public struct Project: Identifiable, Hashable, Sendable {
     public let id: Int
     public var title: String
     public var description: String?
