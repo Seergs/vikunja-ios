@@ -19,6 +19,11 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
     public var dependsOn: [TaskRelation]
     /// Tasks waiting on this one (Vikunja's "blocking" relation kind).
     public var blocks: [TaskRelation]
+    /// Every other relation kind Vikunja reports (e.g. "related", "precedes",
+    /// "follows", "duplicateof") — kinds that don't need distinct UI
+    /// treatment, so they're kept generic here rather than as one named
+    /// property each.
+    public var otherRelations: [RelationKind: [TaskRelation]]
 
     public init(
         id: Int,
@@ -31,7 +36,8 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
         labels: [Label] = [],
         subtasks: [TaskRelation] = [],
         dependsOn: [TaskRelation] = [],
-        blocks: [TaskRelation] = []
+        blocks: [TaskRelation] = [],
+        otherRelations: [RelationKind: [TaskRelation]] = [:]
     ) {
         self.id = id
         self.title = title
@@ -44,6 +50,7 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
         self.subtasks = subtasks
         self.dependsOn = dependsOn
         self.blocks = blocks
+        self.otherRelations = otherRelations
     }
 
     /// Whether this task is still waiting on an incomplete `dependsOn` task.
