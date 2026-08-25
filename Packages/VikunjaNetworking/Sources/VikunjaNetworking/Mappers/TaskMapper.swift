@@ -10,6 +10,12 @@ enum TaskMapper {
         return dueDate
     }
 
+    /// Reads one relation kind out of `dto.relatedTasks`, falling back to
+    /// this task's own project for any entry missing its `project_id`.
+    private static func relations(_ dto: TaskDTO, kind: String) -> [TaskRelation] {
+        (dto.relatedTasks?[kind] ?? []).map { TaskRelationMapper.toDomain($0, fallbackProjectID: dto.projectId) }
+    }
+
     static func toDomain(_ dto: TaskDTO) -> VikunjaTask {
         VikunjaTask(
             id: dto.id,
@@ -19,7 +25,10 @@ enum TaskMapper {
             dueDate: dueDate(from: dto),
             priority: VikunjaTask.Priority(rawValue: dto.priority ?? 0) ?? .unset,
             projectID: dto.projectId,
-            labels: (dto.labels ?? []).map(LabelMapper.toDomain)
+            labels: (dto.labels ?? []).map(LabelMapper.toDomain),
+            subtasks: relations(dto, kind: "subtask"),
+            dependsOn: relations(dto, kind: "blocked"),
+            blocks: relations(dto, kind: "blocking")
         )
     }
 
@@ -32,7 +41,8 @@ enum TaskMapper {
             dueDate: task.dueDate,
             priority: task.priority.rawValue,
             projectId: task.projectID,
-            labels: task.labels.map(LabelMapper.toDTO)
+            labels: task.labels.map(LabelMapper.toDTO),
+            relatedTasks: nil
         )
     }
 }

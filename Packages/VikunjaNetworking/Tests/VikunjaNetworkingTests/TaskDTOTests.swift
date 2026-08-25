@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import VikunjaCore
 @testable import VikunjaNetworking
 
 struct TaskDTOTests {
@@ -22,6 +23,27 @@ struct TaskDTOTests {
         #expect(task.priority == .high)
         #expect(task.labels.count == 1)
         #expect(task.labels.first?.title == "home")
+    }
+
+    @Test
+    func mapsRelatedTasksBySubtaskBlockedAndBlockingKind() throws {
+        let dto = try loadTaskDTO()
+        let task = TaskMapper.toDomain(dto)
+
+        #expect(task.subtasks == [TaskRelation(id: 2, title: "Grind beans", isDone: true, projectID: 4)])
+        #expect(task.dependsOn == [TaskRelation(id: 3, title: "Buy grinder", isDone: false, projectID: 4)])
+        #expect(task.blocks == [TaskRelation(id: 5, title: "Make espresso", isDone: false, projectID: 4)])
+        #expect(task.isBlocked == true)
+    }
+
+    @Test
+    func toleratesAMissingRelatedTasksField() throws {
+        let dto = try loadTaskDTO(named: "task-no-due-date")
+        let task = TaskMapper.toDomain(dto)
+
+        #expect(task.subtasks.isEmpty)
+        #expect(task.dependsOn.isEmpty)
+        #expect(task.blocks.isEmpty)
     }
 
     @Test
