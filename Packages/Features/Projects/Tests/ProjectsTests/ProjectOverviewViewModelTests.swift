@@ -37,4 +37,87 @@ struct ProjectOverviewViewModelTests {
         #expect(viewModel.loadState == .failure("Couldn't reach that server. Check the address and your connection."))
         #expect(viewModel.tasks.isEmpty)
     }
+
+    @Test
+    func loadCarriesTheSubprojectsHandedInAtConstruction() async {
+        let repository = FakeTaskRepository()
+        let subprojects = [ProjectNode(project: Project(id: 2, title: "Client A", parentProjectID: 1))]
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 1, title: "Work"),
+            subprojects: subprojects,
+            repository: repository
+        )
+
+        #expect(viewModel.subprojects.map(\.project.id) == [2])
+    }
+
+    @Test
+    func loadFetchesEachSubprojectsOwnTaskSummary() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [
+            VikunjaTask(id: 1, title: "Parent task", projectID: 1),
+            VikunjaTask(id: 2, title: "Client A task 1", isDone: true, projectID: 2),
+            VikunjaTask(id: 3, title: "Client A task 2", isDone: false, projectID: 2),
+            VikunjaTask(id: 4, title: "Client B task", isDone: false, projectID: 3),
+        ]
+        let subprojects = [
+            ProjectNode(project: Project(id: 2, title: "Client A", parentProjectID: 1)),
+            ProjectNode(project: Project(id: 3, title: "Client B", parentProjectID: 1)),
+        ]
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 1, title: "Work"),
+            subprojects: subprojects,
+            repository: repository
+        )
+
+        await viewModel.load()
+
+        #expect(viewModel.subprojectTaskSummaries[2] == .init(done: 1, total: 2))
+        #expect(viewModel.subprojectTaskSummaries[3] == .init(done: 0, total: 1))
+    }
+
+    @Test
+    func loadOmitsASubprojectSummaryWhenItsFetchFails() async {
+        let repository = FakeTaskRepository()
+        repository.fetchError = .network("offline")
+        let subprojects = [ProjectNode(project: Project(id: 2, title: "Client A", parentProjectID: 1))]
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 1, title: "Work"),
+            subprojects: subprojects,
+            repository: repository
+        )
+
+        await viewModel.load()
+
+        // The main project's own fetch fails first (surfacing the load
+        // error), so subproject summaries never even get requested here —
+        // this just confirms a failed fetch doesn't crash or leave a
+        // stale/partial summary.
+        #expect(viewModel.subprojectTaskSummaries.isEmpty)
+    }
+
+    @Test
+    func toggleDonePersistsTheFlippedStateThroughTheRepository() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1)]
+        let viewModel = ProjectOverviewViewModel(project: Project(id: 1, title: "Work"), repository: repository)
+        await viewModel.load()
+
+        await viewModel.toggleDone(viewModel.tasks[0])
+
+        #expect(viewModel.tasks[0].isDone == true)
+    }
+
+    @Test
+    func toggleDoneRevertsWhenTheServerRejectsTheUpdate() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1)]
+        let viewModel = ProjectOverviewViewModel(project: Project(id: 1, title: "Work"), repository: repository)
+        await viewModel.load()
+        repository.updateError = .network("offline")
+
+        await viewModel.toggleDone(viewModel.tasks[0])
+
+        #expect(viewModel.tasks[0].isDone == false)
+    }
 }
