@@ -15,25 +15,39 @@ public final class TaskDetailViewModel {
     /// loaded lazily via `loadAllLabels()` rather than alongside `load()`,
     /// since most task views are never opened.
     public private(set) var allLabels: [Label] = []
+    /// Candidates for the "add relation" task picker, from the most recent
+    /// `searchTasksForRelation(query:)` call.
+    public private(set) var relationSearchResults: [VikunjaTask] = []
+    /// Every project on the instance, for resolving a relation candidate's
+    /// project name in the "add relation" task picker — loaded lazily via
+    /// `loadAllProjects()` rather than alongside `load()`, the same reasoning
+    /// as `allLabels`/`loadAllLabels()`.
+    public private(set) var allProjects: [Project] = []
 
     public var isLoading: Bool { loadState == .loading }
 
     private let repository: TaskRepositoryProtocol
     private let labelRepository: LabelRepositoryProtocol
     private let relationRepository: TaskRelationRepositoryProtocol
+    private let projectRepository: ProjectRepositoryProtocol
+    private let toastPresenter: ToastPresenting
 
     public init(
         task: VikunjaTask,
         project: Project,
         repository: TaskRepositoryProtocol,
         labelRepository: LabelRepositoryProtocol,
-        relationRepository: TaskRelationRepositoryProtocol
+        relationRepository: TaskRelationRepositoryProtocol,
+        projectRepository: ProjectRepositoryProtocol,
+        toastPresenter: ToastPresenting
     ) {
         self.task = task
         self.project = project
         self.repository = repository
         self.labelRepository = labelRepository
         self.relationRepository = relationRepository
+        self.projectRepository = projectRepository
+        self.toastPresenter = toastPresenter
     }
 
     public func load() async {
@@ -126,6 +140,7 @@ public final class TaskDetailViewModel {
         insertRelation(relation, kind: kind)
         do {
             try await relationRepository.addRelation(kind: kind, otherTaskID: relation.id, toTask: task.id)
+            toastPresenter.show("Relation added", style: .success)
         } catch {
             task = previous
         }
@@ -141,6 +156,63 @@ public final class TaskDetailViewModel {
         } catch {
             task = previous
         }
+    }
+
+    /// Searches every task the account can see for the "add relation" task
+    /// picker, excluding the task itself and anything already related to it
+    /// (under any relation kind) so the same task can't be picked twice. An
+    /// empty or all-whitespace query falls back to `loadRelationSuggestions()`
+    /// rather than clearing the results, so the picker never shows a blank
+    /// list just because the user cleared their search. Failures leave
+    /// `relationSearchResults` empty rather than surfacing an error — the
+    /// sheet just shows no candidates.
+    public func searchTasksForRelation(query: String) async {
+        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            await loadRelationSuggestions()
+            return
+        }
+        let excludedIDs = relatedTaskIDs.union([task.id])
+        let results = (try? await repository.searchTasks(query: query)) ?? []
+        relationSearchResults = results.filter { !excludedIDs.contains($0.id) }
+    }
+
+    /// Populates `relationSearchResults` with this task's own project's other
+    /// tasks before the user has typed anything — most relations (subtasks,
+    /// dependencies, blockers) are within the same project, so this saves a
+    /// search for the common case. Excludes the task itself and anything
+    /// already related to it, the same as `searchTasksForRelation(query:)`.
+    public func loadRelationSuggestions() async {
+        let excludedIDs = relatedTaskIDs.union([task.id])
+        let results = (try? await repository.fetchTasks(projectID: project.id)) ?? []
+        relationSearchResults = results.filter { !excludedIDs.contains($0.id) }
+    }
+
+    /// Loads every project on the instance, for the "add relation" task
+    /// picker to show which project each candidate belongs to. Failures
+    /// leave `allProjects` at whatever it already was — the picker just
+    /// shows fewer project names, the same tradeoff `loadAllLabels()` makes.
+    public func loadAllProjects() async {
+        allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
+    }
+
+    /// Resolves `id` to a project title — the current task's own project
+    /// (always known, no network needed) or, once `loadAllProjects()` has
+    /// run, any other project on the instance. Returns `nil` if `id` isn't
+    /// the current project and hasn't been loaded into `allProjects` yet.
+    public func projectTitle(forProjectID id: Int) -> String? {
+        if id == project.id { return project.title }
+        return allProjects.first { $0.id == id }?.title
+    }
+
+    /// Every task id already related to this one, across `subtasks`,
+    /// `dependsOn`, `blocks`, and every kind in `otherRelations` — used to
+    /// exclude already-related tasks from the relation search results.
+    private var relatedTaskIDs: Set<Int> {
+        var ids = Set((task.subtasks + task.dependsOn + task.blocks).map(\.id))
+        for relations in task.otherRelations.values {
+            ids.formUnion(relations.map(\.id))
+        }
+        return ids
     }
 
     /// Routes `relation` into whichever of `task`'s relation properties

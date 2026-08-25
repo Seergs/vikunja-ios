@@ -9,7 +9,7 @@ struct TaskDetailViewModelTests {
     func startsWithTheTaskPassedInAtConstruction() {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
-        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository())
+        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
 
         #expect(viewModel.task == task)
         #expect(viewModel.loadState == .idle)
@@ -26,7 +26,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.load()
@@ -44,7 +46,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.load()
@@ -60,7 +64,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.toggleDone()
@@ -81,7 +87,7 @@ struct TaskDetailViewModelTests {
             blocks: [TaskRelation(id: 4, title: "Publish", isDone: false, projectID: 1)],
             otherRelations: [.related: [TaskRelation(id: 5, title: "Related memo", isDone: false, projectID: 1)]]
         )
-        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository())
+        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
 
         await viewModel.toggleDone()
 
@@ -101,7 +107,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.toggleDone()
@@ -117,7 +125,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
         let dueDate = Date(timeIntervalSince1970: 1_700_000_000)
 
@@ -135,7 +145,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.setDueDate(Date())
@@ -151,7 +163,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.setPriority(.urgent)
@@ -168,7 +182,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             labelRepository: FakeLabelRepository(),
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.setPriority(.high)
@@ -185,7 +201,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.loadAllLabels()
@@ -202,7 +220,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.toggleLabel(label)
@@ -220,7 +240,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.toggleLabel(label)
@@ -239,7 +261,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.toggleLabel(label)
@@ -255,7 +279,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.createAndAddLabel(title: "Urgent", hexColor: "EF4444")
@@ -274,7 +300,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
-            relationRepository: FakeTaskRelationRepository()
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.createAndAddLabel(title: "Urgent", hexColor: "EF4444")
@@ -291,7 +319,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
-            relationRepository: relationRepository
+            relationRepository: relationRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
         let subtask = TaskRelation(id: 2, title: "Outline", projectID: 1)
         let dependency = TaskRelation(id: 3, title: "Approve brief", projectID: 1)
@@ -316,7 +346,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
-            relationRepository: relationRepository
+            relationRepository: relationRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
         let related = TaskRelation(id: 6, title: "Related memo", projectID: 1)
 
@@ -334,12 +366,52 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
-            relationRepository: relationRepository
+            relationRepository: relationRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.addRelation(TaskRelation(id: 2, title: "Outline", projectID: 1), kind: .subtask)
 
         #expect(viewModel.task.subtasks.isEmpty)
+    }
+
+    @Test
+    func addRelationShowsASuccessToast() async {
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+
+        await viewModel.addRelation(TaskRelation(id: 2, title: "Outline", projectID: 1), kind: .subtask)
+
+        #expect(toastPresenter.shownMessages.map(\.message) == ["Relation added"])
+    }
+
+    @Test
+    func addRelationDoesNotShowAToastWhenTheServerRejectsIt() async {
+        let relationRepository = FakeTaskRelationRepository()
+        relationRepository.addError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: relationRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+
+        await viewModel.addRelation(TaskRelation(id: 2, title: "Outline", projectID: 1), kind: .subtask)
+
+        #expect(toastPresenter.shownMessages.isEmpty)
     }
 
     @Test
@@ -351,7 +423,9 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
-            relationRepository: relationRepository
+            relationRepository: relationRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.removeRelation(subtask, kind: .subtask)
@@ -370,11 +444,165 @@ struct TaskDetailViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
-            relationRepository: relationRepository
+            relationRepository: relationRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
         )
 
         await viewModel.removeRelation(subtask, kind: .subtask)
 
         #expect(viewModel.task.subtasks == [subtask])
+    }
+
+    @Test
+    func searchTasksForRelationExcludesTheTaskItselfAndAlreadyRelatedTasks() async {
+        let repository = FakeTaskRepository()
+        repository.searchResults = [
+            VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            VikunjaTask(id: 2, title: "Outline", projectID: 1),
+            VikunjaTask(id: 3, title: "Approve brief", projectID: 1),
+            VikunjaTask(id: 9, title: "Draft appendix", projectID: 1),
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(
+                id: 1,
+                title: "Write report",
+                projectID: 1,
+                subtasks: [TaskRelation(id: 2, title: "Outline", projectID: 1)],
+                dependsOn: [TaskRelation(id: 3, title: "Approve brief", projectID: 1)]
+            ),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.searchTasksForRelation(query: "a")
+
+        #expect(viewModel.relationSearchResults.map(\.id) == [9])
+    }
+
+    @Test
+    func searchTasksForRelationFallsBackToProjectSuggestionsForABlankQuery() async {
+        let repository = FakeTaskRepository()
+        repository.searchResults = [VikunjaTask(id: 9, title: "Draft appendix", projectID: 1)]
+        repository.tasks = [VikunjaTask(id: 8, title: "Outline appendix", projectID: 1)]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.searchTasksForRelation(query: "   ")
+
+        #expect(viewModel.relationSearchResults.map(\.id) == [8])
+    }
+
+    @Test
+    func loadRelationSuggestionsPopulatesFromTheCurrentProjectExcludingSelfAndAlreadyRelatedTasks() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [
+            VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            VikunjaTask(id: 2, title: "Outline", projectID: 1),
+            VikunjaTask(id: 9, title: "Draft appendix", projectID: 1),
+            VikunjaTask(id: 10, title: "Unrelated in another project", projectID: 2),
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(
+                id: 1,
+                title: "Write report",
+                projectID: 1,
+                subtasks: [TaskRelation(id: 2, title: "Outline", projectID: 1)]
+            ),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.loadRelationSuggestions()
+
+        #expect(viewModel.relationSearchResults.map(\.id) == [9])
+    }
+
+    @Test
+    func searchTasksForRelationLeavesResultsEmptyOnFailure() async {
+        let repository = FakeTaskRepository()
+        repository.searchError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.searchTasksForRelation(query: "report")
+
+        #expect(viewModel.relationSearchResults.isEmpty)
+    }
+
+    @Test
+    func loadAllProjectsPopulatesFromTheRepository() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [Project(id: 2, title: "Personal"), Project(id: 3, title: "Health")]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.loadAllProjects()
+
+        #expect(viewModel.allProjects == projectRepository.projects)
+    }
+
+    @Test
+    func projectTitleResolvesTheCurrentProjectWithoutLoadingAllProjects() async {
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        #expect(viewModel.projectTitle(forProjectID: 1) == "Work")
+    }
+
+    @Test
+    func projectTitleResolvesAnyLoadedProject() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [Project(id: 2, title: "Personal")]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.loadAllProjects()
+
+        #expect(viewModel.projectTitle(forProjectID: 2) == "Personal")
+        #expect(viewModel.projectTitle(forProjectID: 999) == nil)
     }
 }

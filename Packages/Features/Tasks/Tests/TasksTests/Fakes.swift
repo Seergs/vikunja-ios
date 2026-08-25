@@ -5,6 +5,8 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     var tasks: [VikunjaTask] = []
     var fetchError: VikunjaError?
     var updateError: VikunjaError?
+    var searchError: VikunjaError?
+    var searchResults: [VikunjaTask] = []
 
     func fetchTasks(projectID: Int) async throws -> [VikunjaTask] {
         if let fetchError { throw fetchError }
@@ -35,6 +37,11 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
 
     func delete(id: Int) async throws {
         tasks.removeAll { $0.id == id }
+    }
+
+    func searchTasks(query: String) async throws -> [VikunjaTask] {
+        if let searchError { throw searchError }
+        return searchResults
     }
 }
 
