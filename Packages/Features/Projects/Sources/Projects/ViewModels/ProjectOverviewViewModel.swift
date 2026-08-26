@@ -23,11 +23,18 @@ public final class ProjectOverviewViewModel {
     public var isLoading: Bool { loadState == .loading }
 
     private let repository: TaskRepositoryProtocol
+    private let toastPresenter: ToastPresenting
 
-    public init(project: Project, subprojects: [ProjectNode] = [], repository: TaskRepositoryProtocol) {
+    public init(
+        project: Project,
+        subprojects: [ProjectNode] = [],
+        repository: TaskRepositoryProtocol,
+        toastPresenter: ToastPresenting
+    ) {
         self.project = project
         self.subprojects = subprojects
         self.repository = repository
+        self.toastPresenter = toastPresenter
     }
 
     public struct TaskSummary: Equatable, Sendable {
@@ -91,6 +98,22 @@ public final class ProjectOverviewViewModel {
             tasks[index] = try await repository.update(updated)
         } catch {
             tasks[index] = task
+        }
+    }
+
+    /// Deletes a task from the server and drops it from the local list on
+    /// success. Vikunja soft-deletes tasks server-side rather than cascading
+    /// the delete to subtasks/relations, so nothing else in the tree needs
+    /// updating here.
+    public func delete(_ task: VikunjaTask) async {
+        do {
+            try await repository.delete(id: task.id)
+            tasks.removeAll { $0.id == task.id }
+            toastPresenter.show("Task deleted", style: .success)
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
         }
     }
 }
