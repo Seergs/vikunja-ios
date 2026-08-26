@@ -4,6 +4,8 @@ import VikunjaCore
 final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendable {
     var projects: [Project] = []
     var fetchError: VikunjaError?
+    var createError: VikunjaError?
+    private(set) var createdProjects: [Project] = []
 
     func fetchProjects() async throws -> [Project] {
         if let fetchError { throw fetchError }
@@ -17,7 +19,11 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
         return project
     }
 
-    func create(_ project: Project) async throws -> Project { project }
+    func create(_ project: Project) async throws -> Project {
+        if let createError { throw createError }
+        createdProjects.append(project)
+        return project
+    }
 
     func update(_ project: Project) async throws -> Project { project }
 
@@ -56,5 +62,13 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
 
     func searchTasks(query: String) async throws -> [VikunjaTask] {
         tasks.filter { $0.title.localizedCaseInsensitiveContains(query) }
+    }
+}
+
+final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
+    private(set) var shownMessages: [(message: String, style: ToastStyle)] = []
+
+    func show(_ message: String, style: ToastStyle) {
+        shownMessages.append((message, style))
     }
 }
