@@ -56,6 +56,7 @@ struct MainTabView: View {
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
+        .tint(VikunjaColor.brandPrimary)
         .overlay(alignment: .bottomTrailing) {
             QuickAddButton {
                 isShowingQuickAdd = true
