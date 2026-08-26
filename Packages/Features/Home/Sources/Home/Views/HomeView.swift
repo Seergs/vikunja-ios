@@ -19,6 +19,6 @@ public struct HomeView: View {
                 .font(.title2)
         }
         .padding()
-        .navigationTitle("Home")
+        .navigationTitle("Today")
     }
 }

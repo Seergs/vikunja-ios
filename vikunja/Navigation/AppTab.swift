@@ -13,7 +13,7 @@ enum AppTab: Hashable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .home: "Home"
+        case .home: "Today"
         case .projects: "Projects"
         case .search: "Search"
         case .settings: "Settings"
@@ -22,10 +22,10 @@ enum AppTab: Hashable, CaseIterable, Identifiable {
 
     var systemImage: String {
         switch self {
-        case .home: "house.fill"
-        case .projects: "folder.fill"
+        case .home: "calendar.badge.checkmark"
+        case .projects: "square.grid.2x2"
         case .search: "magnifyingglass"
-        case .settings: "gearshape.fill"
+        case .settings: "gearshape"
         }
     }
 }
