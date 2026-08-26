@@ -9,7 +9,9 @@ import VikunjaNavigation
 struct ProjectsView: View {
     @Bindable var viewModel: ProjectsListViewModel
     let router: Router<ProjectsRoute>
+    let makeCreateProjectViewModel: () -> CreateProjectViewModel
     @State private var expandedProjectIDs: Set<Int> = []
+    @State private var isShowingCreateProject = false
 
     var body: some View {
         // `List` stays the root container across every load state — not just
@@ -22,6 +24,21 @@ struct ProjectsView: View {
             .projectsListStyle()
             .refreshable { await viewModel.load() }
             .navigationTitle("Projects")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        isShowingCreateProject = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("New Project")
+                }
+            }
+            .sheet(isPresented: $isShowingCreateProject, onDismiss: {
+                Task { await viewModel.load() }
+            }) {
+                CreateProjectSheetView(viewModel: makeCreateProjectViewModel())
+            }
             .task {
                 await viewModel.load()
             }
