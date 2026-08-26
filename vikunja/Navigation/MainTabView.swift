@@ -38,6 +38,9 @@ struct MainTabView: View {
                     makeOverviewViewModel: { node in
                         container.makeProjectOverviewViewModel(node: node, account: account)
                     },
+                    makeCreateProjectViewModel: {
+                        container.makeCreateProjectViewModel(account: account)
+                    },
                     taskDetailDestination: { task, project in
                         AnyView(TaskDetailView(viewModel: container.makeTaskDetailViewModel(task: task, project: project, account: account)))
                     }
