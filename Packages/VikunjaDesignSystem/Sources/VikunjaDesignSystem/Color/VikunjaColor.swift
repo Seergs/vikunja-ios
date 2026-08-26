@@ -32,10 +32,11 @@ public enum VikunjaColor {
     public static let textSecondary = Color.platformTextSecondary
     public static let textTertiary = Color.platformTextTertiary
 
-    /// Preset swatches offered when creating a new label. Plain hex strings
-    /// rather than `Color`, since `Label.hexColor` round-trips through the API
-    /// as a hex string and this is what a "create label" UI hands back.
-    public enum LabelPalette {
+    /// Preset swatches offered when picking a color for something the user is
+    /// creating (a label, a project, ...). Plain hex strings rather than
+    /// `Color`, since `Label.hexColor`/`Project.hexColor` round-trip through
+    /// the API as a hex string and this is what a "create ..." UI hands back.
+    public enum SwatchPalette {
         public static let swatches: [String] = [
             "8B5CF6", "0EA5E9", "22C55E", "F59E0B", "EF4444", "EC4899",
         ]

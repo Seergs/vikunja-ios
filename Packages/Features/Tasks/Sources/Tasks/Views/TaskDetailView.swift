@@ -850,7 +850,7 @@ private struct LabelPickerSheet: View {
     @Bindable var viewModel: TaskDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
-    @State private var pickedColor = VikunjaColor.LabelPalette.swatches[0]
+    @State private var pickedColor = VikunjaColor.SwatchPalette.swatches[0]
 
     private var trimmedQuery: String {
         query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -964,7 +964,7 @@ private struct LabelSelectionIndicator: View {
 }
 
 /// Offered only once the search query doesn't match any existing label
-/// exactly — lets the user pick a swatch from `VikunjaColor.LabelPalette`
+/// exactly — lets the user pick a swatch from `VikunjaColor.SwatchPalette`
 /// and create+attach the label in one tap.
 private struct CreateLabelCard: View {
     let title: String
@@ -988,7 +988,7 @@ private struct CreateLabelCard: View {
             }
 
             HStack(spacing: VikunjaSpacing.sm) {
-                ForEach(VikunjaColor.LabelPalette.swatches, id: \.self) { swatch in
+                ForEach(VikunjaColor.SwatchPalette.swatches, id: \.self) { swatch in
                     Circle()
                         .fill(Color(vikunjaHex: swatch) ?? VikunjaColor.brandPrimary)
                         .frame(width: 24, height: 24)
