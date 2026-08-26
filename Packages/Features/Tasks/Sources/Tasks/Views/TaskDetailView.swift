@@ -11,6 +11,7 @@ public struct TaskDetailView: View {
     @State private var isShowingDueDatePicker = false
     @State private var isShowingLabelPicker = false
     @State private var relationSheetStep: RelationSheetStep?
+    @State private var relatedTaskDestination: RelatedTaskDestination?
 
     public init(viewModel: TaskDetailViewModel) {
         self.viewModel = viewModel
@@ -59,6 +60,17 @@ public struct TaskDetailView: View {
                     Task { await viewModel.addRelation(relation, kind: kind) }
                     relationSheetStep = nil
                 }
+            }
+        }
+        .navigationDestination(item: $relatedTaskDestination) { destination in
+            TaskDetailView(viewModel: viewModel.makeDetailViewModel(task: destination.task, project: destination.project))
+        }
+    }
+
+    private func openRelation(_ relation: TaskRelation) {
+        Task {
+            if let (task, project) = await viewModel.loadRelatedTask(relation) {
+                relatedTaskDestination = RelatedTaskDestination(task: task, project: project)
             }
         }
     }
@@ -176,9 +188,14 @@ public struct TaskDetailView: View {
                                 .foregroundStyle(VikunjaColor.textTertiary)
                             VStack(spacing: VikunjaSpacing.sm) {
                                 ForEach(group.relations) { relation in
-                                    DependencyRow(relation: relation, projectTitle: projectTitle(for: relation)) {
-                                        Task { await viewModel.removeRelation(relation, kind: group.kind) }
-                                    }
+                                    DependencyRow(
+                                        relation: relation,
+                                        projectTitle: projectTitle(for: relation),
+                                        onTap: { openRelation(relation) },
+                                        onRemove: {
+                                            Task { await viewModel.removeRelation(relation, kind: group.kind) }
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -500,35 +517,42 @@ private struct SubtasksCard: View {
 private struct DependencyRow: View {
     let relation: TaskRelation
     let projectTitle: String?
+    let onTap: () -> Void
     let onRemove: () -> Void
 
     var body: some View {
         HStack(spacing: VikunjaSpacing.sm) {
-            Circle()
-                .strokeBorder(relation.isDone ? Color.clear : VikunjaColor.textTertiary, lineWidth: 2)
-                .background(Circle().fill(relation.isDone ? VikunjaColor.Semantic.success : Color.clear))
-                .frame(width: 20, height: 20)
-                .overlay {
-                    if relation.isDone {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.white)
+            Button(action: onTap) {
+                HStack(spacing: VikunjaSpacing.sm) {
+                    Circle()
+                        .strokeBorder(relation.isDone ? Color.clear : VikunjaColor.textTertiary, lineWidth: 2)
+                        .background(Circle().fill(relation.isDone ? VikunjaColor.Semantic.success : Color.clear))
+                        .frame(width: 20, height: 20)
+                        .overlay {
+                            if relation.isDone {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                        }
+
+                    VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                        Text(relation.title)
+                            .font(.system(size: 14.5, weight: .medium))
+                            .foregroundStyle(Color.primary)
+                            .strikethrough(relation.isDone)
+                        if let projectTitle {
+                            Text(projectTitle)
+                                .font(VikunjaFont.caption)
+                                .foregroundStyle(VikunjaColor.textTertiary)
+                        }
                     }
-                }
 
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                Text(relation.title)
-                    .font(.system(size: 14.5, weight: .medium))
-                    .foregroundStyle(Color.primary)
-                    .strikethrough(relation.isDone)
-                if let projectTitle {
-                    Text(projectTitle)
-                        .font(VikunjaFont.caption)
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                    Spacer()
                 }
+                .contentShape(Rectangle())
             }
-
-            Spacer()
+            .buttonStyle(.plain)
 
             Button(action: onRemove) {
                 Image(systemName: "xmark")
@@ -543,6 +567,16 @@ private struct DependencyRow: View {
         .padding(.vertical, VikunjaSpacing.sm)
         .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
     }
+}
+
+/// Identifies which related task's detail screen to push, resolved
+/// asynchronously via `TaskDetailViewModel.loadRelatedTask(_:)` when a
+/// `DependencyRow` is tapped.
+private struct RelatedTaskDestination: Identifiable, Hashable {
+    let task: VikunjaTask
+    let project: Project
+
+    var id: Int { task.id }
 }
 
 /// The "+ Add" affordance next to the Relations section header.

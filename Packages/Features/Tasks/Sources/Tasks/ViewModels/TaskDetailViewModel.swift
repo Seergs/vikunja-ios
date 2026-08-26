@@ -195,6 +195,40 @@ public final class TaskDetailViewModel {
         allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
     }
 
+    /// Resolves `relation` to the full task and its project, for navigating
+    /// to that task's own detail screen when a relation row is tapped —
+    /// `TaskRelation` only carries an id/title/isDone/projectID summary, not
+    /// enough to push a `TaskDetailView`. Loads `allProjects` first if it
+    /// hasn't been already, mirroring the "add relation" picker's lazy load.
+    /// Returns `nil` if either fetch fails, or the project can't be resolved.
+    public func loadRelatedTask(_ relation: TaskRelation) async -> (VikunjaTask, Project)? {
+        guard let relatedTask = try? await repository.fetchTask(id: relation.id) else { return nil }
+        if relation.projectID == project.id {
+            return (relatedTask, project)
+        }
+        if allProjects.isEmpty {
+            await loadAllProjects()
+        }
+        guard let relatedProject = allProjects.first(where: { $0.id == relation.projectID }) else { return nil }
+        return (relatedTask, relatedProject)
+    }
+
+    /// Builds a `TaskDetailViewModel` for a related task, reusing this
+    /// view model's own dependencies — lets `TaskDetailView` push another
+    /// instance of itself for a tapped relation without the app target's
+    /// `AppContainer` needing to know about the recursion.
+    public func makeDetailViewModel(task: VikunjaTask, project: Project) -> TaskDetailViewModel {
+        TaskDetailViewModel(
+            task: task,
+            project: project,
+            repository: repository,
+            labelRepository: labelRepository,
+            relationRepository: relationRepository,
+            projectRepository: projectRepository,
+            toastPresenter: toastPresenter
+        )
+    }
+
     /// Resolves `id` to a project title — the current task's own project
     /// (always known, no network needed) or, once `loadAllProjects()` has
     /// run, any other project on the instance. Returns `nil` if `id` isn't
