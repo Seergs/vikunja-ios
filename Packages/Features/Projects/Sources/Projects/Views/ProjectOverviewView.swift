@@ -9,6 +9,7 @@ struct ProjectOverviewView: View {
     @Bindable var viewModel: ProjectOverviewViewModel
     let router: Router<ProjectsRoute>
     @State private var filter: ProjectTaskFilter = .all
+    @State private var taskPendingDelete: VikunjaTask?
 
     var body: some View {
         content
@@ -18,6 +19,21 @@ struct ProjectOverviewView: View {
             .refreshable { await viewModel.load() }
             .navigationTitle(viewModel.project.title)
             .task { await viewModel.load() }
+            .confirmationDialog(
+                "This permanently deletes the task.",
+                isPresented: Binding(
+                    get: { taskPendingDelete != nil },
+                    set: { isPresented in if !isPresented { taskPendingDelete = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                if let taskPendingDelete {
+                    Button("Delete Task", role: .destructive) {
+                        Task { await viewModel.delete(taskPendingDelete) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            }
     }
 
     @ViewBuilder
@@ -107,30 +123,63 @@ struct ProjectOverviewView: View {
             .listRowBackground(Color.clear)
         } else {
             ForEach(visible) { section in
-                VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
-                    HStack(spacing: VikunjaSpacing.xs) {
-                        Text(section.title)
-                            .fontWeight(.bold)
-                        Text("\(section.tasks.count)")
-                            .fontWeight(.regular)
-                    }
-                    .overviewSectionLabelStyle()
-                    .padding(.horizontal, VikunjaSpacing.md)
+                HStack(spacing: VikunjaSpacing.xs) {
+                    Text(section.title)
+                        .fontWeight(.bold)
+                    Text("\(section.tasks.count)")
+                        .fontWeight(.regular)
+                }
+                .overviewSectionLabelStyle()
+                .padding(.horizontal, VikunjaSpacing.md)
+                .padding(.top, VikunjaSpacing.md + VikunjaSpacing.xs)
+                .padding(.bottom, VikunjaSpacing.sm)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
 
-                    ProjectTaskCard(tasks: section.tasks, projectColor: swatchColor) { task in
+                // Each task is its own `List` row (rather than all of them
+                // sharing one row inside a `VStack`, as a single card) so a
+                // long-press's highlight and `.contextMenu` only ever target
+                // the one row under the finger — packed into a shared row,
+                // `List` highlights the whole row, i.e. every task in the
+                // section at once. The rounded "card" look is recreated by
+                // hand across these now-separate rows: only the first row
+                // rounds its top corners, only the last rounds its bottom
+                // corners, and a manual divider (not `List`'s own, hidden via
+                // `.listRowSeparator`) sits between adjacent ones.
+                ForEach(Array(section.tasks.enumerated()), id: \.element.id) { index, task in
+                    ProjectTaskRow(task: task, projectColor: swatchColor) {
                         Task { await viewModel.toggleDone(task) }
-                    } onOpen: { task in
+                    } onOpen: {
                         router.push(.taskDetail(task, viewModel.project))
+                    } onDelete: {
+                        taskPendingDelete = task
                     }
+                    .padding(.horizontal, VikunjaSpacing.md)
+                    .padding(.vertical, VikunjaSpacing.sm)
+                    .background(VikunjaColor.Surface.card)
+                    .overlay(alignment: .bottom) {
+                        if index < section.tasks.count - 1 {
+                            Divider().padding(.leading, VikunjaSpacing.md)
+                        }
+                    }
+                    .clipShape(
+                        UnevenRoundedRectangle(
+                            topLeadingRadius: index == 0 ? VikunjaRadius.lg : 0,
+                            bottomLeadingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
+                            bottomTrailingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
+                            topTrailingRadius: index == 0 ? VikunjaRadius.lg : 0,
+                            style: .continuous
+                        )
+                    )
                     // Only the card itself gets breathing room from the
                     // screen edges — the label above it stays flush with
                     // the title, matching everything else on this screen.
                     .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
-                .padding(.top, VikunjaSpacing.md + VikunjaSpacing.xs)
-                .listRowInsets(EdgeInsets())
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
             }
         }
     }
@@ -340,38 +389,6 @@ private struct ProjectTaskSection: Identifiable {
     }
 }
 
-/// One status grouping's tasks, separated by thin dividers, inside one
-/// shared rounded background — the status label itself lives above this
-/// card (flush with `.navigationTitle`), not inside it, so only the card
-/// gets inset from the screen edges. `.plain` list style (needed for the
-/// whole screen to align with `.navigationTitle`) doesn't group rows into
-/// cards automatically the way `.insetGrouped` does, hence drawing it here.
-private struct ProjectTaskCard: View {
-    let tasks: [VikunjaTask]
-    let projectColor: Color
-    let onToggle: (VikunjaTask) -> Void
-    let onOpen: (VikunjaTask) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
-                if index > 0 {
-                    Divider()
-                        .padding(.leading, VikunjaSpacing.md)
-                }
-                ProjectTaskRow(task: task, projectColor: projectColor) {
-                    onToggle(task)
-                } onOpen: {
-                    onOpen(task)
-                }
-                .padding(.horizontal, VikunjaSpacing.md)
-                .padding(.vertical, VikunjaSpacing.sm)
-            }
-        }
-        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.lg, style: .continuous))
-    }
-}
-
 private struct ProjectTaskRow: View {
     static let labelDisplayLimit = 2
 
@@ -379,6 +396,7 @@ private struct ProjectTaskRow: View {
     let projectColor: Color
     let onToggle: () -> Void
     let onOpen: () -> Void
+    let onDelete: () -> Void
 
     private var isOverdue: Bool {
         guard let dueDate = task.dueDate, !task.isDone else { return false }
@@ -454,6 +472,9 @@ private struct ProjectTaskRow: View {
         // catches taps on the rest of the row (title, due date, labels...).
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
+        .contextMenu {
+            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+        }
     }
 }
 
@@ -493,9 +514,9 @@ private extension View {
     /// independent of any `listRowInsets` override — which is exactly what
     /// kept every row on this screen sitting to the right of
     /// `.navigationTitle` no matter how that override was tuned. `.plain`
-    /// rows are flush by default, matching the title; `ProjectTaskCard`
-    /// recreates the rounded "card" look by hand instead of relying on the
-    /// list style to do it.
+    /// rows are flush by default, matching the title; `ProjectTaskRow`
+    /// recreates the rounded "card" look by hand (per-row corner rounding)
+    /// instead of relying on the list style to do it.
     func projectsListStyle() -> some View {
         listStyle(.plain)
     }
