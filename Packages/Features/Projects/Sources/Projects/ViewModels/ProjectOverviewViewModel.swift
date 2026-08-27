@@ -37,10 +37,10 @@ public final class ProjectOverviewViewModel {
         self.toastPresenter = toastPresenter
     }
 
-    public struct TaskSummary: Equatable, Sendable {
-        public let done: Int
-        public let total: Int
-    }
+    /// Kept as a nested name for call sites that already spell it
+    /// `ProjectOverviewViewModel.TaskSummary`; the type itself is shared with
+    /// the projects list (see `ProjectTaskSummary`).
+    public typealias TaskSummary = ProjectTaskSummary
 
     /// Skips the `.loading` transition when there's already loaded content
     /// (i.e. this is a pull-to-refresh): swapping the list out for a
