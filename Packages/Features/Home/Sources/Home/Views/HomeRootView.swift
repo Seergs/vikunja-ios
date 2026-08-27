@@ -1,24 +1,36 @@
 import SwiftUI
+import VikunjaCore
 import VikunjaNavigation
 
 /// Home's entry point for the app target: owns the tab's own `NavigationStack`
 /// and `Router<HomeRoute>`, so pushing a screen from inside Home never needs
 /// the app target or another feature to know about it.
 public struct HomeRootView: View {
-    private let accountName: String
-
     @State private var router = Router<HomeRoute>()
+    private let viewModel: TodayViewModel
+    private let taskDetailDestination: (VikunjaTask, Project) -> AnyView
 
-    public init(accountName: String) {
-        self.accountName = accountName
+    /// `taskDetailDestination` comes from the app target's `AppContainer`,
+    /// the only place allowed to know about the concrete `Tasks` view this
+    /// pushes — type-erased so this package never imports `Tasks` directly,
+    /// mirroring `ProjectsRootView`'s `taskDetailDestination`.
+    public init(
+        viewModel: TodayViewModel,
+        taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView
+    ) {
+        self.viewModel = viewModel
+        self.taskDetailDestination = taskDetailDestination
     }
 
     public var body: some View {
-        // `.navigationDestination(for: HomeRoute.self)` lands here once `HomeRoute`
-        // has its first real case — an exhaustive switch over an empty enum has no
-        // `View` to return, so there's nothing to wire up yet.
         NavigationStack(path: $router.path) {
-            HomeView(accountName: accountName)
+            TodayView(viewModel: viewModel, router: router)
+                .navigationDestination(for: HomeRoute.self) { route in
+                    switch route {
+                    case let .taskDetail(task, project):
+                        taskDetailDestination(task, project)
+                    }
+                }
         }
     }
 }

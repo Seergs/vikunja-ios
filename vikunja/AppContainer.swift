@@ -1,4 +1,5 @@
 import Foundation
+import Home
 import Onboarding
 import Projects
 import Tasks
@@ -31,6 +32,18 @@ final class AppContainer {
 
     func makeInstanceSetupViewModel() -> InstanceSetupViewModel {
         InstanceSetupViewModel(accountStore: accountStore, clientFactory: clientFactory)
+    }
+
+    func makeTodayViewModel(account: InstanceAccount) -> TodayViewModel {
+        let accountStore = self.accountStore
+        let tokenProvider: @Sendable () async -> String? = {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        return TodayViewModel(
+            taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            toastPresenter: toastCenter
+        )
     }
 
     func makeProjectsListViewModel(account: InstanceAccount) -> ProjectsListViewModel {
