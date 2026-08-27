@@ -2,6 +2,7 @@ import Foundation
 import Home
 import Onboarding
 import Projects
+import Settings
 import Tasks
 import VikunjaAuth
 import VikunjaCore
@@ -106,6 +107,23 @@ final class AppContainer {
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             toastPresenter: toastCenter
+        )
+    }
+
+    func makeConnectionsListViewModel(onActiveAccountChanged: @escaping () -> Void) -> ConnectionsListViewModel {
+        ConnectionsListViewModel(accountStore: accountStore, toastPresenter: toastCenter, onActiveAccountChanged: onActiveAccountChanged)
+    }
+
+    func makeConnectionFormViewModel(
+        mode: ConnectionFormMode,
+        onActiveAccountChanged: @escaping () -> Void
+    ) -> ConnectionFormViewModel {
+        ConnectionFormViewModel(
+            mode: mode,
+            accountStore: accountStore,
+            clientFactory: clientFactory,
+            toastPresenter: toastCenter,
+            onActiveAccountChanged: onActiveAccountChanged
         )
     }
 }

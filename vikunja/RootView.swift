@@ -17,11 +17,14 @@ struct RootView: View {
     var body: some View {
         Group {
             if let connectedAccount {
-                MainTabView(
-                    account: connectedAccount,
-                    container: container,
-                    onDisconnect: { self.connectedAccount = nil }
-                )
+                // Keyed by the whole `InstanceAccount` value (not just its
+                // id) so switching the active connection, or editing the
+                // active one's own name/URL, tears down and rebuilds the
+                // entire tab shell — every tab's view models were built
+                // against the old account's `baseURL` at construction time
+                // and don't observe changes to it.
+                MainTabView(account: connectedAccount, container: container, onAccountsChanged: { Task { await refreshActiveAccount() } })
+                    .id(connectedAccount)
             } else if hasCheckedForSavedAccount {
                 NavigationStack {
                     InstanceSetupView(
@@ -39,9 +42,18 @@ struct RootView: View {
             // The Keychain lookup is async, so without this the app would
             // always render onboarding first — even with a saved account —
             // until this resolves.
-            connectedAccount = try? await container.accountStore.activeAccount()
+            await refreshActiveAccount()
             hasCheckedForSavedAccount = true
         }
         .toastHost(container.toastCenter)
+    }
+
+    /// Re-reads the active account from the store and updates
+    /// `connectedAccount` accordingly — `nil` drops back to onboarding (e.g.
+    /// the last connection was just deleted). `Settings`' view models fire
+    /// their "active account changed" callback synchronously, so
+    /// `MainTabView.onAccountsChanged` wraps this in its own `Task`.
+    private func refreshActiveAccount() async {
+        connectedAccount = try? await container.accountStore.activeAccount()
     }
 }

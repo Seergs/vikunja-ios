@@ -19,9 +19,14 @@ import VikunjaDesignSystem
 struct MainTabView: View {
     let account: InstanceAccount
     let container: AppContainer
-    /// Called after the active connection is removed, so `RootView` can drop
-    /// back to onboarding.
-    let onDisconnect: () -> Void
+    /// Called after `Settings`' connection screens make a change that may
+    /// have altered which account is active (switching, deleting the active
+    /// one, or editing its own address) — `RootView` re-reads the active
+    /// account and, since it renders this view keyed by `.id(connectedAccount)`,
+    /// a changed value tears this whole tab shell down and rebuilds it against
+    /// the new one. Dropping the last connection surfaces here too: the
+    /// re-read comes back `nil` and `RootView` falls back to onboarding.
+    let onAccountsChanged: () -> Void
 
     @State private var selection: AppTab = .home
     @State private var isShowingQuickAdd = false
@@ -53,7 +58,15 @@ struct MainTabView: View {
             }
 
             Tab(AppTab.settings.title, systemImage: AppTab.settings.systemImage, value: .settings) {
-                SettingsRootView(onResetConnection: resetConnection)
+                SettingsRootView(
+                    account: account,
+                    makeConnectionsListViewModel: {
+                        container.makeConnectionsListViewModel(onActiveAccountChanged: onAccountsChanged)
+                    },
+                    makeConnectionFormViewModel: { mode in
+                        container.makeConnectionFormViewModel(mode: mode, onActiveAccountChanged: onAccountsChanged)
+                    }
+                )
             }
 
             Tab(value: AppTab.search, role: .search) {
@@ -71,17 +84,6 @@ struct MainTabView: View {
         }
         .sheet(isPresented: $isShowingQuickAdd) {
             QuickAddSheetView(viewModel: container.makeQuickAddTaskViewModel(account: account))
-        }
-    }
-
-    /// Temporary stand-in for real "edit connection" support: wipes the
-    /// saved account/token and drops back to onboarding so the user can
-    /// re-enter a fresh token. TODO: replace with in-place editing once
-    /// Settings has a proper account screen.
-    private func resetConnection() {
-        Task {
-            try? await container.accountStore.removeAccount(id: account.id)
-            onDisconnect()
         }
     }
 }
