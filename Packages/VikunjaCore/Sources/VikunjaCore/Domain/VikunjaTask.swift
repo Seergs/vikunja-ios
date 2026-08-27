@@ -58,6 +58,14 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
         dependsOn.contains { !$0.isDone }
     }
 
+    /// Whether this task has any relation shown in `TaskDetailView`'s
+    /// "Relations" section — `dependsOn`, `blocks`, or any `otherRelations`
+    /// kind. Deliberately excludes `subtasks`, which get their own checklist
+    /// section instead.
+    public var hasRelations: Bool {
+        !dependsOn.isEmpty || !blocks.isEmpty || !otherRelations.isEmpty
+    }
+
     public enum Priority: Int, Sendable, CaseIterable, Hashable {
         case unset = 0
         case low = 1
