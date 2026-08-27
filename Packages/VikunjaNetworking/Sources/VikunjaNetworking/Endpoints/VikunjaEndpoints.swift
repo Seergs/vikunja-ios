@@ -102,4 +102,28 @@ enum VikunjaEndpoints {
     static func deleteTaskRelation(taskID: Int, kind: RelationKind, otherTaskID: Int) -> Endpoint {
         Endpoint(path: "/api/v1/tasks/\(taskID)/relations/\(kind.rawValue)/\(otherTaskID)", method: .delete)
     }
+
+    static func comments(taskID: Int) -> Endpoint {
+        Endpoint(path: "/api/v1/tasks/\(taskID)/comments")
+    }
+
+    static func createComment(taskID: Int, text: String) throws -> Endpoint {
+        try .encoding(
+            path: "/api/v1/tasks/\(taskID)/comments",
+            method: .put,
+            body: CommentRequestDTO(comment: text)
+        )
+    }
+
+    static func updateComment(taskID: Int, commentID: Int, text: String) throws -> Endpoint {
+        try .encoding(
+            path: "/api/v1/tasks/\(taskID)/comments/\(commentID)",
+            method: .post,
+            body: CommentRequestDTO(comment: text)
+        )
+    }
+
+    static func deleteComment(taskID: Int, commentID: Int) -> Endpoint {
+        Endpoint(path: "/api/v1/tasks/\(taskID)/comments/\(commentID)", method: .delete)
+    }
 }

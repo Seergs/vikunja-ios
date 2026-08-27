@@ -47,4 +47,13 @@ public struct VikunjaInstanceClientFactory: InstanceClientFactoryProtocol {
             client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
         )
     }
+
+    public func makeTaskCommentRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> TaskCommentRepositoryProtocol {
+        VikunjaTaskCommentRepository(
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+        )
+    }
 }

@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "comment": "<p>Looks good to me.</p>",
+    "author": { "id": 7, "username": "alex", "name": "Alex" },
+    "created": "2026-08-20T09:00:00Z",
+    "updated": "2026-08-20T09:00:00Z"
+  },
+  {
+    "id": 2,
+    "comment": "<p>Actually, let's double check the due date.</p>",
+    "author": { "id": 3, "username": "sam" },
+    "created": "2026-08-21T14:30:00Z",
+    "updated": "2026-08-22T08:15:00Z"
+  }
+]
