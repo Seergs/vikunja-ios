@@ -9,7 +9,7 @@ struct TaskDetailViewModelTests {
     func startsWithTheTaskPassedInAtConstruction() {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
-        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), commentRepository: FakeTaskCommentRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
 
         #expect(viewModel.task == task)
         #expect(viewModel.loadState == .idle)
@@ -27,6 +27,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -47,6 +48,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -65,6 +67,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -87,7 +90,7 @@ struct TaskDetailViewModelTests {
             blocks: [TaskRelation(id: 4, title: "Publish", isDone: false, projectID: 1)],
             otherRelations: [.related: [TaskRelation(id: 5, title: "Related memo", isDone: false, projectID: 1)]]
         )
-        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), commentRepository: FakeTaskCommentRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
 
         await viewModel.toggleDone()
 
@@ -108,6 +111,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -126,6 +130,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -146,6 +151,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -164,6 +170,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -183,6 +190,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -202,6 +210,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -221,6 +230,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -241,6 +251,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -262,6 +273,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -280,6 +292,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -301,6 +314,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -320,6 +334,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -347,6 +362,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -367,6 +383,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -385,6 +402,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter
         )
@@ -405,6 +423,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter
         )
@@ -424,6 +443,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -445,6 +465,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -475,6 +496,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -495,6 +517,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -524,6 +547,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -543,6 +567,7 @@ struct TaskDetailViewModelTests {
             repository: repository,
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -562,6 +587,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: projectRepository,
             toastPresenter: FakeToastPresenter()
         )
@@ -579,6 +605,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
@@ -596,6 +623,7 @@ struct TaskDetailViewModelTests {
             repository: FakeTaskRepository(),
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
             projectRepository: projectRepository,
             toastPresenter: FakeToastPresenter()
         )
@@ -604,5 +632,109 @@ struct TaskDetailViewModelTests {
 
         #expect(viewModel.projectTitle(forProjectID: 2) == "Personal")
         #expect(viewModel.projectTitle(forProjectID: 999) == nil)
+    }
+
+    @Test
+    func loadCommentsPopulatesFromTheRepository() async {
+        let commentRepository = FakeTaskCommentRepository()
+        let author = User(id: 2, username: "sam", name: "Sam")
+        commentRepository.comments = [
+            TaskComment(id: 1, comment: "Looks good", author: author, created: Date(), updated: Date()),
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.loadComments()
+
+        #expect(viewModel.comments == commentRepository.comments)
+        #expect(viewModel.commentsLoadState == .loaded)
+    }
+
+    @Test
+    func loadCommentsSurfacesAFriendlyMessageOnFailure() async {
+        let commentRepository = FakeTaskCommentRepository()
+        commentRepository.fetchError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.loadComments()
+
+        #expect(viewModel.commentsLoadState == .failure("Couldn't reach that server. Check the address and your connection."))
+    }
+
+    @Test
+    func addCommentAppendsTheCreatedComment() async {
+        let commentRepository = FakeTaskCommentRepository()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.addComment("Sounds good")
+
+        #expect(viewModel.comments.map(\.comment) == ["Sounds good"])
+    }
+
+    @Test
+    func addCommentDoesNothingForBlankText() async {
+        let commentRepository = FakeTaskCommentRepository()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.addComment("   ")
+
+        #expect(viewModel.comments.isEmpty)
+    }
+
+    @Test
+    func addCommentShowsAnErrorToastOnFailure() async {
+        let commentRepository = FakeTaskCommentRepository()
+        commentRepository.addError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+
+        await viewModel.addComment("Sounds good")
+
+        #expect(viewModel.comments.isEmpty)
+        #expect(toastPresenter.shownMessages.map(\.style) == [.error])
     }
 }

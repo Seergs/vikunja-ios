@@ -23,12 +23,19 @@ public final class TaskDetailViewModel {
     /// `loadAllProjects()` rather than alongside `load()`, the same reasoning
     /// as `allLabels`/`loadAllLabels()`.
     public private(set) var allProjects: [Project] = []
+    /// This task's comments, oldest first (Vikunja's own order). Loaded via
+    /// `loadComments()` rather than alongside `load()` — the detail screen
+    /// kicks both off together, but keeping them separate means a comments
+    /// failure doesn't block the rest of the screen from showing.
+    public private(set) var comments: [TaskComment] = []
+    public private(set) var commentsLoadState: ScreenLoadState = .idle
 
     public var isLoading: Bool { loadState == .loading }
 
     private let repository: TaskRepositoryProtocol
     private let labelRepository: LabelRepositoryProtocol
     private let relationRepository: TaskRelationRepositoryProtocol
+    private let commentRepository: TaskCommentRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
 
@@ -38,6 +45,7 @@ public final class TaskDetailViewModel {
         repository: TaskRepositoryProtocol,
         labelRepository: LabelRepositoryProtocol,
         relationRepository: TaskRelationRepositoryProtocol,
+        commentRepository: TaskCommentRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting
     ) {
@@ -46,6 +54,7 @@ public final class TaskDetailViewModel {
         self.repository = repository
         self.labelRepository = labelRepository
         self.relationRepository = relationRepository
+        self.commentRepository = commentRepository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
     }
@@ -224,9 +233,43 @@ public final class TaskDetailViewModel {
             repository: repository,
             labelRepository: labelRepository,
             relationRepository: relationRepository,
+            commentRepository: commentRepository,
             projectRepository: projectRepository,
             toastPresenter: toastPresenter
         )
+    }
+
+    /// Loads this task's comments. Failures surface into `commentsLoadState`
+    /// (mirroring `load()`) rather than being swallowed like `allLabels`'s
+    /// lazy load — comments are always-visible content on this screen, not a
+    /// picker's suggestions, so a failure here is worth showing.
+    public func loadComments() async {
+        if commentsLoadState != .loaded {
+            commentsLoadState = .loading
+        }
+        do {
+            comments = try await commentRepository.fetchComments(taskID: task.id)
+            commentsLoadState = .loaded
+        } catch let error as VikunjaError {
+            commentsLoadState = .failure(error.displayMessage)
+        } catch {
+            commentsLoadState = .failure(error.localizedDescription)
+        }
+    }
+
+    /// Posts a new comment and appends the server's response (its real id,
+    /// author, and timestamps) to `comments`. No optimistic append — unlike
+    /// `toggleDone()`/`toggleLabel(_:)`, there's no local placeholder worth
+    /// showing before the server assigns those fields.
+    public func addComment(_ text: String) async {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        do {
+            let created = try await commentRepository.addComment(trimmed, toTask: task.id)
+            comments.append(created)
+        } catch {
+            toastPresenter.show("Couldn't post comment", style: .error)
+        }
     }
 
     /// Resolves `id` to a project title — the current task's own project

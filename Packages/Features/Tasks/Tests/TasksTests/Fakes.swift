@@ -1,3 +1,4 @@
+import Foundation
 import VikunjaCore
 @testable import Tasks
 
@@ -124,6 +125,44 @@ final class FakeTaskRelationRepository: TaskRelationRepositoryProtocol, @uncheck
     func removeRelation(kind: RelationKind, otherTaskID: Int, fromTask taskID: Int) async throws {
         if let removeError { throw removeError }
         removedRelations.append((kind, otherTaskID, taskID))
+    }
+}
+
+final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked Sendable {
+    var comments: [TaskComment] = []
+    var fetchError: VikunjaError?
+    var addError: VikunjaError?
+    private var nextID = 100
+
+    func fetchComments(taskID: Int) async throws -> [TaskComment] {
+        if let fetchError { throw fetchError }
+        return comments
+    }
+
+    func addComment(_ text: String, toTask taskID: Int) async throws -> TaskComment {
+        if let addError { throw addError }
+        let created = TaskComment(
+            id: nextID,
+            comment: text,
+            author: User(id: 1, username: "me"),
+            created: Date(),
+            updated: Date()
+        )
+        nextID += 1
+        comments.append(created)
+        return created
+    }
+
+    func updateComment(_ commentID: Int, text: String, onTask taskID: Int) async throws -> TaskComment {
+        guard let index = comments.firstIndex(where: { $0.id == commentID }) else {
+            throw VikunjaError.notFound
+        }
+        comments[index].comment = text
+        return comments[index]
+    }
+
+    func deleteComment(_ commentID: Int, fromTask taskID: Int) async throws {
+        comments.removeAll { $0.id == commentID }
     }
 }
 

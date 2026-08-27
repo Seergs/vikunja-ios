@@ -40,6 +40,7 @@ public struct TaskDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .task { await viewModel.load() }
+        .task { await viewModel.loadComments() }
         .sheet(isPresented: $isShowingDueDatePicker) {
             DueDatePickerSheet(initialDate: viewModel.task.dueDate) { newDate in
                 Task { await viewModel.setDueDate(newDate) }
@@ -193,6 +194,16 @@ public struct TaskDetailView: View {
                     }
                 }
             }
+        }
+
+        SectionBlock(title: "Comments", count: viewModel.comments.isEmpty ? nil : "\(viewModel.comments.count)") {
+            CommentsSection(
+                comments: viewModel.comments,
+                loadState: viewModel.commentsLoadState,
+                onSubmit: { text in
+                    Task { await viewModel.addComment(text) }
+                }
+            )
         }
     }
 
@@ -1067,6 +1078,155 @@ private struct CreateLabelCard: View {
         .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
         .padding(.horizontal, VikunjaSpacing.sm)
         .padding(.top, VikunjaSpacing.xs)
+    }
+}
+
+/// The task's comment thread: existing comments (oldest first, matching
+/// Vikunja's own order) plus the composer to post a new one. A failure
+/// loading comments only replaces the "no comments yet" placeholder — the
+/// composer stays available either way, matching the design mockup, which
+/// never blocks posting on the thread having loaded successfully.
+private struct CommentsSection: View {
+    let comments: [TaskComment]
+    let loadState: ScreenLoadState
+    let onSubmit: (String) -> Void
+    @State private var draft = ""
+
+    private var emptyStateMessage: String {
+        if case .failure(let message) = loadState { return message }
+        return "No comments yet."
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: VikunjaSpacing.md - VikunjaSpacing.xxs) {
+            if comments.isEmpty {
+                Text(emptyStateMessage)
+                    .font(VikunjaFont.subheadline)
+                    .foregroundStyle(VikunjaColor.textTertiary)
+            } else {
+                VStack(alignment: .leading, spacing: VikunjaSpacing.md - VikunjaSpacing.xxs) {
+                    ForEach(comments) { comment in
+                        CommentRow(comment: comment)
+                    }
+                }
+            }
+
+            CommentComposer(draft: $draft) {
+                let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !text.isEmpty else { return }
+                draft = ""
+                onSubmit(text)
+            }
+        }
+    }
+}
+
+private struct CommentRow: View {
+    let comment: TaskComment
+
+    private var displayName: String {
+        let name = comment.author.name?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return (name?.isEmpty == false) ? name! : comment.author.username
+    }
+
+    private var initials: String {
+        let letters = displayName.split(separator: " ").prefix(2).compactMap(\.first)
+        return String(letters).uppercased()
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: VikunjaSpacing.sm) {
+            Circle()
+                .fill(VikunjaColor.Surface.field)
+                .frame(width: 30, height: 30)
+                .overlay {
+                    Text(initials)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(VikunjaColor.textSecondary)
+                }
+
+            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                HStack(alignment: .firstTextBaseline, spacing: VikunjaSpacing.xs) {
+                    Text(displayName)
+                        .font(.system(size: 13.5, weight: .bold))
+                        .foregroundStyle(Color.primary)
+                    Text(CommentTimeFormatter.string(for: comment.created))
+                        .font(.system(size: 12))
+                        .foregroundStyle(VikunjaColor.textTertiary)
+                }
+                Text(CommentTextFormatter.plainText(from: comment.comment))
+                    .font(.system(size: 14.5))
+                    .foregroundStyle(VikunjaColor.textSecondary)
+            }
+            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+            .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+        }
+    }
+}
+
+private struct CommentComposer: View {
+    @Binding var draft: String
+    let onSubmit: () -> Void
+
+    private var canSubmit: Bool {
+        !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.xs) {
+            TextField("Write a comment...", text: $draft)
+                .font(.system(size: 15))
+                .foregroundStyle(Color.primary)
+                .submitLabel(.send)
+                .onSubmit(onSubmit)
+                .padding(.leading, VikunjaSpacing.sm)
+                .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+
+            Button(action: onSubmit) {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(canSubmit ? .white : VikunjaColor.textTertiary)
+                    .frame(width: 34, height: 34)
+                    .background(canSubmit ? VikunjaColor.brandPrimary : VikunjaColor.Surface.field, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!canSubmit)
+        }
+        .padding(.trailing, VikunjaSpacing.xxs)
+        .padding(.vertical, VikunjaSpacing.xxs)
+        .background(VikunjaColor.Surface.card, in: Capsule())
+    }
+}
+
+/// Vikunja stores a comment's body as the rich-text editor's HTML output;
+/// this feature has no rich-text renderer yet, so comments render as plain
+/// text — stripped of markup rather than shown as raw `<p>...</p>`.
+private enum CommentTextFormatter {
+    static func plainText(from html: String) -> String {
+        let stripped = html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        return stripped
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+@MainActor
+private enum CommentTimeFormatter {
+    private static let formatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter
+    }()
+
+    static func string(for date: Date) -> String {
+        formatter.localizedString(for: date, relativeTo: Date())
     }
 }
 
