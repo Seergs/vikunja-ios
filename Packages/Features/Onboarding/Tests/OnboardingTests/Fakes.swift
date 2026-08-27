@@ -22,6 +22,16 @@ final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
         activeID = account.id
     }
 
+    func updateAccount(_ account: InstanceAccount, token: String?) async throws {
+        guard let index = accounts.firstIndex(where: { $0.id == account.id }) else {
+            throw VikunjaError.notFound
+        }
+        accounts[index] = account
+        if let token {
+            tokens[account.id] = token
+        }
+    }
+
     func removeAccount(id: InstanceAccount.ID) async throws {
         accounts.removeAll { $0.id == id }
         tokens[id] = nil
@@ -68,6 +78,20 @@ final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked
         baseURL: URL,
         tokenProvider: @escaping @Sendable () async -> String?
     ) -> TaskRepositoryProtocol {
+        fatalError("not exercised by Onboarding tests")
+    }
+
+    func makeLabelRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> LabelRepositoryProtocol {
+        fatalError("not exercised by Onboarding tests")
+    }
+
+    func makeTaskRelationRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> TaskRelationRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }
 }
