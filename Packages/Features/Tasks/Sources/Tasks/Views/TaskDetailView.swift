@@ -41,6 +41,10 @@ public struct TaskDetailView: View {
         #endif
         .task { await viewModel.load() }
         .task { await viewModel.loadComments() }
+        .refreshable {
+            await viewModel.load()
+            await viewModel.loadComments()
+        }
         .sheet(isPresented: $isShowingDueDatePicker) {
             DueDatePickerSheet(initialDate: viewModel.task.dueDate) { newDate in
                 Task { await viewModel.setDueDate(newDate) }
