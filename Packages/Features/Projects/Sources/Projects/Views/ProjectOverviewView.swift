@@ -438,10 +438,28 @@ private struct ProjectTaskRow: View {
                     .strikethrough(task.isDone)
                     .foregroundStyle(task.isDone ? VikunjaColor.textTertiary : Color.primary)
 
-                if let dueDate = task.dueDate {
-                    Text(dueDate, style: .date)
-                        .font(.system(size: 12.5, weight: .regular))
-                        .foregroundStyle(isOverdue ? VikunjaColor.Semantic.dangerText : VikunjaColor.textSecondary)
+                HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+                    if let dueDate = task.dueDate {
+                        Text(dueDate, style: .date)
+                            .font(.system(size: 12.5, weight: .regular))
+                            .foregroundStyle(isOverdue ? VikunjaColor.Semantic.dangerText : VikunjaColor.textSecondary)
+                    }
+
+                    if task.hasRelations {
+                        if task.dueDate == nil {
+                            HStack(spacing: VikunjaSpacing.xxs) {
+                                Image(systemName: "link")
+                                    .font(.system(size: 11, weight: .regular))
+                                Text("Related tasks")
+                                    .font(.system(size: 12.5, weight: .regular))
+                            }
+                            .foregroundStyle(VikunjaColor.textTertiary)
+                        } else {
+                            Image(systemName: "link")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(VikunjaColor.textTertiary)
+                        }
+                    }
                 }
 
                 if !task.labels.isEmpty {
