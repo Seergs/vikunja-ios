@@ -35,10 +35,12 @@ final class AppContainer {
 
     func makeProjectsListViewModel(account: InstanceAccount) -> ProjectsListViewModel {
         let accountStore = self.accountStore
-        let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL) {
+        let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
-        return ProjectsListViewModel(repository: repository)
+        let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        let taskRepository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        return ProjectsListViewModel(repository: repository, taskRepository: taskRepository)
     }
 
     func makeCreateProjectViewModel(parentProjectID: Int? = nil, account: InstanceAccount) -> CreateProjectViewModel {
