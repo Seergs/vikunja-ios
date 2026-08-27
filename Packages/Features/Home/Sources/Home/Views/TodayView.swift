@@ -323,7 +323,7 @@ private struct TodayTaskRow: View {
                             .foregroundStyle(isOverdue ? VikunjaColor.Semantic.dangerText : VikunjaColor.textSecondary)
                     }
 
-                    if !task.dependsOn.isEmpty {
+                    if task.hasRelations {
                         Image(systemName: "link")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundStyle(VikunjaColor.textTertiary)
