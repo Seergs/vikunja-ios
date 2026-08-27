@@ -239,10 +239,18 @@ struct TodaySection: Identifiable {
         case .upcoming: filtered = dated.filter(isUpcoming)
         }
 
+        func sortedByDueDate(_ tasks: [VikunjaTask]) -> [VikunjaTask] {
+            tasks.sorted { lhs, rhs in
+                guard let lhsDate = lhs.dueDate, let rhsDate = rhs.dueDate else { return false }
+                if lhsDate != rhsDate { return lhsDate < rhsDate }
+                return lhs.id < rhs.id
+            }
+        }
+
         return [
-            ("Overdue", filtered.filter(isOverdue)),
-            ("Today", filtered.filter(isToday)),
-            ("Upcoming", filtered.filter(isUpcoming)),
+            ("Overdue", sortedByDueDate(filtered.filter(isOverdue))),
+            ("Today", sortedByDueDate(filtered.filter(isToday))),
+            ("Upcoming", sortedByDueDate(filtered.filter(isUpcoming))),
         ].compactMap { title, tasks in tasks.isEmpty ? nil : TodaySection(title: title, tasks: tasks) }
     }
 }

@@ -55,6 +55,43 @@ struct TodaySectionTests {
     }
 
     @Test
+    func sortsTasksWithinEachSectionByAscendingDueDate() {
+        let overdueTwoDaysAgo = VikunjaTask(
+            id: 1,
+            title: "Overdue, older",
+            dueDate: Self.calendar.date(byAdding: .day, value: -2, to: Self.now)!,
+            projectID: 1
+        )
+        let overdueYesterday = VikunjaTask(id: 2, title: "Overdue, newer", dueDate: Self.yesterday, projectID: 1)
+        let laterTonight = VikunjaTask(
+            id: 3,
+            title: "Today, later",
+            dueDate: Self.calendar.date(byAdding: .hour, value: 2, to: Self.now)!,
+            projectID: 1
+        )
+        let earlierToday = VikunjaTask(id: 4, title: "Today, earlier", dueDate: Self.laterToday, projectID: 1)
+
+        let sections = TodaySection.sections(
+            from: [overdueYesterday, overdueTwoDaysAgo, laterTonight, earlierToday],
+            filter: .all
+        )
+
+        #expect(sections[0].tasks.map(\.id) == [1, 2])
+        #expect(sections[1].tasks.map(\.id) == [4, 3])
+    }
+
+    @Test
+    func breaksDueDateTiesById() {
+        let sameDueDate = Self.laterToday
+        let higherID = VikunjaTask(id: 5, title: "Higher id", dueDate: sameDueDate, projectID: 1)
+        let lowerID = VikunjaTask(id: 2, title: "Lower id", dueDate: sameDueDate, projectID: 1)
+
+        let sections = TodaySection.sections(from: [higherID, lowerID], filter: .all)
+
+        #expect(sections[0].tasks.map(\.id) == [2, 5])
+    }
+
+    @Test
     func filteringNarrowsToOnlyTheSelectedBucket() {
         let overdueTask = VikunjaTask(id: 1, title: "Overdue", dueDate: Self.yesterday, projectID: 1)
         let todayTask = VikunjaTask(id: 2, title: "Today", dueDate: Self.laterToday, projectID: 1)
