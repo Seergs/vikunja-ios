@@ -48,6 +48,25 @@ public struct TaskDetailView: View {
         .contentShape(Rectangle())
         .onTapGesture { focusedField = nil }
         .scrollDismissesKeyboard(.interactively)
+        // The tap-outside/scroll dismissal above isn't reliable on a physical
+        // device once the keyboard is up (a background tap there commonly
+        // resigns the keyboard through UIKit without SwiftUI's gesture ever
+        // firing) — a checkmark in the nav bar, matching Notes/Reminders, is
+        // the dependable way to commit the description edit. The title field
+        // doesn't need it: it's single-line, so its own Return key already
+        // submits.
+        .toolbar {
+            if focusedField == .description {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        focusedField = nil
+                    } label: {
+                        Image(systemName: "checkmark")
+                            .fontWeight(.semibold)
+                    }
+                }
+            }
+        }
         .navigationTitle("Task Details")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -142,7 +161,10 @@ public struct TaskDetailView: View {
             .padding(.top, VikunjaSpacing.xxs)
 
             if isEditingTitle {
-                TextField("Task title", text: $titleDraft, axis: .vertical)
+                // Single-line (no `axis:`) so Return submits via `onSubmit`
+                // instead of inserting a line break — a task title shouldn't
+                // wrap across lines anyway.
+                TextField("Task title", text: $titleDraft)
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Color.primary)
                     .focused($focusedField, equals: .title)
@@ -165,12 +187,16 @@ public struct TaskDetailView: View {
         }
 
         if isEditingDescription {
+            // Multi-line (`axis: .vertical`) so it grows with the text and
+            // Return inserts a line break, matching a description's normal
+            // multi-paragraph use — unlike the title, there's no `onSubmit`
+            // here since a multi-line field never submits on Return. Committing
+            // happens via the nav bar checkmark below, or by tapping
+            // elsewhere (see `focusedField`'s `onChange` above).
             TextField("Add description...", text: $descriptionDraft, axis: .vertical)
                 .font(VikunjaFont.callout)
                 .foregroundStyle(VikunjaColor.textSecondary)
                 .focused($focusedField, equals: .description)
-                .submitLabel(.done)
-                .onSubmit { focusedField = nil }
                 .padding(.top, VikunjaSpacing.md)
         } else if let description = task.description, !description.isEmpty {
             Text(description)
