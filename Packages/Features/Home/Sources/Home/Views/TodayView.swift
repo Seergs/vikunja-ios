@@ -313,8 +313,8 @@ private struct TodayTaskRow: View {
 
                     if project != nil, task.dueDate != nil {
                         Text("·")
-                            .font(.system(size: 12.5, weight: .regular))
-                            .foregroundStyle(VikunjaColor.textTertiary)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(VikunjaColor.textSecondary)
                     }
 
                     if isOverdue {
