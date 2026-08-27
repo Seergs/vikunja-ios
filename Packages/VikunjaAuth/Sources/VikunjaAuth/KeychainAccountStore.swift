@@ -56,6 +56,19 @@ public actor KeychainAccountStore: AccountStoreProtocol {
         try writeActiveAccountID(account.id)
     }
 
+    public func updateAccount(_ account: InstanceAccount, token: String?) throws {
+        var accounts = try loadIndex()
+        guard let index = accounts.firstIndex(where: { $0.id == account.id }) else {
+            throw VikunjaError.notFound
+        }
+        accounts[index] = account
+        try saveIndex(accounts)
+
+        if let token {
+            try Keychain.save(Data(token.utf8), service: service, account: tokenItem(for: account.id))
+        }
+    }
+
     public func removeAccount(id: InstanceAccount.ID) throws {
         var accounts = try loadIndex()
         accounts.removeAll { $0.id == id }

@@ -73,6 +73,44 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
+    func updatingAnAccountChangesItsMetadataWithoutTouchingTheActivePointer() async throws {
+        let store = makeStore()
+        let first = makeAccount(displayName: "Home")
+        let second = makeAccount(displayName: "Work")
+        try await store.addAccount(first, token: "first-token")
+        try await store.addAccount(second, token: "second-token")
+        try await store.setActiveAccount(id: first.id)
+
+        var renamed = second
+        renamed.displayName = "Office"
+        try await store.updateAccount(renamed, token: nil)
+
+        #expect(try await store.fetchAccounts().contains(renamed))
+        #expect(try await store.activeAccount() == first)
+        #expect(try await store.token(forAccountID: second.id) == "second-token")
+    }
+
+    @Test
+    func updatingAnAccountWithATokenRotatesTheStoredCredential() async throws {
+        let store = makeStore()
+        let account = makeAccount()
+        try await store.addAccount(account, token: "old-token")
+
+        try await store.updateAccount(account, token: "new-token")
+
+        #expect(try await store.token(forAccountID: account.id) == "new-token")
+    }
+
+    @Test
+    func updatingAnUnknownAccountThrows() async throws {
+        let store = makeStore()
+
+        await #expect(throws: VikunjaError.notFound) {
+            try await store.updateAccount(makeAccount(), token: nil)
+        }
+    }
+
+    @Test
     func removingTheActiveAccountPromotesAnotherOne() async throws {
         let store = makeStore()
         let first = makeAccount(displayName: "Home")
