@@ -12,6 +12,16 @@ public struct TaskDetailView: View {
     @State private var isShowingLabelPicker = false
     @State private var relationSheetStep: RelationSheetStep?
     @State private var relatedTaskDestination: RelatedTaskDestination?
+    @State private var isEditingTitle = false
+    @State private var titleDraft = ""
+    @State private var isEditingDescription = false
+    @State private var descriptionDraft = ""
+    @FocusState private var focusedField: EditableField?
+
+    private enum EditableField: Hashable {
+        case title
+        case description
+    }
 
     public init(viewModel: TaskDetailViewModel) {
         self.viewModel = viewModel
@@ -35,6 +45,9 @@ public struct TaskDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(VikunjaColor.Surface.page)
+        .contentShape(Rectangle())
+        .onTapGesture { focusedField = nil }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Task Details")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -70,6 +83,37 @@ public struct TaskDetailView: View {
         .navigationDestination(item: $relatedTaskDestination) { destination in
             TaskDetailView(viewModel: viewModel.makeDetailViewModel(task: destination.task, project: destination.project))
         }
+        .onChange(of: focusedField) { previous, current in
+            if previous == .title, current != .title { commitTitleEdit() }
+            if previous == .description, current != .description { commitDescriptionEdit() }
+        }
+    }
+
+    private func beginEditingTitle() {
+        titleDraft = viewModel.task.title
+        isEditingTitle = true
+        focusedField = .title
+    }
+
+    private func commitTitleEdit() {
+        isEditingTitle = false
+        let trimmed = titleDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed != viewModel.task.title else { return }
+        Task { await viewModel.setTitle(trimmed) }
+    }
+
+    private func beginEditingDescription() {
+        descriptionDraft = viewModel.task.description ?? ""
+        isEditingDescription = true
+        focusedField = .description
+    }
+
+    private func commitDescriptionEdit() {
+        isEditingDescription = false
+        let trimmed = descriptionDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newDescription = trimmed.isEmpty ? nil : trimmed
+        guard newDescription != viewModel.task.description else { return }
+        Task { await viewModel.setDescription(newDescription) }
     }
 
     private func openRelation(_ relation: TaskRelation) {
@@ -97,10 +141,21 @@ public struct TaskDetailView: View {
             .buttonStyle(.plain)
             .padding(.top, VikunjaSpacing.xxs)
 
-            Text(task.title)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(Color.primary)
-                .strikethrough(task.isDone)
+            if isEditingTitle {
+                TextField("Task title", text: $titleDraft, axis: .vertical)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(Color.primary)
+                    .focused($focusedField, equals: .title)
+                    .submitLabel(.done)
+                    .onSubmit { focusedField = nil }
+            } else {
+                Text(task.title)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(Color.primary)
+                    .strikethrough(task.isDone)
+                    .contentShape(Rectangle())
+                    .onTapGesture { beginEditingTitle() }
+            }
         }
         .padding(.top, VikunjaSpacing.sm)
 
@@ -109,10 +164,27 @@ public struct TaskDetailView: View {
                 .padding(.top, VikunjaSpacing.md)
         }
 
-        if let description = task.description, !description.isEmpty {
+        if isEditingDescription {
+            TextField("Add description...", text: $descriptionDraft, axis: .vertical)
+                .font(VikunjaFont.callout)
+                .foregroundStyle(VikunjaColor.textSecondary)
+                .focused($focusedField, equals: .description)
+                .submitLabel(.done)
+                .onSubmit { focusedField = nil }
+                .padding(.top, VikunjaSpacing.md)
+        } else if let description = task.description, !description.isEmpty {
             Text(description)
                 .font(VikunjaFont.callout)
                 .foregroundStyle(VikunjaColor.textSecondary)
+                .contentShape(Rectangle())
+                .onTapGesture { beginEditingDescription() }
+                .padding(.top, VikunjaSpacing.md)
+        } else {
+            Text("Add description...")
+                .font(VikunjaFont.callout)
+                .foregroundStyle(VikunjaColor.textTertiary)
+                .contentShape(Rectangle())
+                .onTapGesture { beginEditingDescription() }
                 .padding(.top, VikunjaSpacing.md)
         }
 

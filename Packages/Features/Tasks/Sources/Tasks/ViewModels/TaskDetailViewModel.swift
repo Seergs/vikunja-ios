@@ -98,6 +98,22 @@ public final class TaskDetailViewModel {
         await persist(previous: previous)
     }
 
+    /// Sets the title and persists it, rolling back on failure the same way
+    /// `toggleDone()` does.
+    public func setTitle(_ title: String) async {
+        let previous = task
+        task.title = title
+        await persist(previous: previous)
+    }
+
+    /// Sets (or clears, via `nil`) the description and persists it, rolling
+    /// back on failure the same way `toggleDone()` does.
+    public func setDescription(_ description: String?) async {
+        let previous = task
+        task.description = description
+        await persist(previous: previous)
+    }
+
     /// Loads every label on the instance, for the label picker sheet. Failures
     /// leave `allLabels` at whatever it already was (empty on first failure),
     /// rather than surfacing an error — the sheet just shows fewer/no

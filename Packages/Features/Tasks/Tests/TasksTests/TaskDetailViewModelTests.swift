@@ -201,6 +201,84 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func setTitlePersistsTheNewTitle() async {
+        let repository = FakeTaskRepository()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.setTitle("Write annual report")
+
+        #expect(viewModel.task.title == "Write annual report")
+    }
+
+    @Test
+    func setTitleRevertsWhenTheServerRejectsTheUpdate() async {
+        let repository = FakeTaskRepository()
+        repository.updateError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.setTitle("Write annual report")
+
+        #expect(viewModel.task.title == "Write report")
+    }
+
+    @Test
+    func setDescriptionPersistsTheNewDescription() async {
+        let repository = FakeTaskRepository()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.setDescription("Quarterly numbers and highlights.")
+
+        #expect(viewModel.task.description == "Quarterly numbers and highlights.")
+    }
+
+    @Test
+    func setDescriptionRevertsWhenTheServerRejectsTheUpdate() async {
+        let repository = FakeTaskRepository()
+        repository.updateError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", description: "Original", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.setDescription("Changed")
+
+        #expect(viewModel.task.description == "Original")
+    }
+
+    @Test
     func loadAllLabelsPopulatesFromTheRepository() async {
         let labelRepository = FakeLabelRepository()
         labelRepository.labels = [Label(id: 1, title: "Design", hexColor: "8B5CF6")]
