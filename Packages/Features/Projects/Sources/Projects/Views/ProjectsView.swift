@@ -79,6 +79,7 @@ struct ProjectsView: View {
                     ForEach(Self.flatten(viewModel.rootNodes, expandedProjectIDs: expandedProjectIDs)) { row in
                         ProjectRow(
                             project: row.node.project,
+                            taskSummary: viewModel.taskSummaries[row.node.id],
                             level: row.level,
                             hasChildren: !row.node.children.isEmpty,
                             isExpanded: expandedProjectIDs.contains(row.node.id),
@@ -137,13 +138,15 @@ private struct ProjectDisplayRow: Identifiable {
 }
 
 /// A single row: a color swatch (from the project's `hexColor`, falling back
-/// to the brand color when unset), title, and — only when the project has
-/// children — a disclosure chevron. Tapping the row itself opens that
+/// to the brand color when unset), title, a task-completion progress bar +
+/// `done/total` count when the project has tasks, and — only when the project
+/// has children — a disclosure chevron. Tapping the row itself opens that
 /// project's overview; the chevron is its own tap target that only
 /// expands/collapses the children, so opening a parent project doesn't
 /// require first collapsing it.
 private struct ProjectRow: View {
     let project: Project
+    let taskSummary: ProjectTaskSummary?
     let level: Int
     let hasChildren: Bool
     let isExpanded: Bool
@@ -165,10 +168,16 @@ private struct ProjectRow: View {
                         .frame(width: 12, height: 12)
                 }
 
-            Text(project.title)
-                .font(VikunjaFont.body)
-                .fontWeight(.semibold)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+                Text(project.title)
+                    .font(VikunjaFont.body)
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+
+                if let taskSummary, taskSummary.total > 0 {
+                    ProjectProgressCount(summary: taskSummary, color: swatchColor)
+                }
+            }
 
             Spacer(minLength: VikunjaSpacing.sm)
 
@@ -191,6 +200,34 @@ private struct ProjectRow: View {
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(project.title)
+    }
+}
+
+/// The design's per-project progress affordance: a slim completion bar
+/// capped at 120pt wide, followed by a `done/total` count.
+private struct ProjectProgressCount: View {
+    let summary: ProjectTaskSummary
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.sm) {
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(VikunjaColor.Surface.field)
+                    Capsule()
+                        .fill(color)
+                        .frame(width: proxy.size.width * summary.fraction)
+                }
+            }
+            .frame(width: 120, height: 4)
+
+            Text("\(summary.done)/\(summary.total)")
+                .font(VikunjaFont.caption)
+                .foregroundStyle(VikunjaColor.textTertiary)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(summary.done) of \(summary.total) tasks completed")
     }
 }
 
