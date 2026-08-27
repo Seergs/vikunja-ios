@@ -29,7 +29,12 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             Tab(AppTab.home.title, systemImage: AppTab.home.systemImage, value: .home) {
-                HomeRootView(accountName: account.displayName)
+                HomeRootView(
+                    viewModel: container.makeTodayViewModel(account: account),
+                    taskDetailDestination: { task, project in
+                        AnyView(TaskDetailView(viewModel: container.makeTaskDetailViewModel(task: task, project: project, account: account)))
+                    }
+                )
             }
 
             Tab(AppTab.projects.title, systemImage: AppTab.projects.systemImage, value: .projects) {
