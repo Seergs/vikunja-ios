@@ -107,6 +107,13 @@ final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked
     ) -> TaskRelationRepositoryProtocol {
         fatalError("not exercised by Settings tests")
     }
+
+    func makeTaskCommentRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> TaskCommentRepositoryProtocol {
+        fatalError("not exercised by Settings tests")
+    }
 }
 
 final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {

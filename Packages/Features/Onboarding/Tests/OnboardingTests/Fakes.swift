@@ -94,4 +94,11 @@ final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked
     ) -> TaskRelationRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }
+
+    func makeTaskCommentRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> TaskCommentRepositoryProtocol {
+        fatalError("not exercised by Onboarding tests")
+    }
 }
