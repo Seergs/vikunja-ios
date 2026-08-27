@@ -181,24 +181,15 @@ public struct TaskDetailView: View {
             } else {
                 VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
                     ForEach(groups, id: \.kind) { group in
-                        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
-                            Text(group.kind.displayName)
-                                .font(VikunjaFont.caption)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(VikunjaColor.textTertiary)
-                            VStack(spacing: VikunjaSpacing.sm) {
-                                ForEach(group.relations) { relation in
-                                    DependencyRow(
-                                        relation: relation,
-                                        projectTitle: projectTitle(for: relation),
-                                        onTap: { openRelation(relation) },
-                                        onRemove: {
-                                            Task { await viewModel.removeRelation(relation, kind: group.kind) }
-                                        }
-                                    )
-                                }
+                        RelationGroupView(
+                            kind: group.kind,
+                            relations: group.relations,
+                            projectTitle: projectTitle(for:),
+                            onTap: openRelation,
+                            onRemove: { relation in
+                                Task { await viewModel.removeRelation(relation, kind: group.kind) }
                             }
-                        }
+                        )
                     }
                 }
             }
@@ -511,6 +502,67 @@ private struct SubtasksCard: View {
             }
         }
         .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+    }
+}
+
+/// One relation kind and its rows. When a kind carries more than
+/// `collapseThreshold` relations the list starts collapsed to the first few,
+/// with a "Show N more"/"Show less" toggle — long relation lists (a task that
+/// blocks a dozen others) otherwise push the rest of the screen far down.
+private struct RelationGroupView: View {
+    let kind: RelationKind
+    let relations: [TaskRelation]
+    let projectTitle: (TaskRelation) -> String?
+    let onTap: (TaskRelation) -> Void
+    let onRemove: (TaskRelation) -> Void
+
+    @State private var isExpanded = false
+
+    private static let collapseThreshold = 3
+
+    private var isCollapsible: Bool {
+        relations.count > Self.collapseThreshold
+    }
+
+    private var visibleRelations: ArraySlice<TaskRelation> {
+        isCollapsible && !isExpanded ? relations.prefix(Self.collapseThreshold) : relations[...]
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+            Text(kind.displayName)
+                .font(VikunjaFont.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(VikunjaColor.textTertiary)
+            VStack(spacing: VikunjaSpacing.sm) {
+                ForEach(visibleRelations) { relation in
+                    DependencyRow(
+                        relation: relation,
+                        projectTitle: projectTitle(relation),
+                        onTap: { onTap(relation) },
+                        onRemove: { onRemove(relation) }
+                    )
+                }
+            }
+            if isCollapsible {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+                } label: {
+                    HStack(spacing: VikunjaSpacing.xxs) {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(isExpanded
+                             ? "Show less"
+                             : "Show \(relations.count - Self.collapseThreshold) more")
+                    }
+                    .font(VikunjaFont.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(VikunjaColor.brandPrimary)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, VikunjaSpacing.xxs)
+            }
+        }
     }
 }
 
