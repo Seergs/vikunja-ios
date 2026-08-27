@@ -1,4 +1,5 @@
 import SwiftUI
+import VikunjaCore
 import VikunjaNavigation
 
 /// Settings' entry point for the app target: owns the tab's own
@@ -7,17 +8,37 @@ import VikunjaNavigation
 /// about it.
 public struct SettingsRootView: View {
     @State private var router = Router<SettingsRoute>()
-    private let onResetConnection: () -> Void
+    private let account: InstanceAccount
+    private let makeConnectionsListViewModel: () -> ConnectionsListViewModel
+    private let makeConnectionFormViewModel: (ConnectionFormMode) -> ConnectionFormViewModel
 
-    public init(onResetConnection: @escaping () -> Void) {
-        self.onResetConnection = onResetConnection
+    /// `account` is the currently active connection — shown on the landing
+    /// screen's "Connections" row. `makeConnectionsListViewModel`/
+    /// `makeConnectionFormViewModel` come from the app target's
+    /// `AppContainer`, the only place allowed to know about the concrete
+    /// `AccountStoreProtocol`/`InstanceClientFactoryProtocol` these view
+    /// models need.
+    public init(
+        account: InstanceAccount,
+        makeConnectionsListViewModel: @escaping () -> ConnectionsListViewModel,
+        makeConnectionFormViewModel: @escaping (ConnectionFormMode) -> ConnectionFormViewModel
+    ) {
+        self.account = account
+        self.makeConnectionsListViewModel = makeConnectionsListViewModel
+        self.makeConnectionFormViewModel = makeConnectionFormViewModel
     }
 
     public var body: some View {
-        // `.navigationDestination(for: SettingsRoute.self)` lands here once
-        // `SettingsRoute` has its first real case.
         NavigationStack(path: $router.path) {
-            SettingsView(onResetConnection: onResetConnection)
+            SettingsView(activeAccountName: account.displayName, router: router)
+                .navigationDestination(for: SettingsRoute.self) { route in
+                    switch route {
+                    case .connections:
+                        ConnectionsListView(makeViewModel: makeConnectionsListViewModel, router: router)
+                    case let .connectionForm(mode):
+                        ConnectionFormView(makeViewModel: { makeConnectionFormViewModel(mode) }, router: router)
+                    }
+                }
         }
     }
 }
