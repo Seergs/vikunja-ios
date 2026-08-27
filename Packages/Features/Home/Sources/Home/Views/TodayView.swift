@@ -317,10 +317,14 @@ private struct TodayTaskRow: View {
                             .foregroundStyle(VikunjaColor.textTertiary)
                     }
 
-                    if let dueDate = task.dueDate {
+                    if isOverdue {
+                        Text("Overdue")
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                    } else if let dueDate = task.dueDate {
                         Text(dueDate, style: .date)
                             .font(.system(size: 12.5, weight: .regular))
-                            .foregroundStyle(isOverdue ? VikunjaColor.Semantic.dangerText : VikunjaColor.textSecondary)
+                            .foregroundStyle(VikunjaColor.textSecondary)
                     }
 
                     if task.hasRelations {
