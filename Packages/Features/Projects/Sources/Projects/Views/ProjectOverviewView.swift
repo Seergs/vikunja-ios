@@ -377,14 +377,30 @@ private struct ProjectTaskSection: Identifiable {
         case .completed: filtered = tasks.filter(\.isDone)
         }
 
+        func sortedByDueDate(_ tasks: [VikunjaTask]) -> [VikunjaTask] {
+            tasks.sorted { lhs, rhs in
+                switch (lhs.dueDate, rhs.dueDate) {
+                case let (lhsDate?, rhsDate?):
+                    if lhsDate != rhsDate { return lhsDate < rhsDate }
+                    return lhs.id < rhs.id
+                case (nil, nil):
+                    return lhs.id < rhs.id
+                case (nil, _):
+                    return false
+                case (_, nil):
+                    return true
+                }
+            }
+        }
+
         let overdue = filtered.filter(isOverdue)
         let pending = filtered.filter { !$0.isDone && !isOverdue($0) }
         let completed = filtered.filter(\.isDone)
 
         return [
-            overdue.isEmpty ? nil : ProjectTaskSection(title: "Overdue", tasks: overdue),
-            pending.isEmpty ? nil : ProjectTaskSection(title: "Pending", tasks: pending),
-            completed.isEmpty ? nil : ProjectTaskSection(title: "Completed", tasks: completed),
+            overdue.isEmpty ? nil : ProjectTaskSection(title: "Overdue", tasks: sortedByDueDate(overdue)),
+            pending.isEmpty ? nil : ProjectTaskSection(title: "Pending", tasks: sortedByDueDate(pending)),
+            completed.isEmpty ? nil : ProjectTaskSection(title: "Completed", tasks: sortedByDueDate(completed)),
         ].compactMap { $0 }
     }
 }
