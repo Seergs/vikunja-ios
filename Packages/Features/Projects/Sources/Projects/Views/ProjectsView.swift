@@ -12,6 +12,7 @@ struct ProjectsView: View {
     let makeCreateProjectViewModel: () -> CreateProjectViewModel
     @State private var expandedProjectIDs: Set<Int> = []
     @State private var isShowingCreateProject = false
+    @State private var projectPendingDelete: ProjectNode?
 
     var body: some View {
         // `List` stays the root container across every load state — not just
@@ -38,6 +39,21 @@ struct ProjectsView: View {
                 Task { await viewModel.load() }
             }) {
                 CreateProjectSheetView(viewModel: makeCreateProjectViewModel())
+            }
+            .confirmationDialog(
+                deleteConfirmationMessage,
+                isPresented: Binding(
+                    get: { projectPendingDelete != nil },
+                    set: { isPresented in if !isPresented { projectPendingDelete = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                if let projectPendingDelete {
+                    Button("Delete Project", role: .destructive) {
+                        Task { await viewModel.deleteProject(projectPendingDelete) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
             }
             .task {
                 await viewModel.load()
@@ -84,7 +100,8 @@ struct ProjectsView: View {
                             hasChildren: !row.node.children.isEmpty,
                             isExpanded: expandedProjectIDs.contains(row.node.id),
                             onSelect: { router.push(.projectOverview(row.node)) },
-                            onToggleExpand: { toggleExpanded(row.node.id) }
+                            onToggleExpand: { toggleExpanded(row.node.id) },
+                            onDelete: { projectPendingDelete = row.node }
                         )
                     }
                 } header: {
@@ -95,6 +112,13 @@ struct ProjectsView: View {
                 }
             }
         }
+    }
+
+    private var deleteConfirmationMessage: String {
+        let hasChildren = projectPendingDelete?.children.isEmpty == false
+        return hasChildren
+            ? "This permanently deletes the project, its subprojects, and all their tasks."
+            : "This permanently deletes the project and all its tasks."
     }
 
     private func toggleExpanded(_ id: Int) {
@@ -152,6 +176,7 @@ private struct ProjectRow: View {
     let isExpanded: Bool
     let onSelect: () -> Void
     let onToggleExpand: () -> Void
+    let onDelete: () -> Void
 
     private var swatchColor: Color {
         Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
@@ -197,6 +222,13 @@ private struct ProjectRow: View {
         .padding(.leading, CGFloat(level) * VikunjaSpacing.lg)
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
+        .contextMenu {
+            // `role: .destructive` alone renders blue here, not red: the tab
+            // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
+            // menu and overrides the role's tint. Pin it back to danger.
+            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+                .tint(VikunjaColor.Semantic.danger)
+        }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(project.title)
