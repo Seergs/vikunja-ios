@@ -237,7 +237,7 @@ private struct ProjectField: View {
                     .foregroundStyle(VikunjaColor.textTertiary)
             }
             .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
             .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
         }
         .buttonStyle(.plain)
