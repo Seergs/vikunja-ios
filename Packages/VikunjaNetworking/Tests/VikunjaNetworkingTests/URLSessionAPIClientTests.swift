@@ -208,4 +208,17 @@ struct URLSessionAPIClientTests {
         #expect(request.httpMethod == "DELETE")
         #expect(request.url?.path == "/api/v1/tasks/1/relations/blocked/3")
     }
+
+    @Test
+    func deleteProjectDELETEsTheProjectByID() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaProjectRepository(client: client)
+
+        try await repository.delete(id: 7)
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/api/v1/projects/7")
+    }
 }
