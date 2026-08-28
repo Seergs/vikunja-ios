@@ -20,13 +20,16 @@ public final class ProjectsListViewModel {
 
     private let repository: ProjectRepositoryProtocol
     private let taskRepository: TaskRepositoryProtocol
+    private let toastPresenter: ToastPresenting
 
     public init(
         repository: ProjectRepositoryProtocol,
-        taskRepository: TaskRepositoryProtocol
+        taskRepository: TaskRepositoryProtocol,
+        toastPresenter: ToastPresenting
     ) {
         self.repository = repository
         self.taskRepository = taskRepository
+        self.toastPresenter = toastPresenter
     }
 
     /// Skips the `.loading` transition when there's already loaded content
@@ -46,6 +49,35 @@ public final class ProjectsListViewModel {
             loadState = .failure(error.displayMessage)
         } catch {
             loadState = .failure(error.localizedDescription)
+        }
+    }
+
+    /// Deletes a project server-side, then drops it — and its whole subtree —
+    /// from the local list. Vikunja cascades the delete to child projects and
+    /// their tasks, so the entire node is removed here rather than reparenting
+    /// its children. On failure the tree is left untouched and the error is
+    /// surfaced as a toast.
+    public func deleteProject(_ node: ProjectNode) async {
+        do {
+            try await repository.delete(id: node.id)
+            rootNodes = Self.removing(node.id, from: rootNodes)
+            for id in Self.flattenedIDs(of: [node]) {
+                taskSummaries[id] = nil
+            }
+            toastPresenter.show("Project deleted", style: .success)
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
+        }
+    }
+
+    /// Removes the node with `id` wherever it sits in the tree, pruning its
+    /// descendants along with it.
+    private static func removing(_ id: Int, from nodes: [ProjectNode]) -> [ProjectNode] {
+        nodes.compactMap { node in
+            guard node.id != id else { return nil }
+            return ProjectNode(project: node.project, children: removing(id, from: node.children))
         }
     }
 

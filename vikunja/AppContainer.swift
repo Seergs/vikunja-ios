@@ -54,7 +54,7 @@ final class AppContainer {
         }
         let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let taskRepository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
-        return ProjectsListViewModel(repository: repository, taskRepository: taskRepository)
+        return ProjectsListViewModel(repository: repository, taskRepository: taskRepository, toastPresenter: toastCenter)
     }
 
     func makeCreateProjectViewModel(parentProjectID: Int? = nil, account: InstanceAccount) -> CreateProjectViewModel {

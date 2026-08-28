@@ -5,7 +5,9 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     var projects: [Project] = []
     var fetchError: VikunjaError?
     var createError: VikunjaError?
+    var deleteError: VikunjaError?
     private(set) var createdProjects: [Project] = []
+    private(set) var deletedIDs: [Int] = []
 
     func fetchProjects() async throws -> [Project] {
         if let fetchError { throw fetchError }
@@ -28,6 +30,8 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     func update(_ project: Project) async throws -> Project { project }
 
     func delete(id: Int) async throws {
+        if let deleteError { throw deleteError }
+        deletedIDs.append(id)
         projects.removeAll { $0.id == id }
     }
 }
