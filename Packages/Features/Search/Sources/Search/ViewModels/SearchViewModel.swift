@@ -5,6 +5,10 @@ import VikunjaCore
 @Observable
 @MainActor
 public final class SearchViewModel {
+    /// How long to wait after the last keystroke before hitting the network, so
+    /// typing doesn't fire (and re-render) a request per character.
+    static let debounceInterval: Duration = .milliseconds(300)
+
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
@@ -14,7 +18,7 @@ public final class SearchViewModel {
     var projectsByID: [Int: Project] = [:]
 
     private var lastSearchQuery = ""
-    private var isSearching = false
+    private var searchTask: Task<Void, Never>?
 
     public init(
         taskRepository: TaskRepositoryProtocol,
@@ -26,33 +30,48 @@ public final class SearchViewModel {
         self.toastPresenter = toastPresenter
     }
 
-    public func search() async {
+    /// Called on every change to `query`. Debounces, then searches.
+    public func queryChanged() {
+        searchTask?.cancel()
+
         let trimmedQuery = query.trimmingCharacters(in: .whitespaces)
 
         if trimmedQuery.isEmpty {
+            lastSearchQuery = ""
             state = .idle
             return
         }
 
-        if trimmedQuery == lastSearchQuery && isSearching {
-            return
+        searchTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.debounceInterval)
+            guard !Task.isCancelled else { return }
+            await self?.performSearch(trimmedQuery)
         }
+    }
 
+    private func performSearch(_ trimmedQuery: String) async {
+        guard trimmedQuery != lastSearchQuery || !state.isLoaded else { return }
         lastSearchQuery = trimmedQuery
-        isSearching = true
-        state = .loading
+
+        // Keep the current results on screen while re-searching; only fall back
+        // to the full-screen spinner when there's nothing to show yet. This is
+        // what stops the list from flickering away on every keystroke.
+        if !state.isLoaded {
+            state = .loading
+        }
 
         do {
             let tasks = try await taskRepository.searchTasks(query: trimmedQuery)
+            guard !Task.isCancelled else { return }
 
-            let projectIDs = Set(tasks.compactMap { $0.projectID })
+            let projectIDs = Set(tasks.map { $0.projectID })
             await loadProjects(ids: Array(projectIDs))
+            guard !Task.isCancelled else { return }
 
             state = .loaded(tasks)
-            isSearching = false
         } catch {
+            guard !Task.isCancelled else { return }
             state = .failure((error as? VikunjaError)?.displayMessage ?? "Search failed")
-            isSearching = false
         }
     }
 

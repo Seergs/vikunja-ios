@@ -13,6 +13,13 @@ enum ScreenLoadState<T: Sendable>: Sendable {
         return false
     }
 
+    var isLoaded: Bool {
+        if case .loaded = self {
+            return true
+        }
+        return false
+    }
+
     var value: T? {
         if case .loaded(let value) = self {
             return value

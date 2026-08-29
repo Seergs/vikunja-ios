@@ -25,9 +25,7 @@ public struct SearchRootView: View {
                     prompt: "Search tasks"
                 )
                 .onChange(of: viewModel.query) { _, _ in
-                    Task {
-                        await viewModel.search()
-                    }
+                    viewModel.queryChanged()
                 }
         }
     }
