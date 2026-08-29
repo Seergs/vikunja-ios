@@ -234,50 +234,26 @@ struct TodaySection: Identifiable {
     var id: String { title }
 
     static func sections(from tasks: [VikunjaTask], filter: TodayFilter) -> [TodaySection] {
-        let calendar = Calendar.current
-        let startOfToday = calendar.startOfDay(for: Date())
-        guard let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: startOfToday) else {
-            return []
-        }
+        // Bucketing/sorting lives in `VikunjaCore.TodayDigest` so the Today
+        // widget shares the exact same rule; this just maps the buckets the
+        // current filter keeps onto titled sections.
+        let digest = TodayDigest(tasks: tasks)
 
-        // Tasks with no due date never appear on this screen — only inside
-        // their own project.
-        let dated = tasks.filter { $0.dueDate != nil }
-
-        func isOverdue(_ task: VikunjaTask) -> Bool {
-            guard let dueDate = task.dueDate, !task.isDone else { return false }
-            return dueDate < startOfToday
-        }
-        func isToday(_ task: VikunjaTask) -> Bool {
-            guard let dueDate = task.dueDate else { return false }
-            return dueDate >= startOfToday && dueDate < startOfTomorrow
-        }
-        func isUpcoming(_ task: VikunjaTask) -> Bool {
-            guard let dueDate = task.dueDate else { return false }
-            return dueDate >= startOfTomorrow
-        }
-
-        let filtered: [VikunjaTask]
+        let buckets: [(String, [VikunjaTask])]
         switch filter {
-        case .all: filtered = dated
-        case .overdue: filtered = dated.filter(isOverdue)
-        case .today: filtered = dated.filter(isToday)
-        case .upcoming: filtered = dated.filter(isUpcoming)
+        case .all:
+            buckets = [("Overdue", digest.overdue), ("Today", digest.today), ("Upcoming", digest.upcoming)]
+        case .overdue:
+            buckets = [("Overdue", digest.overdue)]
+        case .today:
+            buckets = [("Today", digest.today)]
+        case .upcoming:
+            buckets = [("Upcoming", digest.upcoming)]
         }
 
-        func sortedByDueDate(_ tasks: [VikunjaTask]) -> [VikunjaTask] {
-            tasks.sorted { lhs, rhs in
-                guard let lhsDate = lhs.dueDate, let rhsDate = rhs.dueDate else { return false }
-                if lhsDate != rhsDate { return lhsDate < rhsDate }
-                return lhs.id < rhs.id
-            }
+        return buckets.compactMap { title, tasks in
+            tasks.isEmpty ? nil : TodaySection(title: title, tasks: tasks)
         }
-
-        return [
-            ("Overdue", sortedByDueDate(filtered.filter(isOverdue))),
-            ("Today", sortedByDueDate(filtered.filter(isToday))),
-            ("Upcoming", sortedByDueDate(filtered.filter(isUpcoming))),
-        ].compactMap { title, tasks in tasks.isEmpty ? nil : TodaySection(title: title, tasks: tasks) }
     }
 }
 
