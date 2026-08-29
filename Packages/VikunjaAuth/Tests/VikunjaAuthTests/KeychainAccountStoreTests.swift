@@ -17,6 +17,25 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
+    func fallsBackToThePrivateKeychainWhenTheAccessGroupIsUnusable() async throws {
+        // A bogus access group the test process has no entitlement for: the
+        // store must not fail every call, it must transparently fall back to
+        // the app's private keychain.
+        let service = "dev.sergiosuarez.vikunja.tests.\(UUID().uuidString)"
+        let store = KeychainAccountStore(service: service, accessGroup: "bogus.unentitled.group")
+        let account = makeAccount()
+
+        try await store.addAccount(account, token: "secret-token")
+
+        #expect(try await store.activeAccount() == account)
+        #expect(try await store.token(forAccountID: account.id) == "secret-token")
+
+        // And a store without any group sees the same items.
+        let plain = KeychainAccountStore(service: service)
+        #expect(try await plain.fetchAccounts() == [account])
+    }
+
+    @Test
     func startsWithNoAccounts() async throws {
         let store = makeStore()
 
