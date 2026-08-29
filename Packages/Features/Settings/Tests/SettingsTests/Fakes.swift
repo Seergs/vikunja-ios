@@ -116,6 +116,58 @@ final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked
     }
 }
 
+final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
+    private(set) var labels: [Label]
+    private var nextID: Int
+    private(set) var deletedIDs: [Int] = []
+
+    var fetchError: VikunjaError?
+    var createError: VikunjaError?
+    var updateError: VikunjaError?
+    var deleteError: VikunjaError?
+
+    init(labels: [Label] = []) {
+        self.labels = labels
+        self.nextID = (labels.map(\.id).max() ?? 0) + 1
+    }
+
+    func fetchLabels() async throws -> [Label] {
+        if let fetchError { throw fetchError }
+        return labels
+    }
+
+    func create(_ label: Label) async throws -> Label {
+        if let createError { throw createError }
+        let created = Label(id: nextID, title: label.title, hexColor: label.hexColor)
+        nextID += 1
+        labels.append(created)
+        return created
+    }
+
+    func update(_ label: Label) async throws -> Label {
+        if let updateError { throw updateError }
+        guard let index = labels.firstIndex(where: { $0.id == label.id }) else {
+            throw VikunjaError.notFound
+        }
+        labels[index] = label
+        return label
+    }
+
+    func delete(id: Int) async throws {
+        if let deleteError { throw deleteError }
+        labels.removeAll { $0.id == id }
+        deletedIDs.append(id)
+    }
+
+    func addLabel(_ labelID: Int, toTask taskID: Int) async throws {
+        fatalError("not exercised by Settings tests")
+    }
+
+    func removeLabel(_ labelID: Int, fromTask taskID: Int) async throws {
+        fatalError("not exercised by Settings tests")
+    }
+}
+
 final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
     private(set) var shownMessages: [(message: String, style: ToastStyle)] = []
 

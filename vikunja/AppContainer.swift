@@ -132,6 +132,14 @@ final class AppContainer {
         )
     }
 
+    func makeManageLabelsViewModel(account: InstanceAccount) -> ManageLabelsViewModel {
+        let accountStore = self.accountStore
+        let repository = clientFactory.makeLabelRepository(baseURL: account.baseURL) {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        return ManageLabelsViewModel(repository: repository, toastPresenter: toastCenter)
+    }
+
     func makeConnectionsListViewModel(onActiveAccountChanged: @escaping () -> Void) -> ConnectionsListViewModel {
         ConnectionsListViewModel(accountStore: accountStore, toastPresenter: toastCenter, onActiveAccountChanged: onActiveAccountChanged)
     }

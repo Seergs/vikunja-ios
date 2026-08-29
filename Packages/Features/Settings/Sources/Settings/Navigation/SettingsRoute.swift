@@ -4,4 +4,6 @@ public enum SettingsRoute: Hashable, Sendable {
     case connections
     /// The add/edit form for a single connection.
     case connectionForm(ConnectionFormMode)
+    /// The account-wide label management screen.
+    case manageLabels
 }

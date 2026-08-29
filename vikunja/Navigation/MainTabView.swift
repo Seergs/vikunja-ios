@@ -64,6 +64,9 @@ struct MainTabView: View {
                     },
                     makeConnectionFormViewModel: { mode in
                         container.makeConnectionFormViewModel(mode: mode, onActiveAccountChanged: onAccountsChanged)
+                    },
+                    makeManageLabelsViewModel: {
+                        container.makeManageLabelsViewModel(account: account)
                     }
                 )
             }

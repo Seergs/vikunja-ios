@@ -11,6 +11,7 @@ public struct SettingsRootView: View {
     private let account: InstanceAccount
     private let makeConnectionsListViewModel: () -> ConnectionsListViewModel
     private let makeConnectionFormViewModel: (ConnectionFormMode) -> ConnectionFormViewModel
+    private let makeManageLabelsViewModel: () -> ManageLabelsViewModel
 
     /// `account` is the currently active connection — shown on the landing
     /// screen's "Connections" row. `makeConnectionsListViewModel`/
@@ -21,11 +22,13 @@ public struct SettingsRootView: View {
     public init(
         account: InstanceAccount,
         makeConnectionsListViewModel: @escaping () -> ConnectionsListViewModel,
-        makeConnectionFormViewModel: @escaping (ConnectionFormMode) -> ConnectionFormViewModel
+        makeConnectionFormViewModel: @escaping (ConnectionFormMode) -> ConnectionFormViewModel,
+        makeManageLabelsViewModel: @escaping () -> ManageLabelsViewModel
     ) {
         self.account = account
         self.makeConnectionsListViewModel = makeConnectionsListViewModel
         self.makeConnectionFormViewModel = makeConnectionFormViewModel
+        self.makeManageLabelsViewModel = makeManageLabelsViewModel
     }
 
     public var body: some View {
@@ -37,6 +40,8 @@ public struct SettingsRootView: View {
                         ConnectionsListView(makeViewModel: makeConnectionsListViewModel, router: router)
                     case let .connectionForm(mode):
                         ConnectionFormView(makeViewModel: { makeConnectionFormViewModel(mode) }, router: router)
+                    case .manageLabels:
+                        ManageLabelsView(makeViewModel: makeManageLabelsViewModel)
                     }
                 }
         }
