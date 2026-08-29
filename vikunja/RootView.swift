@@ -39,11 +39,20 @@ struct RootView: View {
             }
         }
         .task {
+            // Move any pre-existing Keychain items into the shared access
+            // group before the first read, so a returning user keeps their
+            // account (and the widget can see it).
+            await container.bootstrap()
             // The Keychain lookup is async, so without this the app would
             // always render onboarding first — even with a saved account —
             // until this resolves.
             await refreshActiveAccount()
             hasCheckedForSavedAccount = true
+            // Seed the widget's shared snapshot on launch, so the Today
+            // widget has data even before the app is next backgrounded.
+            if connectedAccount != nil {
+                Task { await container.refreshTodayWidgetSnapshot() }
+            }
         }
         .toastHost(container.toastCenter)
     }

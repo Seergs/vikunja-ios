@@ -9,6 +9,8 @@ import VikunjaAuth
 import VikunjaCore
 import VikunjaDesignSystem
 import VikunjaNetworking
+import VikunjaWidgetKit
+import WidgetKit
 
 /// Composition root. The only type in the app target allowed to know about
 /// concrete `VikunjaNetworking`/`VikunjaAuth` implementations — it wires them
@@ -25,11 +27,38 @@ final class AppContainer {
     let toastCenter = ToastCenter()
 
     init(
-        accountStore: AccountStoreProtocol = KeychainAccountStore(),
+        accountStore: AccountStoreProtocol = KeychainAccountStore(
+            accessGroup: VikunjaWidgetConfig.keychainAccessGroup
+        ),
         clientFactory: InstanceClientFactoryProtocol = VikunjaInstanceClientFactory()
     ) {
         self.accountStore = accountStore
         self.clientFactory = clientFactory
+    }
+
+    /// One-time move of Keychain items written before the shared
+    /// `keychain-access-group` existed into that group, so the widget can read
+    /// the active account and its token. No-op after the first run, and when
+    /// `accountStore` isn't the Keychain-backed one (tests). Call once on launch.
+    func bootstrap() async {
+        guard let store = accountStore as? KeychainAccountStore else { return }
+        try? await store.migrateToAccessGroup()
+    }
+
+    /// Fetches the Today data with the app's own (always-working) account
+    /// store and writes it to the shared App Group cache, then reloads the
+    /// widget. This is what makes the Today widget work even where keychain
+    /// sharing with the extension doesn't (the iOS Simulator, an
+    /// un-provisioned build): the widget renders this cache when it can't
+    /// authenticate itself. Call on launch and whenever the app backgrounds.
+    func refreshTodayWidgetSnapshot() async {
+        let loader = TodaySnapshotLoader(
+            accountStore: accountStore,
+            clientFactory: clientFactory,
+            cache: TodaySnapshotCache(appGroupIdentifier: VikunjaWidgetConfig.appGroupIdentifier)
+        )
+        _ = await loader.loadState()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func makeInstanceSetupViewModel() -> InstanceSetupViewModel {
