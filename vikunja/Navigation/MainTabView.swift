@@ -36,9 +36,7 @@ struct MainTabView: View {
             Tab(AppTab.home.title, systemImage: AppTab.home.systemImage, value: .home) {
                 HomeRootView(
                     viewModel: container.makeTodayViewModel(account: account),
-                    taskDetailDestination: { task, project in
-                        AnyView(TaskDetailView(viewModel: container.makeTaskDetailViewModel(task: task, project: project, account: account)))
-                    }
+                    taskDetailDestination: taskDetailDestination
                 )
             }
 
@@ -51,9 +49,7 @@ struct MainTabView: View {
                     makeCreateProjectViewModel: {
                         container.makeCreateProjectViewModel(account: account)
                     },
-                    taskDetailDestination: { task, project in
-                        AnyView(TaskDetailView(viewModel: container.makeTaskDetailViewModel(task: task, project: project, account: account)))
-                    }
+                    taskDetailDestination: taskDetailDestination
                 )
             }
 
@@ -85,5 +81,38 @@ struct MainTabView: View {
         .sheet(isPresented: $isShowingQuickAdd) {
             QuickAddSheetView(viewModel: container.makeQuickAddTaskViewModel(account: account))
         }
+    }
+
+    /// Builds a `Tasks.TaskDetailView` for the given task, type-erased so
+    /// neither `Home` nor `Projects` needs to import `Tasks` directly — both
+    /// tabs pass this same closure straight through as their own
+    /// `taskDetailDestination`. Mutually recursive with `projectDestination`
+    /// below: tapping a task's project pill pushes a project overview that
+    /// can itself push back into a task's detail screen.
+    private func taskDetailDestination(task: VikunjaTask, project: Project) -> AnyView {
+        AnyView(
+            TaskDetailView(
+                viewModel: container.makeTaskDetailViewModel(task: task, project: project, account: account),
+                projectDestination: projectDestination
+            )
+        )
+    }
+
+    /// Builds the `Projects.ProjectOverviewRootView` pushed when a task
+    /// detail screen's project pill is tapped — `Features/Tasks` can't import
+    /// `Projects` directly, so this closure (built here, where both are
+    /// already imported) stands in for that push, the same way
+    /// `taskDetailDestination` above stands in for `Projects`/`Home` pushing
+    /// into `Tasks`.
+    private func projectDestination(project: Project) -> AnyView {
+        AnyView(
+            ProjectOverviewRootView(
+                viewModel: container.makeProjectOverviewViewModel(project: project, account: account),
+                makeOverviewViewModel: { node in
+                    container.makeProjectOverviewViewModel(node: node, account: account)
+                },
+                taskDetailDestination: taskDetailDestination
+            )
+        )
     }
 }

@@ -40,7 +40,11 @@ public struct ProjectsRootView: View {
                 .navigationDestination(for: ProjectsRoute.self) { route in
                     switch route {
                     case let .projectOverview(node):
-                        ProjectOverviewView(viewModel: makeOverviewViewModel(node), router: router)
+                        ProjectOverviewView(
+                            viewModel: makeOverviewViewModel(node),
+                            onSelectSubproject: { router.push(.projectOverview($0)) },
+                            onSelectTask: { task in router.push(.taskDetail(task, node.project)) }
+                        )
                     case let .taskDetail(task, project):
                         taskDetailDestination(task, project)
                     }

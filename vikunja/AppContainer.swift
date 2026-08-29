@@ -81,6 +81,14 @@ final class AppContainer {
         )
     }
 
+    /// For a project reached from outside the already-loaded projects tree
+    /// (`Features/Tasks`' project pill, today) — see `ProjectOverviewRootView`.
+    /// No `ProjectNode` is available there, only the bare `Project`, so this
+    /// seeds `ProjectOverviewViewModel` with no known subprojects.
+    func makeProjectOverviewViewModel(project: Project, account: InstanceAccount) -> ProjectOverviewViewModel {
+        makeProjectOverviewViewModel(node: ProjectNode(project: project), account: account)
+    }
+
     func makeTaskDetailViewModel(task: VikunjaTask, project: Project, account: InstanceAccount) -> TaskDetailViewModel {
         let accountStore = self.accountStore
         let tokenProvider: @Sendable () async -> String? = {

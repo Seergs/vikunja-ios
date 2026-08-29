@@ -1,13 +1,23 @@
 import SwiftUI
 import VikunjaCore
 import VikunjaDesignSystem
-import VikunjaNavigation
 
 /// A single project's overview: its subprojects (if any), a status filter,
 /// and its own tasks grouped by overdue/pending/completed.
+///
+/// Takes plain closures for its two further pushes (a subproject, a task)
+/// rather than a `Router<ProjectsRoute>` directly: `ProjectsRootView` (its own
+/// tab's stack) implements them via `router.push(_:)`, but
+/// `ProjectOverviewRootView` (pushed cross-feature from `Features/Tasks`'
+/// project pill) has no `Router` of its own — it chains further
+/// `.navigationDestination`s onto whatever ambient stack is already hosting
+/// it instead. Owning a second `NavigationStack` there to back a `Router`
+/// would nest one `NavigationStack` inside another's push destination, which
+/// on iOS immediately pops the pushed screen back off.
 struct ProjectOverviewView: View {
     @Bindable var viewModel: ProjectOverviewViewModel
-    let router: Router<ProjectsRoute>
+    let onSelectSubproject: (ProjectNode) -> Void
+    let onSelectTask: (VikunjaTask) -> Void
     @State private var filter: ProjectTaskFilter = .all
     @State private var taskPendingDelete: VikunjaTask?
     @State private var taskPendingMove: VikunjaTask?
@@ -96,7 +106,7 @@ struct ProjectOverviewView: View {
                         subprojects: viewModel.subprojects,
                         taskSummaries: viewModel.subprojectTaskSummaries
                     ) { subproject in
-                        router.push(.projectOverview(subproject))
+                        onSelectSubproject(subproject)
                     }
                     .padding(.horizontal, VikunjaSpacing.md)
                 }
@@ -157,7 +167,7 @@ struct ProjectOverviewView: View {
                     ProjectTaskRow(task: task, projectColor: swatchColor) {
                         Task { await viewModel.toggleDone(task) }
                     } onOpen: {
-                        router.push(.taskDetail(task, viewModel.project))
+                        onSelectTask(task)
                     } onMove: {
                         taskPendingMove = task
                     } onDelete: {

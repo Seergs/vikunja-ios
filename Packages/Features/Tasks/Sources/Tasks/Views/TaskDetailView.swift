@@ -8,6 +8,11 @@ import VikunjaDesignSystem
 /// owns no `NavigationStack`/`Router` of its own.
 public struct TaskDetailView: View {
     @Bindable var viewModel: TaskDetailViewModel
+    /// Type-erased, like `Features/Projects`' and `Features/Home`'s own
+    /// `taskDetailDestination` closures — this package can't import
+    /// `Projects` directly, so `AppContainer` supplies the actual
+    /// `ProjectOverviewRootView` to push when the project pill is tapped.
+    private let projectDestination: (Project) -> AnyView
     @Environment(\.dismiss) private var dismiss
     @State private var isShowingDueDatePicker = false
     @State private var isShowingLabelPicker = false
@@ -15,6 +20,7 @@ public struct TaskDetailView: View {
     @State private var isShowingDeleteConfirmation = false
     @State private var relationSheetStep: RelationSheetStep?
     @State private var relatedTaskDestination: RelatedTaskDestination?
+    @State private var projectDestinationBox: ProjectDestinationBox?
     @State private var isEditingTitle = false
     @State private var titleDraft = ""
     @State private var isEditingDescription = false
@@ -26,8 +32,9 @@ public struct TaskDetailView: View {
         case description
     }
 
-    public init(viewModel: TaskDetailViewModel) {
+    public init(viewModel: TaskDetailViewModel, projectDestination: @escaping (Project) -> AnyView) {
         self.viewModel = viewModel
+        self.projectDestination = projectDestination
     }
 
     public var body: some View {
@@ -143,7 +150,17 @@ public struct TaskDetailView: View {
             }
         }
         .navigationDestination(item: $relatedTaskDestination) { destination in
-            TaskDetailView(viewModel: viewModel.makeDetailViewModel(task: destination.task, project: destination.project))
+            TaskDetailView(
+                viewModel: viewModel.makeDetailViewModel(task: destination.task, project: destination.project),
+                projectDestination: projectDestination
+            )
+        }
+        // The `AnyView` is built once, at tap time, and stashed in
+        // `projectDestinationBox` rather than called fresh inside this
+        // closure — see `ProjectDestinationBox`'s doc comment for why that
+        // distinction matters here.
+        .navigationDestination(item: $projectDestinationBox) { box in
+            box.content
         }
         .onChange(of: focusedField) { previous, current in
             if previous == .title, current != .title { commitTitleEdit() }
@@ -191,8 +208,13 @@ public struct TaskDetailView: View {
         let task = viewModel.task
         let project = viewModel.project
 
-        ProjectPill(project: project)
-            .padding(.top, VikunjaSpacing.sm)
+        Button {
+            projectDestinationBox = ProjectDestinationBox(id: project.id, content: projectDestination(project))
+        } label: {
+            ProjectPill(project: project)
+        }
+        .buttonStyle(.plain)
+        .padding(.top, VikunjaSpacing.sm)
 
         HStack(alignment: .top, spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
             Button {
@@ -785,6 +807,35 @@ private struct RelatedTaskDestination: Identifiable, Hashable {
     let project: Project
 
     var id: Int { task.id }
+}
+
+/// Wraps the type-erased `AnyView` `projectDestination(_:)` builds, computed
+/// once at tap time rather than inside the `.navigationDestination(item:)`
+/// closure itself. That closure re-runs on every re-render of this screen —
+/// unlike `.navigationDestination(for:)`, which keys off a stable value
+/// already sitting in the `NavigationPath` and only rebuilds when the path
+/// actually changes — and `AnyView` erases the type identity SwiftUI would
+/// otherwise use to recognize "this is still the same destination" across
+/// those reruns. Rebuilding the `AnyView` (and the `ProjectOverviewViewModel`
+/// inside it) fresh each time meant the pushed screen kept getting torn down
+/// and remounted from scratch, restarting its `.task { load() }` before it
+/// ever finished — an endless-looking spinner. Building it once here and
+/// handing the closure the same cached value every time avoids that; the
+/// concrete-typed `relatedTaskDestination` above doesn't need this same
+/// treatment since it pushes a real `TaskDetailView`, not an `AnyView`.
+private struct ProjectDestinationBox: Identifiable, Hashable {
+    let id: Int
+    let content: AnyView
+
+    // Written by hand: `AnyView` isn't `Hashable`, and identity here only
+    // ever needs to key off `id` anyway.
+    static func == (lhs: ProjectDestinationBox, rhs: ProjectDestinationBox) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 /// The "+ Add" affordance next to the Relations section header.
