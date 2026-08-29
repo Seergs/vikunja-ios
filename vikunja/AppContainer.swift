@@ -67,13 +67,16 @@ final class AppContainer {
 
     func makeProjectOverviewViewModel(node: ProjectNode, account: InstanceAccount) -> ProjectOverviewViewModel {
         let accountStore = self.accountStore
-        let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL) {
+        let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
+        let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        let projectRepository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         return ProjectOverviewViewModel(
             project: node.project,
             subprojects: node.children,
             repository: repository,
+            projectRepository: projectRepository,
             toastPresenter: toastCenter
         )
     }

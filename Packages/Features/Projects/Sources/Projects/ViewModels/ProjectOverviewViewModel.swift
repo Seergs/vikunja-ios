@@ -19,21 +19,28 @@ public final class ProjectOverviewViewModel {
     /// the "Subprojects" cards. Fetched alongside this project's own tasks
     /// since `ProjectNode` only carries project metadata, not tasks.
     public private(set) var subprojectTaskSummaries: [Int: TaskSummary] = [:]
+    /// Every project on the instance, for the "Move to Project" picker —
+    /// loaded lazily via `loadMoveCandidates()` rather than alongside
+    /// `load()`, since most visits to this screen never open that picker.
+    public private(set) var allProjects: [Project] = []
 
     public var isLoading: Bool { loadState == .loading }
 
     private let repository: TaskRepositoryProtocol
+    private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
 
     public init(
         project: Project,
         subprojects: [ProjectNode] = [],
         repository: TaskRepositoryProtocol,
+        projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting
     ) {
         self.project = project
         self.subprojects = subprojects
         self.repository = repository
+        self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
     }
 
@@ -110,6 +117,52 @@ public final class ProjectOverviewViewModel {
             try await repository.delete(id: task.id)
             tasks.removeAll { $0.id == task.id }
             toastPresenter.show("Task deleted", style: .success)
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
+        }
+    }
+
+    /// Loads every project on the instance, for the "Move to Project"
+    /// picker. Failures leave `allProjects` at whatever it already was — the
+    /// picker just shows fewer candidates, mirroring
+    /// `TaskDetailViewModel.loadAllProjects()`.
+    public func loadMoveCandidates() async {
+        allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
+    }
+
+    /// `allProjects` arranged for the "Move to Project" picker: one group per
+    /// top-level project, each carrying its direct children (mirrors
+    /// `QuickAddTaskViewModel.projectGroups` — only one level deep, not a
+    /// full recursive tree), with this screen's own project excluded since
+    /// moving a task there would be a no-op.
+    public var moveProjectGroups: [ProjectGroup] {
+        let candidates = allProjects.filter { $0.id != project.id }
+        let childrenByParentID = Dictionary(grouping: candidates, by: \.parentProjectID)
+        return (childrenByParentID[nil] ?? [])
+            .sorted { $0.position < $1.position }
+            .map { root in
+                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
+            }
+    }
+
+    public struct ProjectGroup: Identifiable, Hashable {
+        public let root: Project
+        public let children: [Project]
+        public var id: Int { root.id }
+    }
+
+    /// Moves `task` to `destination` and drops it from the local list on
+    /// success — it no longer belongs to this project's screen, mirroring
+    /// `delete(_:)`.
+    public func move(_ task: VikunjaTask, to destination: Project) async {
+        var updated = task
+        updated.projectID = destination.id
+        do {
+            _ = try await repository.update(updated)
+            tasks.removeAll { $0.id == task.id }
+            toastPresenter.show("Task moved to \(destination.title)", style: .success)
         } catch let error as VikunjaError {
             toastPresenter.show(error.displayMessage, style: .error)
         } catch {

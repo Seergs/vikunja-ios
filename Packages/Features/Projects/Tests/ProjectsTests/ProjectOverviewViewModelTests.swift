@@ -15,6 +15,7 @@ struct ProjectOverviewViewModelTests {
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -31,6 +32,7 @@ struct ProjectOverviewViewModelTests {
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -48,6 +50,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             subprojects: subprojects,
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -71,6 +74,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             subprojects: subprojects,
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -89,6 +93,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             subprojects: subprojects,
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -108,6 +113,7 @@ struct ProjectOverviewViewModelTests {
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
         await viewModel.load()
@@ -124,6 +130,7 @@ struct ProjectOverviewViewModelTests {
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter()
         )
         await viewModel.load()
@@ -145,6 +152,7 @@ struct ProjectOverviewViewModelTests {
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter
         )
         await viewModel.load()
@@ -165,6 +173,7 @@ struct ProjectOverviewViewModelTests {
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
+            projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter
         )
         await viewModel.load()
@@ -173,5 +182,71 @@ struct ProjectOverviewViewModelTests {
 
         #expect(viewModel.tasks.map(\.id) == [1])
         #expect(toastPresenter.shownMessages.last?.style == .error)
+    }
+
+    @Test
+    func moveUpdatesTheTasksProjectAndRemovesItFromTheLocalList() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [
+            VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            VikunjaTask(id: 2, title: "Review PR", projectID: 1),
+        ]
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+        await viewModel.load()
+        let destination = Project(id: 2, title: "Personal")
+
+        await viewModel.move(viewModel.tasks[0], to: destination)
+
+        #expect(viewModel.tasks.map(\.id) == [2])
+        #expect(repository.tasks.first { $0.id == 1 }?.projectID == 2)
+        #expect(toastPresenter.shownMessages.last?.style == .success)
+    }
+
+    @Test
+    func moveLeavesTheTaskInPlaceAndShowsAnErrorToastOnFailure() async {
+        let repository = FakeTaskRepository()
+        let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
+        repository.tasks = [task]
+        repository.updateError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+        await viewModel.load()
+
+        await viewModel.move(task, to: Project(id: 2, title: "Personal"))
+
+        #expect(viewModel.tasks.map(\.id) == [1])
+        #expect(toastPresenter.shownMessages.last?.style == .error)
+    }
+
+    @Test
+    func moveProjectGroupsExcludesThisScreensOwnProject() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [
+            Project(id: 1, title: "Work"),
+            Project(id: 2, title: "Personal"),
+            Project(id: 3, title: "Client A", parentProjectID: 2),
+        ]
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.loadMoveCandidates()
+
+        #expect(viewModel.moveProjectGroups.map(\.root.id) == [2])
+        #expect(viewModel.moveProjectGroups.first?.children.map(\.id) == [3])
     }
 }

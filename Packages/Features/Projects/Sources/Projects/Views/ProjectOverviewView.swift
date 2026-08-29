@@ -10,6 +10,7 @@ struct ProjectOverviewView: View {
     let router: Router<ProjectsRoute>
     @State private var filter: ProjectTaskFilter = .all
     @State private var taskPendingDelete: VikunjaTask?
+    @State private var taskPendingMove: VikunjaTask?
 
     var body: some View {
         content
@@ -33,6 +34,11 @@ struct ProjectOverviewView: View {
                     }
                 }
                 Button("Cancel", role: .cancel) {}
+            }
+            .sheet(item: $taskPendingMove) { task in
+                MoveTaskProjectPickerSheet(viewModel: viewModel) { destination in
+                    Task { await viewModel.move(task, to: destination) }
+                }
             }
     }
 
@@ -152,6 +158,8 @@ struct ProjectOverviewView: View {
                         Task { await viewModel.toggleDone(task) }
                     } onOpen: {
                         router.push(.taskDetail(task, viewModel.project))
+                    } onMove: {
+                        taskPendingMove = task
                     } onDelete: {
                         taskPendingDelete = task
                     }
@@ -412,6 +420,7 @@ private struct ProjectTaskRow: View {
     let projectColor: Color
     let onToggle: () -> Void
     let onOpen: () -> Void
+    let onMove: () -> Void
     let onDelete: () -> Void
 
     private var isOverdue: Bool {
@@ -507,12 +516,98 @@ private struct ProjectTaskRow: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .contextMenu {
+            Button("Move", systemImage: "folder", action: onMove)
             // `role: .destructive` alone renders blue here, not red: the tab
             // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
             // menu and overrides the role's tint. Pin it back to danger.
             Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
                 .tint(VikunjaColor.Semantic.danger)
         }
+    }
+}
+
+/// The "Move to Project" sheet, opened from a task row's long-press menu:
+/// every other project on the instance, grouped under its top-level project
+/// (mirrors `Features/Tasks`' own `MoveProjectPickerSheet` — a separate copy
+/// since `Projects` can't import that package, see the "Rules for new code"
+/// note in `CLAUDE.md`), filterable by `.searchable`. Tapping a row acts
+/// immediately via `onSelect`, which the caller uses to persist the move.
+private struct MoveTaskProjectPickerSheet: View {
+    @Bindable var viewModel: ProjectOverviewViewModel
+    let onSelect: (Project) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
+
+    private var filteredGroups: [ProjectOverviewViewModel.ProjectGroup] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return viewModel.moveProjectGroups }
+        return viewModel.moveProjectGroups.compactMap { group in
+            let rootMatches = group.root.title.localizedCaseInsensitiveContains(trimmed)
+            let matchingChildren = group.children.filter { $0.title.localizedCaseInsensitiveContains(trimmed) }
+            guard rootMatches || !matchingChildren.isEmpty else { return nil }
+            return ProjectOverviewViewModel.ProjectGroup(root: group.root, children: rootMatches ? group.children : matchingChildren)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VikunjaSpacing.lg) {
+                    ForEach(filteredGroups) { group in
+                        VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                            MoveTaskProjectPickerRow(project: group.root, isBold: true) { select(group.root) }
+                            ForEach(group.children) { child in
+                                MoveTaskProjectPickerRow(project: child, isBold: false) { select(child) }
+                                    .padding(.leading, VikunjaSpacing.lg)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical, VikunjaSpacing.sm)
+            }
+            .searchable(text: $query, prompt: "Search projects...")
+            .navigationTitle("Move to Project")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.75), .large])
+        .presentationDragIndicator(.visible)
+        .task { await viewModel.loadMoveCandidates() }
+    }
+
+    private func select(_ project: Project) {
+        dismiss()
+        onSelect(project)
+    }
+}
+
+private struct MoveTaskProjectPickerRow: View {
+    let project: Project
+    let isBold: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: VikunjaSpacing.sm) {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
+                    .frame(width: 8, height: 8)
+                Text(project.title)
+                    .font(.system(size: 15, weight: isBold ? .semibold : .regular))
+                    .foregroundStyle(Color.primary)
+                Spacer()
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.vertical, VikunjaSpacing.sm)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
