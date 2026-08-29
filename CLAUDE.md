@@ -350,9 +350,12 @@ by the compiler, not just convention:
     timestamps only exist once the server assigns them). Comment bodies
     arrive as the Vikunja rich-text editor's HTML output; `CommentTextFormatter`
     strips that down to plain text since this feature has no rich-text
-    renderer yet. Editing/deleting an existing comment
-    (`TaskCommentRepositoryProtocol.updateComment`/`deleteComment`) is defined
-    on the protocol but not yet wired into `TaskDetailViewModel` or the view.
+    renderer yet. A comment row's context menu offers "Edit Comment"
+    (`editComment(_:newText:)` — `EditCommentSheet`, prefilled with the
+    plain-text body, persists via `TaskCommentRepositoryProtocol.updateComment`
+    and swaps in the server's response; no optimistic placeholder, same as
+    `addComment`) and "Delete Comment" (`deleteComment(_:)`, optimistic removal
+    with rollback behind a confirmation dialog).
   - `TaskDetailViewModel` takes `task` + `project` + **five** repository
     protocols (`TaskRepositoryProtocol`, `LabelRepositoryProtocol`,
     `TaskRelationRepositoryProtocol`, `TaskCommentRepositoryProtocol`,

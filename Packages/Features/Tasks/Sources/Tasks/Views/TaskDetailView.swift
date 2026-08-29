@@ -19,6 +19,7 @@ public struct TaskDetailView: View {
     @State private var isShowingMovePicker = false
     @State private var isShowingDeleteConfirmation = false
     @State private var commentPendingDeletion: TaskComment?
+    @State private var commentPendingEdit: TaskComment?
     @State private var relationSheetStep: RelationSheetStep?
     @State private var relatedTaskDestination: RelatedTaskDestination?
     @State private var projectDestinationBox: ProjectDestinationBox?
@@ -149,6 +150,11 @@ public struct TaskDetailView: View {
                 Task { await viewModel.deleteComment(comment) }
             }
             Button("Cancel", role: .cancel) {}
+        }
+        .sheet(item: $commentPendingEdit) { comment in
+            EditCommentSheet(initialText: CommentTextFormatter.plainText(from: comment.comment)) { newText in
+                Task { await viewModel.editComment(comment, newText: newText) }
+            }
         }
         .sheet(item: $relationSheetStep) { step in
             switch step {
@@ -380,6 +386,7 @@ public struct TaskDetailView: View {
                 onSubmit: { text in
                     Task { await viewModel.addComment(text) }
                 },
+                onEdit: { comment in commentPendingEdit = comment },
                 onDelete: { comment in commentPendingDeletion = comment }
             )
         }
@@ -1386,6 +1393,7 @@ private struct CommentsSection: View {
     let comments: [TaskComment]
     let loadState: ScreenLoadState
     let onSubmit: (String) -> Void
+    let onEdit: (TaskComment) -> Void
     let onDelete: (TaskComment) -> Void
     @State private var draft = ""
 
@@ -1403,7 +1411,11 @@ private struct CommentsSection: View {
             } else {
                 VStack(alignment: .leading, spacing: VikunjaSpacing.md - VikunjaSpacing.xxs) {
                     ForEach(comments) { comment in
-                        CommentRow(comment: comment) { onDelete(comment) }
+                        CommentRow(
+                            comment: comment,
+                            onEdit: { onEdit(comment) },
+                            onDelete: { onDelete(comment) }
+                        )
                     }
                 }
             }
@@ -1420,6 +1432,7 @@ private struct CommentsSection: View {
 
 private struct CommentRow: View {
     let comment: TaskComment
+    let onEdit: () -> Void
     let onDelete: () -> Void
 
     private var displayName: String {
@@ -1463,6 +1476,7 @@ private struct CommentRow: View {
         }
         .contentShape(Rectangle())
         .contextMenu {
+            Button("Edit Comment", systemImage: "pencil", action: onEdit)
             // `role: .destructive` alone renders blue here, not red: the tab
             // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
             // menu — an explicit `.tint` is what forces the red, mirroring
@@ -1504,6 +1518,64 @@ private struct CommentComposer: View {
         .padding(.trailing, VikunjaSpacing.xxs)
         .padding(.vertical, VikunjaSpacing.xxs)
         .background(VikunjaColor.Surface.card, in: Capsule())
+    }
+}
+
+/// Edits an existing comment's body. A small sheet with a "Save" toolbar
+/// button, matching `DueDatePickerSheet`'s pattern rather than the inline
+/// edit the task title/description use — `CommentRow` is a nested private
+/// view with no toolbar of its own to host a commit affordance. The field
+/// starts from the comment's plain-text form (Vikunja stores the body as
+/// HTML; see `CommentTextFormatter`), and `onSave` sends plain text back the
+/// same way the composer does for a new comment.
+private struct EditCommentSheet: View {
+    @State private var draft: String
+    private let initialText: String
+    private let onSave: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    init(initialText: String, onSave: @escaping (String) -> Void) {
+        self.initialText = initialText
+        _draft = State(initialValue: initialText)
+        self.onSave = onSave
+    }
+
+    private var canSave: Bool {
+        let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed != initialText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                TextField("Comment", text: $draft, axis: .vertical)
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.primary)
+                    .padding(VikunjaSpacing.sm)
+                    .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+                    .padding(.horizontal, VikunjaSpacing.md)
+                    .padding(.top, VikunjaSpacing.md)
+            }
+            .navigationTitle("Edit Comment")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        onSave(draft)
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                    .disabled(!canSave)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 

@@ -871,6 +871,81 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func editCommentReplacesTheCommentWithTheServerResponse() async {
+        let commentRepository = FakeTaskCommentRepository()
+        let author = User(id: 1, username: "me")
+        commentRepository.comments = [
+            TaskComment(id: 1, comment: "Frist draft", author: author, created: Date(), updated: Date())
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+        await viewModel.loadComments()
+
+        await viewModel.editComment(viewModel.comments[0], newText: "  First draft  ")
+
+        #expect(viewModel.comments.map(\.comment) == ["First draft"])
+    }
+
+    @Test
+    func editCommentDoesNothingForBlankText() async {
+        let commentRepository = FakeTaskCommentRepository()
+        let author = User(id: 1, username: "me")
+        commentRepository.comments = [
+            TaskComment(id: 1, comment: "Original", author: author, created: Date(), updated: Date())
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+        await viewModel.loadComments()
+
+        await viewModel.editComment(viewModel.comments[0], newText: "   ")
+
+        #expect(viewModel.comments.map(\.comment) == ["Original"])
+    }
+
+    @Test
+    func editCommentKeepsTheOriginalAndShowsAnErrorToastOnFailure() async {
+        let commentRepository = FakeTaskCommentRepository()
+        commentRepository.updateError = .network("offline")
+        let author = User(id: 1, username: "me")
+        commentRepository.comments = [
+            TaskComment(id: 1, comment: "Original", author: author, created: Date(), updated: Date())
+        ]
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+        await viewModel.loadComments()
+
+        await viewModel.editComment(viewModel.comments[0], newText: "Revised")
+
+        #expect(viewModel.comments.map(\.comment) == ["Original"])
+        #expect(toastPresenter.shownMessages.map(\.style) == [.error])
+    }
+
+    @Test
     func moveUpdatesTheTasksProjectAndShowsASuccessToast() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]

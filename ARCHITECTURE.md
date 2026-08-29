@@ -528,9 +528,9 @@ Open threads:
 - **Subtasks** render read-only on the detail screen (a `TaskRelation` is too
   thin to round-trip through an update without an extra fetch per row) — making
   them togglable/creatable like the other relation kinds is unfinished.
-- **Comment editing/deletion**: `TaskCommentRepositoryProtocol.updateComment`/
-  `deleteComment` exist and are implemented in `VikunjaNetworking`, but
-  `TaskDetailViewModel` and the comment UI only wire up fetch and add so far.
+- **Comment rich text**: comment bodies round-trip as plain text
+  (`CommentTextFormatter` strips the server's stored HTML on the way in, edits
+  send plain text back) — there's no rich-text renderer or editor yet.
 - **`SessionManager`** (a single source of truth for the active account's live
   `APIClient` + `CapabilityProvider`) and **OIDC** are still unbuilt — today
   each `AppContainer` factory builds its own repository per screen from the

@@ -354,6 +354,23 @@ public final class TaskDetailViewModel {
         }
     }
 
+    /// Replaces `comment`'s body with `newText`, restoring the whole list if
+    /// the server rejects the update — mirrors `deleteComment(_:)`. Unlike a
+    /// toggle there's no local placeholder worth showing first: the server
+    /// assigns the new `updated` timestamp, so `comments` is only touched once
+    /// its response is back (same reasoning as `addComment(_:)`). No-ops on
+    /// blank text or an unknown comment id.
+    public func editComment(_ comment: TaskComment, newText: String) async {
+        let trimmed = newText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        guard let index = comments.firstIndex(where: { $0.id == comment.id }) else { return }
+        do {
+            comments[index] = try await commentRepository.updateComment(comment.id, text: trimmed, onTask: task.id)
+        } catch {
+            toastPresenter.show("Couldn't update comment", style: .error)
+        }
+    }
+
     /// Deletes `comment` from the task, optimistically removing it from
     /// `comments` and restoring the whole list if the server rejects the
     /// delete — mirrors `removeRelation(_:kind:)`. No author check: whether

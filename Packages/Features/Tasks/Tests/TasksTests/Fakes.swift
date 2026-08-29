@@ -134,6 +134,7 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
     var comments: [TaskComment] = []
     var fetchError: VikunjaError?
     var addError: VikunjaError?
+    var updateError: VikunjaError?
     var deleteError: VikunjaError?
     private var nextID = 100
 
@@ -157,10 +158,12 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
     }
 
     func updateComment(_ commentID: Int, text: String, onTask taskID: Int) async throws -> TaskComment {
+        if let updateError { throw updateError }
         guard let index = comments.firstIndex(where: { $0.id == commentID }) else {
             throw VikunjaError.notFound
         }
         comments[index].comment = text
+        comments[index].updated = Date()
         return comments[index]
     }
 
