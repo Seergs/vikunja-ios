@@ -40,11 +40,11 @@ You can find this app in the App Store
 - Projects
     - Create project
     - Delete project
-    - Update project (Pending)
+    - Update project
 - Comments
     - Add comment to task
-    - Update comment (Pending)
-    - Delete comment (Pending)
+    - Update comment 
+    - Delete comment 
 - Task Relations
     - Add relations between tasks
     - Remove relations between tasks
