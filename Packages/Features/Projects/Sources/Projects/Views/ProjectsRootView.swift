@@ -11,6 +11,7 @@ public struct ProjectsRootView: View {
     private let viewModel: ProjectsListViewModel
     private let makeOverviewViewModel: (ProjectNode) -> ProjectOverviewViewModel
     private let makeCreateProjectViewModel: () -> CreateProjectViewModel
+    private let makeEditProjectViewModel: (Project) -> EditProjectViewModel
     private let taskDetailDestination: (VikunjaTask, Project) -> AnyView
 
     /// `makeOverviewViewModel`, `makeCreateProjectViewModel`, and
@@ -26,28 +27,44 @@ public struct ProjectsRootView: View {
         viewModel: ProjectsListViewModel,
         makeOverviewViewModel: @escaping (ProjectNode) -> ProjectOverviewViewModel,
         makeCreateProjectViewModel: @escaping () -> CreateProjectViewModel,
+        makeEditProjectViewModel: @escaping (Project) -> EditProjectViewModel,
         taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView
     ) {
         self.viewModel = viewModel
         self.makeOverviewViewModel = makeOverviewViewModel
         self.makeCreateProjectViewModel = makeCreateProjectViewModel
+        self.makeEditProjectViewModel = makeEditProjectViewModel
         self.taskDetailDestination = taskDetailDestination
     }
 
+    @State private var editingProject: Project?
+
     public var body: some View {
         NavigationStack(path: $router.path) {
-            ProjectsView(viewModel: viewModel, router: router, makeCreateProjectViewModel: makeCreateProjectViewModel)
+            ProjectsView(viewModel: viewModel, router: router, makeCreateProjectViewModel: makeCreateProjectViewModel, makeEditProjectViewModel: makeEditProjectViewModel)
                 .navigationDestination(for: ProjectsRoute.self) { route in
                     switch route {
                     case let .projectOverview(node):
                         ProjectOverviewView(
                             viewModel: makeOverviewViewModel(node),
                             onSelectSubproject: { router.push(.projectOverview($0)) },
-                            onSelectTask: { task in router.push(.taskDetail(task, node.project)) }
+                            onSelectTask: { task in router.push(.taskDetail(task, node.project)) },
+                            onEditProject: { editingProject = $0 }
                         )
                     case let .taskDetail(task, project):
                         taskDetailDestination(task, project)
+                    case let .editProject(project):
+                        ProjectOverviewView(
+                            viewModel: makeOverviewViewModel(ProjectNode(project: project)),
+                            onSelectSubproject: { router.push(.projectOverview($0)) },
+                            onSelectTask: { task in router.push(.taskDetail(task, project)) },
+                            onEditProject: { editingProject = $0 }
+                        )
                     }
+                }
+                .sheet(item: $editingProject) { project in
+                    EditProjectSheetView(viewModel: makeEditProjectViewModel(project))
+                        .presentationCompactAdaptation(.sheet)
                 }
         }
     }

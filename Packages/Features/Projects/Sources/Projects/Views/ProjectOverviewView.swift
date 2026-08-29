@@ -18,6 +18,7 @@ struct ProjectOverviewView: View {
     @Bindable var viewModel: ProjectOverviewViewModel
     let onSelectSubproject: (ProjectNode) -> Void
     let onSelectTask: (VikunjaTask) -> Void
+    let onEditProject: (Project) -> Void
     @State private var filter: ProjectTaskFilter = .all
     @State private var taskPendingDelete: VikunjaTask?
     @State private var taskPendingMove: VikunjaTask?
@@ -29,6 +30,13 @@ struct ProjectOverviewView: View {
             .background(VikunjaColor.Surface.page)
             .refreshable { await viewModel.load() }
             .navigationTitle(viewModel.project.title)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: { onEditProject(viewModel.project) }) {
+                        Image(systemName: "pencil")
+                    }
+                }
+            }
             .task { await viewModel.load() }
             .confirmationDialog(
                 "This permanently deletes the task.",

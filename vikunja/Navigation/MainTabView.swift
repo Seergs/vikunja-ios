@@ -49,6 +49,9 @@ struct MainTabView: View {
                     makeCreateProjectViewModel: {
                         container.makeCreateProjectViewModel(account: account)
                     },
+                    makeEditProjectViewModel: { project in
+                        container.makeEditProjectViewModel(project: project, account: account)
+                    },
                     taskDetailDestination: taskDetailDestination
                 )
             }

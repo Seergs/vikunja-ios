@@ -45,7 +45,8 @@ public struct ProjectOverviewRootView: View {
                     id: task.id,
                     content: taskDetailDestination(task, viewModel.project)
                 )
-            }
+            },
+            onEditProject: { _ in }
         )
         // Concrete-typed content (another `ProjectOverviewRootView`), so this
         // one doesn't need the box treatment below — see

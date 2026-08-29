@@ -10,9 +10,11 @@ struct ProjectsView: View {
     @Bindable var viewModel: ProjectsListViewModel
     let router: Router<ProjectsRoute>
     let makeCreateProjectViewModel: () -> CreateProjectViewModel
+    let makeEditProjectViewModel: (Project) -> EditProjectViewModel
     @State private var expandedProjectIDs: Set<Int> = []
     @State private var isShowingCreateProject = false
     @State private var projectPendingDelete: ProjectNode?
+    @State private var editingProject: Project?
 
     var body: some View {
         // `List` stays the root container across every load state — not just
@@ -39,6 +41,11 @@ struct ProjectsView: View {
                 Task { await viewModel.load() }
             }) {
                 CreateProjectSheetView(viewModel: makeCreateProjectViewModel())
+            }
+            .sheet(item: $editingProject, onDismiss: {
+                Task { await viewModel.load() }
+            }) { project in
+                EditProjectSheetView(viewModel: makeEditProjectViewModel(project))
             }
             .confirmationDialog(
                 deleteConfirmationMessage,
@@ -101,6 +108,7 @@ struct ProjectsView: View {
                             isExpanded: expandedProjectIDs.contains(row.node.id),
                             onSelect: { router.push(.projectOverview(row.node)) },
                             onToggleExpand: { toggleExpanded(row.node.id) },
+                            onEdit: { editingProject = $0 },
                             onDelete: { projectPendingDelete = row.node }
                         )
                     }
@@ -176,6 +184,7 @@ private struct ProjectRow: View {
     let isExpanded: Bool
     let onSelect: () -> Void
     let onToggleExpand: () -> Void
+    let onEdit: (Project) -> Void
     let onDelete: () -> Void
 
     private var swatchColor: Color {
@@ -223,6 +232,7 @@ private struct ProjectRow: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
         .contextMenu {
+            Button("Edit", systemImage: "pencil", action: { onEdit(project) })
             // `role: .destructive` alone renders blue here, not red: the tab
             // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
             // menu and overrides the role's tint. Pin it back to danger.

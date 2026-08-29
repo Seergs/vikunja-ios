@@ -11,4 +11,6 @@ public enum ProjectsRoute: Hashable, Sendable {
     /// never needs a second fetch — mirrors `projectOverview` carrying its
     /// `ProjectNode`.
     case taskDetail(VikunjaTask, Project)
+    /// Edit a project's name and color via a sheet.
+    case editProject(Project)
 }
