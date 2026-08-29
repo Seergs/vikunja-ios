@@ -468,9 +468,16 @@ behind each one.
 
 - English only — no Spanish in code, comments, strings, or test fixtures (this is
   an open-source project).
-- Conventional Commits, small/atomic commits — check `git log` for the established
-  granularity (roughly one type/file-group per commit). Single-line subject only
-  (no body, no trailers, no `Co-Authored-By`).
+- **Commit messages: STRICT format** — Conventional Commits style, single line only.
+  Format: `type(scope): description` (e.g., `feat(projects): add edit functionality`).
+  RULES:
+  - ONE line only. NO body, NO blank lines, NO trailers of any kind.
+  - NO `Co-Authored-By`, NO `Claude-Session`, NO multi-line footers.
+  - NO HEREDOC, NO git commit with `<<'EOF'` — use `-m` with quoted string only.
+  - Keep subject under 72 characters.
+  - Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`.
+  - Small/atomic commits — check `git log` for established granularity (roughly one
+    type/file-group per commit).
 - Swift 6 language mode / strict concurrency in both packages
   (`swift-tools-version: 6.0`). Types crossing the `APIClient` boundary as a
   `Response` generic must be `Sendable`.
