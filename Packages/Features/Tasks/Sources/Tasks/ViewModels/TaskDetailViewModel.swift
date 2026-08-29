@@ -220,6 +220,72 @@ public final class TaskDetailViewModel {
         allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
     }
 
+    /// `allProjects` arranged for the "Move to Project" picker: one group per
+    /// top-level project, each carrying its direct children (mirrors
+    /// `QuickAddTaskViewModel.projectGroups` — only one level deep, not a
+    /// full recursive tree), with the task's current project excluded since
+    /// moving it there would be a no-op.
+    public var moveProjectGroups: [ProjectGroup] {
+        let candidates = allProjects.filter { $0.id != task.projectID }
+        let childrenByParentID = Dictionary(grouping: candidates, by: \.parentProjectID)
+        return (childrenByParentID[nil] ?? [])
+            .sorted { $0.position < $1.position }
+            .map { root in
+                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
+            }
+    }
+
+    public struct ProjectGroup: Identifiable, Hashable {
+        public let root: Project
+        public let children: [Project]
+        public var id: Int { root.id }
+    }
+
+    /// Moves the task to `project` and persists it, mirroring `persist(previous:)`'s
+    /// optimistic-with-rollback pattern. `project` is fixed for this view
+    /// model's whole lifetime, so a moved task's own detail screen can no
+    /// longer represent it correctly afterwards — the view is expected to
+    /// pop back once this returns `true`, the same way it would after
+    /// `deleteTask()`.
+    public func move(to newProject: Project) async -> Bool {
+        let previous = task
+        task.projectID = newProject.id
+        do {
+            var updated = try await repository.update(task)
+            updated.subtasks = previous.subtasks
+            updated.dependsOn = previous.dependsOn
+            updated.blocks = previous.blocks
+            updated.otherRelations = previous.otherRelations
+            task = updated
+            toastPresenter.show("Task moved to \(newProject.title)", style: .success)
+            return true
+        } catch let error as VikunjaError {
+            task = previous
+            toastPresenter.show(error.displayMessage, style: .error)
+            return false
+        } catch {
+            task = previous
+            toastPresenter.show(error.localizedDescription, style: .error)
+            return false
+        }
+    }
+
+    /// Deletes the task from the server. There's nothing left to show on this
+    /// screen once it succeeds — the view is expected to pop back.
+    public func deleteTask() async -> Bool {
+        do {
+            try await repository.delete(id: task.id)
+            toastPresenter.show("Task deleted", style: .success)
+            return true
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+            return false
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
+            return false
+        }
+    }
+
     /// Resolves `relation` to the full task and its project, for navigating
     /// to that task's own detail screen when a relation row is tapped —
     /// `TaskRelation` only carries an id/title/isDone/projectID summary, not

@@ -8,8 +8,11 @@ import VikunjaDesignSystem
 /// owns no `NavigationStack`/`Router` of its own.
 public struct TaskDetailView: View {
     @Bindable var viewModel: TaskDetailViewModel
+    @Environment(\.dismiss) private var dismiss
     @State private var isShowingDueDatePicker = false
     @State private var isShowingLabelPicker = false
+    @State private var isShowingMovePicker = false
+    @State private var isShowingDeleteConfirmation = false
     @State private var relationSheetStep: RelationSheetStep?
     @State private var relatedTaskDestination: RelatedTaskDestination?
     @State private var isEditingTitle = false
@@ -66,6 +69,23 @@ public struct TaskDetailView: View {
                     }
                 }
             }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button("Move to Project", systemImage: "folder") {
+                        isShowingMovePicker = true
+                    }
+                    // `role: .destructive` alone renders blue here, not red:
+                    // the tab bar's `.tint(VikunjaColor.brandPrimary)` leaks
+                    // into this menu and overrides the role's tint — mirrors
+                    // `ProjectTaskRow`'s context menu in `Features/Projects`.
+                    Button("Delete Task", systemImage: "trash", role: .destructive) {
+                        isShowingDeleteConfirmation = true
+                    }
+                    .tint(VikunjaColor.Semantic.danger)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
         }
         .navigationTitle("Task Details")
         #if os(iOS)
@@ -84,6 +104,29 @@ public struct TaskDetailView: View {
         }
         .sheet(isPresented: $isShowingLabelPicker) {
             LabelPickerSheet(viewModel: viewModel)
+        }
+        .sheet(isPresented: $isShowingMovePicker) {
+            MoveProjectPickerSheet(viewModel: viewModel) { project in
+                Task {
+                    if await viewModel.move(to: project) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .confirmationDialog(
+            "This permanently deletes the task.",
+            isPresented: $isShowingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Task", role: .destructive) {
+                Task {
+                    if await viewModel.deleteTask() {
+                        dismiss()
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
         }
         .sheet(item: $relationSheetStep) { step in
             switch step {
@@ -1011,6 +1054,91 @@ private struct DueDatePickerSheet: View {
 /// `ProjectPickerView` uses; unlike that picker, tapping a row here toggles
 /// membership instead of dismissing, since a task can carry more than one
 /// label.
+/// The "Move to Project" sheet: every other project on the instance, grouped
+/// under its top-level project (mirrors `QuickAddSheetView`'s "Choose
+/// Project" picker), filterable by `.searchable`. Unlike that picker, tapping
+/// a row acts immediately — there's no separate "Save" step for a move — via
+/// `onSelect`, which the caller uses to persist the change and pop the
+/// screen.
+private struct MoveProjectPickerSheet: View {
+    @Bindable var viewModel: TaskDetailViewModel
+    let onSelect: (Project) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
+
+    private var filteredGroups: [TaskDetailViewModel.ProjectGroup] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return viewModel.moveProjectGroups }
+        return viewModel.moveProjectGroups.compactMap { group in
+            let rootMatches = group.root.title.localizedCaseInsensitiveContains(trimmed)
+            let matchingChildren = group.children.filter { $0.title.localizedCaseInsensitiveContains(trimmed) }
+            guard rootMatches || !matchingChildren.isEmpty else { return nil }
+            return TaskDetailViewModel.ProjectGroup(root: group.root, children: rootMatches ? group.children : matchingChildren)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VikunjaSpacing.lg) {
+                    ForEach(filteredGroups) { group in
+                        VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                            MoveProjectPickerRow(project: group.root, isBold: true) { select(group.root) }
+                            ForEach(group.children) { child in
+                                MoveProjectPickerRow(project: child, isBold: false) { select(child) }
+                                    .padding(.leading, VikunjaSpacing.lg)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical, VikunjaSpacing.sm)
+            }
+            .searchable(text: $query, prompt: "Search projects...")
+            .navigationTitle("Move to Project")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.75), .large])
+        .presentationDragIndicator(.visible)
+        .task { await viewModel.loadAllProjects() }
+    }
+
+    private func select(_ project: Project) {
+        dismiss()
+        onSelect(project)
+    }
+}
+
+private struct MoveProjectPickerRow: View {
+    let project: Project
+    let isBold: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: VikunjaSpacing.sm) {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
+                    .frame(width: 8, height: 8)
+                Text(project.title)
+                    .font(.system(size: 15, weight: isBold ? .semibold : .regular))
+                    .foregroundStyle(Color.primary)
+                Spacer()
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.vertical, VikunjaSpacing.sm)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 private struct LabelPickerSheet: View {
     @Bindable var viewModel: TaskDetailViewModel
     @Environment(\.dismiss) private var dismiss

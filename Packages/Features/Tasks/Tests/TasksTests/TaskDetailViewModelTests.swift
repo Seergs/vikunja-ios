@@ -815,4 +815,121 @@ struct TaskDetailViewModelTests {
         #expect(viewModel.comments.isEmpty)
         #expect(toastPresenter.shownMessages.map(\.style) == [.error])
     }
+
+    @Test
+    func moveUpdatesTheTasksProjectAndShowsASuccessToast() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+
+        let succeeded = await viewModel.move(to: Project(id: 2, title: "Personal"))
+
+        #expect(succeeded == true)
+        #expect(viewModel.task.projectID == 2)
+        #expect(toastPresenter.shownMessages.last?.style == .success)
+    }
+
+    @Test
+    func moveRevertsAndShowsAnErrorToastOnFailure() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
+        repository.updateError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+
+        let succeeded = await viewModel.move(to: Project(id: 2, title: "Personal"))
+
+        #expect(succeeded == false)
+        #expect(viewModel.task.projectID == 1)
+        #expect(toastPresenter.shownMessages.last?.style == .error)
+    }
+
+    @Test
+    func moveProjectGroupsExcludesTheTasksCurrentProject() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [
+            Project(id: 1, title: "Work"),
+            Project(id: 2, title: "Personal"),
+            Project(id: 3, title: "Client A", parentProjectID: 2),
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.loadAllProjects()
+
+        #expect(viewModel.moveProjectGroups.map(\.root.id) == [2])
+        #expect(viewModel.moveProjectGroups.first?.children.map(\.id) == [3])
+    }
+
+    @Test
+    func deleteTaskShowsASuccessToast() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+
+        let succeeded = await viewModel.deleteTask()
+
+        #expect(succeeded == true)
+        #expect(toastPresenter.shownMessages.last?.style == .success)
+    }
+
+    @Test
+    func deleteTaskShowsAnErrorToastOnFailure() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
+        repository.deleteError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+
+        let succeeded = await viewModel.deleteTask()
+
+        #expect(succeeded == false)
+        #expect(toastPresenter.shownMessages.last?.style == .error)
+    }
 }
