@@ -23,16 +23,28 @@ multi-module**, **no local persistence for now** (everything is re-fetched from 
 server; offline support is a later phase).
 
 **Implementation status**: `VikunjaCore`, `VikunjaNetworking`, `VikunjaAuth`,
-`VikunjaNavigation`, `VikunjaDesignSystem` (starter token set — see below),
+`VikunjaNavigation`, `VikunjaDesignSystem` (colors — brand/priority/surface/
+semantic/swatch — plus typography, spacing, radius, and the toast system),
 `Features/Onboarding`, the `AppContainer` composition root, and the top-level
 navigation shell (onboarding → floating tab bar, one `NavigationStack` per tab)
 are built (see `Packages/` and `vikunja/`). `Features/Projects` is built end to
-end: a collapsible parent/child project tree, a project overview (subprojects +
-tasks grouped by status), and it pushes into `Features/Tasks`'s task detail
-screen (completion, due date, priority, labels, subtasks, dependencies) — also
-built, as a leaf screen with no navigation stack of its own. `Features/Settings`
-has one real action (reset the saved connection); `Features/Home` and
-`Features/Search` are still placeholder screens.
+end: a collapsible parent/child project tree with a per-row task-completion
+tally, project creation (title + color + parent), a project overview
+(subprojects + tasks grouped by status), task completion toggle, and task
+deletion. It pushes into `Features/Tasks`'s task detail screen — inline
+title/description editing, completion, due date, priority, label editing
+(add/remove/create), relation editing (`dependsOn`/`blocks` + other kinds, via
+a kind-then-task picker), a comment thread (read + post), and tap-through to a
+related task's own detail screen — built as a leaf screen with no navigation
+stack of its own. `Features/Tasks` also owns the quick-add task sheet reachable
+from the tab bar's FAB. `Features/Home` is a "Today" screen built end to end:
+every project's tasks, merged and grouped by due date, with the same
+completion toggle and tap-through into `Features/Tasks`. `Features/Settings`
+is fully built as multi-account management — list, add, edit, delete, and
+switch the active connection, all through `AccountStoreProtocol`. Task and
+project mutation (create/update/delete), label CRUD + association, relation
+add/remove, and task comment fetch/add are all wired through `VikunjaNetworking`
+end to end. `Features/Search` is still a placeholder screen.
 
 ---
 
@@ -53,24 +65,29 @@ vikunja-ios/
 │   └── Navigation/
 │       ├── AppTab.swift               # the tab enum (iOS-26-only Tab APIs live here,
 │       ├── MainTabView.swift          # not in a package, since packages floor at iOS 17)
-│       └── QuickAddAccessoryView.swift
+│       └── QuickAddButton.swift       # bare circular FAB → presents Tasks' quick-add sheet
 │
 └── Packages/
     ├── VikunjaCore/               # 100% pure Swift, no networking, no UI
     │   └── Sources/VikunjaCore/
     │       ├── Domain/            # domain models (Task, Project, User, Label,
-    │       │                      # TaskRelation, InstanceAccount, InstanceURL...)
-    │       ├── Protocols/         # TaskRepositoryProtocol, AuthServiceProtocol,
-    │       │                      # AccountStoreProtocol, InstanceClientFactoryProtocol
+    │       │                      # TaskRelation, RelationKind, TaskComment,
+    │       │                      # ToastStyle, InstanceAccount, InstanceURL...)
+    │       ├── Protocols/         # Task/Project/Label/TaskRelation/TaskComment
+    │       │                      # RepositoryProtocol, AuthServiceProtocol,
+    │       │                      # AccountStoreProtocol,
+    │       │                      # InstanceClientFactoryProtocol, ToastPresenting
     │       ├── Capabilities/      # VikunjaServerInfo, CapabilityProvider
     │       └── Errors/            # VikunjaError (domain-level, not HTTP)
     │
     ├── VikunjaNetworking/         # the ONLY place that knows a REST API exists
     │   └── Sources/VikunjaNetworking/
     │       ├── Client/            # APIClient protocol + URLSessionAPIClient
-    │       ├── Endpoints/         # per-resource endpoint definitions
+    │       ├── Endpoints/         # every /api/v1 route (task/project/label CRUD,
+    │       │                      # relations, comments, search) in one file
     │       ├── DTOs/              # Codable models mirroring the server's JSON
-    │       ├── Mappers/           # DTO -> domain model (VikunjaCore)
+    │       ├── Mappers/           # DTO -> domain model (VikunjaCore), incl.
+    │       │                      # TaskMapper.merge for safe partial updates
     │       └── Repositories/      # implement VikunjaCore's protocols
     │                              # (incl. VikunjaInstanceClientFactory)
     │
@@ -83,17 +100,17 @@ vikunja-ios/
     │   └── Sources/VikunjaNavigation/
     │       └── Router.swift       # generic Router<Route: Hashable>, wraps NavigationPath
     │
-    ├── VikunjaDesignSystem/       # colors, typography, spacing tokens; toast system (growing set)
+    ├── VikunjaDesignSystem/       # color/typography/spacing/radius tokens; toast system (growing set)
     │   └── Sources/VikunjaDesignSystem/
     │       └── Toast/             # ToastCenter (implements Core's ToastPresenting), ToastView, toastHost(_:)
     │
     └── Features/
         ├── Onboarding/            # "connect to your instance" — built end to end
-        ├── Home/                  # landing tab — placeholder content, real navigation shell
-        ├── Projects/              # projects tab — built end to end (list, tree, overview)
+        ├── Home/                  # "Today" tab — built end to end (every project's tasks, by due date)
+        ├── Projects/              # projects tab — built end to end (list, tree, overview, create, delete)
         ├── Search/                # search tab (iOS 26 `.search` role) — placeholder
-        ├── Settings/              # settings tab — placeholder content + reset-connection action
-        ├── Tasks/                 # task detail screen — built, pushed by Projects as a leaf
+        ├── Settings/              # settings tab — built end to end (multi-account: list/add/edit/delete/switch)
+        ├── Tasks/                 # task detail (pushed by Home/Projects as a leaf) + quick-add sheet
         └── ...
 ```
 
@@ -111,10 +128,14 @@ This is what protects the app when Vikunja's API changes:
   `VikunjaDesignSystem` or SwiftUI. Every other token in the package stays
   dependency-free.
 - `Features/*` → depend on `VikunjaCore` (protocols + models), `VikunjaNavigation`,
-  and `VikunjaDesignSystem`. They **never** import `VikunjaNetworking` directly.
+  and `VikunjaDesignSystem` as each needs — every feature with real content
+  (`Onboarding`, `Home`, `Projects`, `Settings`, `Tasks`) pulls `VikunjaCore` +
+  `VikunjaDesignSystem`; the still-placeholder `Search` depends only on
+  `VikunjaNavigation`. None **ever** import `VikunjaNetworking` directly.
   Views use `VikunjaDesignSystem` tokens (`VikunjaColor`, `VikunjaFont`,
-  `VikunjaSpacing`) instead of hardcoding colors, fonts, or spacing values —
-  that's what keeps the app visually consistent as `VikunjaDesignSystem` grows.
+  `VikunjaSpacing`, `VikunjaRadius`) instead of hardcoding colors, fonts,
+  spacing, or corner radii — that's what keeps the app visually consistent as
+  `VikunjaDesignSystem` grows.
 - The app / composition root → the only place that knows both `VikunjaCore`'s
   protocols and `VikunjaNetworking`/`VikunjaAuth`'s concrete implementations, and
   wires them together. It's also the only place that knows about every Feature's
@@ -144,8 +165,11 @@ Features/Tasks/Sources/Tasks/
     └── TasksRoute.swift      # private route enum
 ```
 
-- **Model**: comes from `VikunjaCore.Domain` (e.g. `Task`, `Project`). No network
-  models here — those are DTOs and stay locked inside `VikunjaNetworking`.
+- **Model**: comes from `VikunjaCore.Domain` (e.g. `VikunjaTask`, `Project`). No
+  network models here — those are DTOs and stay locked inside `VikunjaNetworking`.
+  A feature that also needs view-only state (a request-lifecycle enum, error
+  copy) keeps it in its own `Models/` (`ScreenLoadState`) / `Support/`
+  (`VikunjaError+DisplayMessage`) — never a domain model.
 - **ViewModel**: `@Observable` (or `ObservableObject` if the iOS minimum requires
   it), receives a protocol via **constructor injection**, never a concrete
   networking class:
@@ -183,23 +207,37 @@ This keeps "V" and "VM" cleanly separated from "M", and the Model never knows HT
 exists — only `VikunjaNetworking` does.
 
 **Exception — a feature with no top-level screen of its own**: `Features/Tasks`
-as actually built is a single task-detail screen, always pushed as a leaf onto
-whichever feature's stack opened it (`Features/Projects`, today) — never
-reachable from the tab bar directly. It skips `Navigation/`/`Router` entirely
-and exposes a plain public view; the feature that pushes it takes a
+as actually built is a task-detail screen (always pushed as a leaf onto
+whichever feature's stack opened it — `Features/Home` or `Features/Projects`,
+today) plus a quick-add sheet (presented as a `.sheet` by `MainTabView`'s
+FAB). Neither owns
+push navigation, so the package skips `Navigation/`/`Router` entirely and
+exposes plain public views; the feature that pushes the leaf screen takes a
 type-erased `(VikunjaTask, Project) -> AnyView` closure (built by
 `AppContainer`) instead of importing it, so the pushing feature still never
-imports another Feature's package.
+imports another Feature's package. (`TaskDetailView` does push a nested copy of
+itself for a tapped relation — intra-feature, onto the host stack, so still no
+`Router` needed.)
 
 ---
 
 ## 2b. Top-level navigation: onboarding → floating tab bar
 
 `vikunja/RootView.swift` is the only place that switches between the two
-top-level app states: no connected account (`InstanceSetupView`, from
-`Features/Onboarding`) and a connected account (`MainTabView`). It holds this as
+top-level app states: no saved account (`InstanceSetupView`, from
+`Features/Onboarding`) and an active account (`MainTabView`). It holds this as
 plain `@State private var connectedAccount: InstanceAccount?` — two states don't
-need a dedicated enum.
+need a dedicated enum. It re-reads the active account from
+`AccountStoreProtocol` on launch (async Keychain lookup, so a `ProgressView`
+covers the gap rather than flashing onboarding first) and again whenever
+`MainTabView` reports `onAccountsChanged` — fired by `Features/Settings`'
+connection screens after switching accounts, deleting the active one, or
+editing its own address. `MainTabView` is rendered keyed by
+`.id(connectedAccount)`, so any of those changes tears the whole tab shell
+down and rebuilds it against the new account, since every tab's view models
+were constructed against the old account's `baseURL` and don't observe
+changes to it. Deleting the last saved account surfaces here too: the re-read
+comes back `nil` and `RootView` falls back to onboarding.
 
 `MainTabView` (`vikunja/Navigation/MainTabView.swift`) is the floating, Liquid
 Glass bottom tab bar — the default rendering for `TabView` built with the modern
@@ -212,34 +250,53 @@ Store apps use):
 ```swift
 TabView(selection: $selection) {
     Tab(AppTab.home.title, systemImage: AppTab.home.systemImage, value: .home) {
-        HomeRootView(accountName: account.displayName)
+        HomeRootView(
+            viewModel: container.makeTodayViewModel(account: account),
+            taskDetailDestination: { task, project in
+                AnyView(TaskDetailView(viewModel: container.makeTaskDetailViewModel(task:project:account:)))
+            }
+        )
     }
     Tab(AppTab.projects.title, systemImage: AppTab.projects.systemImage, value: .projects) {
-        ProjectsRootView()
+        ProjectsRootView(/* view-model + destination closures from AppContainer */)
     }
     Tab(AppTab.settings.title, systemImage: AppTab.settings.systemImage, value: .settings) {
-        SettingsRootView()
+        SettingsRootView(
+            account: account,
+            makeConnectionsListViewModel: { container.makeConnectionsListViewModel(onActiveAccountChanged: onAccountsChanged) },
+            makeConnectionFormViewModel: { mode in container.makeConnectionFormViewModel(mode: mode, onActiveAccountChanged: onAccountsChanged) }
+        )
     }
     Tab(value: AppTab.search, role: .search) {   // separated glass pill, iOS 26 search role
         SearchRootView()
     }
 }
-.tabViewBottomAccessory {                         // floating accessory above the bar
-    QuickAddAccessoryView()                        // placeholder — no task-creation flow yet
-}
 .tabBarMinimizeBehavior(.onScrollDown)
+.overlay(alignment: .bottomTrailing) {           // bare circular FAB, not a system accessory
+    QuickAddButton { isShowingQuickAdd = true }
+}
+.sheet(isPresented: $isShowingQuickAdd) {
+    QuickAddSheetView(viewModel: container.makeQuickAddTaskViewModel(account: account))
+}
 ```
 
-`AppTab`, `MainTabView`, and `QuickAddAccessoryView` live in the app target, not a
-package, because `Tab(role:)`, `.tabViewBottomAccessory`, and
-`.tabBarMinimizeBehavior` are iOS-26-only APIs, while every package floors at
-`.iOS(.v17)` for portability (see `CLAUDE.md` § Conventions). `AppTab` is also the
-one enum allowed to know about every Feature's tab at once — Features themselves
-never reference each other.
+The FAB is a plain `.overlay`, **not** `.tabViewBottomAccessory`: that API
+always paints a system glass background behind its content and centres it over
+the tab bar — neither suppressible nor corner-anchorable — so it can't match
+the mockup's bare floating button. It presents `Features/Tasks`'
+`QuickAddSheetView`.
 
-No root-level account switcher exists (or is planned) outside Settings — with
-only API-token auth and no multi-instance UI built yet, switching accounts stays
-a `Features/Settings` concern rather than top-level navigation state.
+`AppTab`, `MainTabView`, and `QuickAddButton` live in the app target, not a
+package, because `Tab(role:)` and `.tabBarMinimizeBehavior` are iOS-26-only
+APIs, while every package floors at `.iOS(.v17)` for portability (see
+`CLAUDE.md` § Conventions). `AppTab` is also the one enum allowed to know about
+every Feature's tab at once — Features themselves never reference each other.
+
+No root-level account switcher exists outside Settings — switching, adding,
+editing, and removing connections is a `Features/Settings` concern
+(`ConnectionsListView`/`ConnectionFormView`, see §5) rather than top-level
+navigation state; `RootView` only reacts to the *result* via
+`onAccountsChanged`.
 
 ---
 
@@ -250,16 +307,19 @@ Three layers, each with a single responsibility:
 **a) `APIClient` — generic transport, knows nothing about Vikunja**
 
 ```swift
-public protocol APIClient {
-    func send<T: Decodable>(_ endpoint: Endpoint) async throws -> T
+public protocol APIClient: Sendable {
+    func send<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> Response
     func send(_ endpoint: Endpoint) async throws // no response body
 }
 ```
 
-The concrete implementation (`URLSessionAPIClient`) resolves the active instance's
-base URL, attaches auth headers, handles token refresh, and maps raw HTTP errors to
-domain-level `VikunjaError`. An `Endpoint` is a plain struct (path, method, query,
-body) — adding/changing an endpoint means touching a single file.
+The concrete implementation (`URLSessionAPIClient`, an `actor`) is built with a
+base URL and an optional `@Sendable () async -> String?` token provider,
+attaches the bearer header per request, and maps raw HTTP status codes to
+domain-level `VikunjaError`. An `Endpoint` is a plain struct (path, method,
+query, body `Data`), with an `Endpoint.encoding(path:method:body:)` helper that
+JSON-encodes an `Encodable` body — adding/changing a route means touching the
+single `VikunjaEndpoints` file.
 
 **b) DTOs + Mappers — the buffer against JSON changes**
 
@@ -268,6 +328,24 @@ DTOs (`TaskDTO`, `ProjectDTO`, ...) are a *tolerant* mirror of the real JSON
 `Mapper` converts a DTO into a `VikunjaCore` domain model. If Vikunja renames or
 adds a field, you touch the DTO and the mapper; the domain model and everything
 upstream (ViewModels, Views) stays untouched.
+
+One quirk this layer absorbs: Vikunja's task-update endpoint is a **full
+replace** — any field missing from the request body is reset server-side, not
+left alone. So `VikunjaTaskRepository.update` first `GET`s the current task and
+`TaskMapper.merge(_:onto:)` overlays only the fields `VikunjaTask` actually
+tracks, carrying every other field (including ones the domain model doesn't
+model at all — `percent_done`, `reminders`, ...) through untouched. `TaskDTO`
+deliberately holds that long tail of never-mapped fields for this reason.
+Relations and labels aren't in the task body at all — they have their own
+endpoints (`/tasks/{id}/relations`, `/tasks/{id}/labels`) behind
+`TaskRelationRepositoryProtocol` / `LabelRepositoryProtocol` — so a caller that
+edits a task has to re-attach the relations/labels it already loaded onto the
+update response itself (see `Features/Tasks`). Comments are the same shape
+again: their own endpoint (`/tasks/{id}/comments`) behind
+`TaskCommentRepositoryProtocol`, mapped by `CommentMapper`. Vikunja stores a
+comment's body as its rich-text editor's HTML output — `CommentDTO.comment` is
+carried through as-is; rendering it as plain text is a `Features/Tasks`
+concern (`CommentTextFormatter`), not something this layer strips.
 
 **c) `Repository` — implements `VikunjaCore`'s protocols**
 
@@ -310,9 +388,9 @@ public protocol CapabilityProvider {
 }
 ```
 
-- When connecting to an instance (or logging in), the app hits `/info` once,
-  stores the result in the `SessionManager` for that account, and caches it in
-  memory.
+- When connecting to an instance (or logging in), the app hits `/info` once and
+  the `CapabilityProvider` caches the result in memory for that session (a
+  longer-lived per-account `SessionManager` is still future work — see §5).
 - Features query `capabilityProvider.supports(.totp)` to show/hide UI, instead of
   hardcoding version comparisons spread across the codebase.
 - For differences in **JSON shape** between old/new backend versions (not just
@@ -351,20 +429,34 @@ public struct InstanceAccount: Identifiable, Codable {
 - `AccountStoreProtocol` (`VikunjaCore`) is implemented by `KeychainAccountStore`
   in `VikunjaAuth`: it stores the account list, each account's bearer token
   (keyed by account id, so removing one account never touches another's secret),
-  and which account is active — all in the Keychain, never `UserDefaults`.
-  Adding an account makes it the active one.
+  and which account is active — all in the Keychain, never `UserDefaults`. The
+  protocol is full CRUD, not just add-on-connect: `fetchAccounts`,
+  `activeAccount`, `addAccount(_:token:)` (also makes it active),
+  `updateAccount(_:token:)` (metadata in place, optionally rotating the token,
+  without changing which account is active), `removeAccount(id:)`,
+  `setActiveAccount(id:)`, and `token(forAccountID:)`. `Features/Settings` is
+  what actually exercises all of it — list every account, add one, edit one
+  (including rotating its token), delete one, and switch which is active; see
+  `CLAUDE.md`'s `Features/Settings` entry for the screen-level detail.
 - `InstanceClientFactoryProtocol` (`VikunjaCore`, implemented by
-  `VikunjaInstanceClientFactory` in `VikunjaNetworking`) builds a
-  `CapabilityProvider` for a URL that doesn't have an account yet — this is what
-  lets the onboarding flow probe `GET /api/v1/info` to confirm an address is a
-  real Vikunja instance before the connection is saved.
+  `VikunjaInstanceClientFactory` in `VikunjaNetworking`) builds clients for a
+  given instance URL: a `CapabilityProvider` for a URL that doesn't have an
+  account yet (so onboarding — and `Settings`' "test connection" — can probe
+  `GET /api/v1/info` to confirm an address is a real Vikunja instance before
+  the connection is saved), and each repository (`makeTaskRepository`,
+  `makeProjectRepository`, `makeLabelRepository`,
+  `makeTaskRelationRepository`, `makeTaskCommentRepository`) for an
+  already-connected account, taking a `tokenProvider` closure that resolves
+  the bearer token per request. This is the seam `AppContainer` wires screen
+  dependencies through.
 - `InstanceURL.normalize(_:)` (`VikunjaCore`) turns whatever the user typed — a
   bare domain or a full URL, with or without a trailing path — into the
   scheme+host `URL` the networking layer expects as `baseURL`.
 - A `SessionManager` that tracks the active account's live `APIClient` +
   `CapabilityProvider` for the rest of the app to use, and OIDC support, are
-  still future work — not needed yet, since nothing outside onboarding consumes
-  an active connection today.
+  still future work. Not needed yet: today every `AppContainer` factory just
+  builds a fresh repository per screen call from the account's `baseURL` plus
+  a token-provider closure — see §6.
 
 ---
 
@@ -377,23 +469,29 @@ constructor injection. It's the only file in the project that imports both
 ```swift
 @MainActor
 final class AppContainer {
-    let sessionManager: SessionManager
-    let taskRepository: TaskRepositoryProtocol
-    let capabilityProvider: CapabilityProvider
-    // ...
+    let accountStore: AccountStoreProtocol          // KeychainAccountStore
+    let clientFactory: InstanceClientFactoryProtocol // VikunjaInstanceClientFactory
+    let toastCenter = ToastCenter()                  // the app's single toast host
 
-    init() {
-        let session = KeychainSessionManager()
-        self.sessionManager = session
-        self.taskRepository = VikunjaTaskRepository(client: session.apiClient)
-        self.capabilityProvider = VikunjaCapabilityProvider(client: session.apiClient)
-    }
+    // One factory per screen. Each resolves the account's repositories from the
+    // factory (baseURL + a per-request keychain token-provider closure) and
+    // passes `toastCenter` wherever a `ToastPresenting` is needed.
+    func makeTodayViewModel(account: InstanceAccount) -> TodayViewModel { ... }
+    func makeProjectsListViewModel(account: InstanceAccount) -> ProjectsListViewModel { ... }
+    func makeTaskDetailViewModel(task:project:account:) -> TaskDetailViewModel { ... }
+    func makeQuickAddTaskViewModel(account:) -> QuickAddTaskViewModel { ... }
+    // account CRUD doesn't take `account:` — it isn't scoped to one instance
+    func makeConnectionsListViewModel(onActiveAccountChanged: @escaping () -> Void) -> ConnectionsListViewModel { ... }
+    func makeConnectionFormViewModel(mode: ConnectionFormMode, onActiveAccountChanged: @escaping () -> Void) -> ConnectionFormViewModel { ... }
+    // ...
 }
 ```
 
-This keeps zero new external dependencies, stays testable (tests build an
-`AppContainer` with mocks conforming to the same protocols), and reinforces the
-central idea: anything "dirty" about networking lives behind a wall of protocols.
+There's no long-lived `SessionManager` yet — a screen's repositories are built
+on demand from the active `InstanceAccount`. This keeps zero new external
+dependencies, stays testable (tests build view models with fakes conforming to
+the same `VikunjaCore` protocols), and reinforces the central idea: anything
+"dirty" about networking lives behind a wall of protocols.
 
 ---
 
@@ -412,14 +510,30 @@ central idea: anything "dirty" about networking lives behind a wall of protocols
 
 ## Next steps
 
-The shell is built and wired, and the most central slice of Vikunja's model is
-now real: `Projects` (list → tree → overview) and `Tasks` (detail, reachable
-from a project's task list) both sit on top of `VikunjaCore`/`VikunjaNetworking`
-end to end, including relations (subtasks/dependencies). What's still a
-placeholder is `Home` (just confirms the connected instance) and `Search`
-(bare screen) — the natural next slice is giving `Search` a real query against
-`ProjectRepositoryProtocol`/`TaskRepositoryProtocol`, since both already exist.
-`Settings` has only one real action (reset connection) — an account switcher
-and preferences are still open. The quick-add accessory's `onTap` is the other
-open thread — today it's a visible no-op; wiring it up will likely mean giving
-`Tasks` a create flow, not just the read-only detail screen it has now.
+The shell is built and wired, and the central slice of Vikunja's model is real
+end to end on top of `VikunjaCore`/`VikunjaNetworking`: `Home` (every project's
+tasks merged and grouped by due date), `Projects` (list → tree → overview,
+plus project creation and task deletion), `Tasks` (a detail screen with
+editable title/description/completion/due date/priority/labels/relations plus
+a comment thread, and a tab-bar quick-add sheet), and `Settings` (full
+multi-account management). Task and project create/update/delete, label CRUD
++ association, relation add/remove, and task comment fetch/add all go through
+the networking layer.
+
+Open threads:
+
+- **`Search`** is still a placeholder. The natural next slice is a real query
+  against `ProjectRepositoryProtocol` / `TaskRepositoryProtocol.searchTasks`
+  (both already exist).
+- **Subtasks** render read-only on the detail screen (a `TaskRelation` is too
+  thin to round-trip through an update without an extra fetch per row) — making
+  them togglable/creatable like the other relation kinds is unfinished.
+- **Comment editing/deletion**: `TaskCommentRepositoryProtocol.updateComment`/
+  `deleteComment` exist and are implemented in `VikunjaNetworking`, but
+  `TaskDetailViewModel` and the comment UI only wire up fetch and add so far.
+- **`SessionManager`** (a single source of truth for the active account's live
+  `APIClient` + `CapabilityProvider`) and **OIDC** are still unbuilt — today
+  each `AppContainer` factory builds its own repository per screen from the
+  account's `baseURL` + a keychain token-provider closure.
+- **Offline / local persistence** remains a later phase — everything is still
+  re-fetched from the server.

@@ -23,8 +23,10 @@ cd Packages/VikunjaAuth && swift build && swift test
 cd Packages/VikunjaNavigation && swift build && swift test
 cd Packages/VikunjaDesignSystem && swift build && swift test
 cd Packages/Features/Onboarding && swift build && swift test
+cd Packages/Features/Home && swift build && swift test
 cd Packages/Features/Projects && swift build && swift test
 cd Packages/Features/Tasks && swift build && swift test
+cd Packages/Features/Settings && swift build && swift test
 ```
 
 Run a single test (packages use swift-testing, not XCTest):
@@ -60,52 +62,105 @@ by the compiler, not just convention:
 
 - **`VikunjaCore`** — pure Swift, no networking, no UI, no dependencies.
   - `Domain/` — domain models (`VikunjaTask`, `Project`, `User`, `Label`,
-    `TaskRelation`, `InstanceAccount`, `InstanceURL`). `InstanceAccount` holds only
+    `TaskRelation`, `RelationKind`, `TaskComment`, `InstanceAccount`,
+    `InstanceURL`, `ToastStyle`). `InstanceAccount` holds only
     id/displayName/baseURL/createdAt — no `authMethod` field, since only API
     token auth is modeled today. `InstanceURL.normalize(_:)` turns a bare
     domain or full URL the user typed into the scheme+host `URL` the
     networking layer expects as `baseURL`. `TaskRelation` is a thin
     id/title/isDone/projectID summary (not a full recursive `VikunjaTask`) used
-    for `VikunjaTask.subtasks`, `.dependsOn`, and `.blocks` — Vikunja represents
-    all three the same way, as a "related task" keyed by relation kind.
+    for `VikunjaTask.subtasks`, `.dependsOn`, `.blocks`, and `.otherRelations`
+    — Vikunja represents every relation the same way, as a "related task"
+    keyed by relation kind. `RelationKind` is that key: `subtask`/`blocked`/
+    `blocking` map onto the three named `VikunjaTask` fields (they get distinct
+    UI — checkboxes, the "Blocked" banner); every other kind (`related`,
+    `precedes`, `duplicateof`, ...) is carried generically in
+    `VikunjaTask.otherRelations` (`[RelationKind: [TaskRelation]]`).
+    `TaskComment` is id/comment/author/created/updated — a task's comment
+    thread, kept separate from `VikunjaTask` itself since it's loaded and
+    posted through its own endpoint.
   - `Protocols/` — the contracts Features are meant to depend on
-    (`TaskRepositoryProtocol`, `ProjectRepositoryProtocol`, `AuthServiceProtocol`,
-    `AccountStoreProtocol`, `InstanceClientFactoryProtocol`).
+    (`TaskRepositoryProtocol`, `ProjectRepositoryProtocol`,
+    `LabelRepositoryProtocol`, `TaskRelationRepositoryProtocol`,
+    `TaskCommentRepositoryProtocol`, `AuthServiceProtocol`,
+    `AccountStoreProtocol`, `InstanceClientFactoryProtocol`,
+    `ToastPresenting`). `TaskRepositoryProtocol` and `ProjectRepositoryProtocol`
+    now cover full CRUD; `TaskRepositoryProtocol` also has
+    `searchTasks(query:)` (account-wide, not project-scoped — for the relation
+    picker). `LabelRepositoryProtocol` covers label CRUD plus attach/detach
+    against a task; `TaskRelationRepositoryProtocol` is just add/remove a
+    relation of a given `RelationKind`; `TaskCommentRepositoryProtocol` is
+    fetch/add/update/delete for one task's comments (only fetch and add are
+    wired into `Features/Tasks` today — see below). `AccountStoreProtocol` is
+    full multi-account CRUD (`fetchAccounts`/`addAccount`/`updateAccount`/
+    `removeAccount`/`setActiveAccount`/`token(forAccountID:)`), not just a
+    single saved connection.
   - `Capabilities/` — `VikunjaServerInfo`, `CapabilityProvider`, `VikunjaFeature`:
     the runtime feature-detection layer (see below).
   - `Errors/` — `VikunjaError`, the domain-level error type everything surfaces.
 
 - **`VikunjaNetworking`** — the only module that knows Vikunja speaks HTTP/JSON.
   Depends on `VikunjaCore`.
-  - `Client/` — generic transport: `APIClient` protocol, `Endpoint` struct, and the
-    concrete `URLSessionAPIClient` actor (maps HTTP status codes to `VikunjaError`).
+  - `Client/` — generic transport: `APIClient` protocol, `Endpoint` struct
+    (with an `Endpoint.encoding(path:method:body:)` helper that JSON-encodes a
+    body), and the concrete `URLSessionAPIClient` actor (maps HTTP status codes
+    to `VikunjaError`).
   - `Endpoints/VikunjaEndpoints.swift` — the single file that knows Vikunja's actual
     REST routes (`/api/v1/...`). This is where a real API change gets fixed.
+    Covers `/info`, login, full task + project CRUD (**create is `PUT`**, update
+    is `POST` — Vikunja's convention, not a typo), label CRUD plus task/label
+    association (`/tasks/{id}/labels`), task relation add/remove
+    (`/tasks/{id}/relations`), task comment CRUD (`/tasks/{id}/comments`), and
+    account-wide task search (`GET /api/v1/tasks?s=`
+    — note `/tasks`, **not** the older `/tasks/all`; see the doc comment on
+    `searchTasks` for the version nuance).
   - `DTOs/` — `Codable` structs mirroring the raw JSON, tolerant of optional/missing
     fields. Field names are best-effort and **must be verified against a live
     instance's swagger docs (`/api/v1/docs`)** before pointing this at a real server.
     `RelatedTaskDTO` mirrors one entry of `TaskDTO.relatedTasks` (JSON key
     `related_tasks`), a `[String: [RelatedTaskDTO]]` keyed by relation kind
-    (`"subtask"`, `"blocked"`, `"blocking"`, ...).
+    (`"subtask"`, `"blocked"`, `"blocking"`, ...). `LabelDTO`, `TaskLabelDTO`
+    (attach-label body), `CreateTaskRelationDTO` (add-relation body),
+    `CommentDTO` (a task comment; the body arrives as the rich-text editor's
+    HTML — see `Mappers/` below). `JSONValue`
+    is a shape-agnostic JSON box used only for `TaskDTO` fields whose real
+    structure isn't verified (`reminders`, `assignees`) — see the next bullet.
+    `TaskDTO` carries a large tail of fields it **never** populates from the
+    domain model (`doneAt`, `startDate`, `reminders`, `percentDone`,
+    `hexColor`, ...); they exist purely so an update can round-trip the
+    server's current state untouched.
   - `Mappers/` — DTO → domain model translation. `TaskRelationMapper` maps one
     `RelatedTaskDTO` to a `TaskRelation`; `TaskMapper` reads `subtasks`/
-    `dependsOn`/`blocks` out of `TaskDTO.relatedTasks` by kind. Vikunja manages
-    relations through their own endpoint rather than the task update body, so
-    `TaskMapper`'s update-response mapping doesn't carry them back — see
-    `TaskDetailViewModel.toggleDone()` in `Features/Tasks` for how callers
-    preserve the previously-loaded relations across an update instead of
-    losing them.
+    `dependsOn`/`blocks`/`otherRelations` out of `TaskDTO.relatedTasks` by kind
+    (unrecognized kind strings are dropped, not fatal). `LabelMapper` for
+    `Label`; `CommentMapper` for `TaskComment`. Two things about updates:
+    - Vikunja manages relations and labels through their own endpoints rather
+      than the task update body, so `TaskMapper`'s update-response mapping
+      doesn't carry them back — see `TaskDetailViewModel.persist(previous:)` in
+      `Features/Tasks` for how callers preserve the previously-loaded
+      relations/labels across an update instead of losing them.
+    - Vikunja's task update is a **full replace**: any field the request body
+      omits is reset to zero/null server-side. `VikunjaTaskRepository.update`
+      therefore `GET`s the current task first and `TaskMapper.merge(_:onto:)`
+      overwrites only the fields `VikunjaTask` tracks, leaving everything else
+      (including fields the domain model doesn't represent) exactly as the
+      server last reported it.
   - `Repositories/` — concrete implementations of `VikunjaCore`'s protocols
-    (`VikunjaTaskRepository`, `VikunjaProjectRepository`, `VikunjaCapabilityProvider`,
-    `VikunjaAuthService`, `VikunjaInstanceClientFactory`). These are what eventually
-    get injected into Features.
+    (`VikunjaTaskRepository`, `VikunjaProjectRepository`, `VikunjaLabelRepository`,
+    `VikunjaTaskRelationRepository`, `VikunjaTaskCommentRepository`,
+    `VikunjaCapabilityProvider`, `VikunjaAuthService`,
+    `VikunjaInstanceClientFactory`). These are what eventually get injected
+    into Features. `VikunjaInstanceClientFactory` builds one of these per
+    screen call — see `InstanceClientFactoryProtocol` — from a `baseURL` plus
+    a `tokenProvider` closure; there's no long-lived per-account client.
 
 - **`VikunjaAuth`** — multi-account/instance storage. Depends on `VikunjaCore`.
   - `KeychainAccountStore` — implements `AccountStoreProtocol`: the account list,
     each account's bearer token (keyed by account id, in its own Keychain item so
     removing one account never touches another's secret), and the active-account
     pointer, all in the Keychain, never `UserDefaults`. Adding an account makes it
-    the active one.
+    the active one; updating one can rotate its token or leave it untouched;
+    removing one deletes both its metadata and its token item.
   - `Keychain` — internal `Security`-framework wrapper (generic password items);
     not part of the module's public API.
 
@@ -122,13 +177,24 @@ by the compiler, not just convention:
   is dependency-free). The shared design tokens and views every Feature should
   build on (colors, typography, spacing; more token categories and shared
   views land here over time).
-  - `VikunjaColor` — `brandPrimary` plus `VikunjaColor.Priority` (`urgent`/`high`/
-    `medium`/`low`). Values that originate as `oklch(...)` in the design source are
-    pre-converted to sRGB hex once (via a private `Color(hex:)` initializer)
-    rather than converted at runtime.
+  - `VikunjaColor` — `brandPrimary`; `VikunjaColor.Priority` (`urgent`/`high`/
+    `medium`/`low`); `Surface` (`card`/`field`/`page` grouped-content
+    backgrounds, backed by adaptive iOS system colors — see
+    `Color+Platform.swift`); `textSecondary`/`textTertiary` (a darker, more
+    legible gray scale than the system `.secondary`/`.tertiary`); `Semantic`
+    (`success`/`danger` plus darker `successText`/`dangerText` for text drawn
+    on a tinted banner); and `SwatchPalette` (preset hex strings offered when
+    picking a color for a label or project the user is creating). Values that
+    originate as `oklch(...)` in the design source are pre-converted to sRGB
+    hex once (via a private `Color(hex:)` initializer) rather than converted at
+    runtime. `Color(vikunjaHex:)` (public) parses an API `hex_color` string
+    off a `Project`/`Label`, returning `nil` for unset/malformed so callers
+    fall back to a token.
   - `VikunjaFont` — wraps the system Dynamic Type text styles under our own
     names, so a future custom typeface or weight change happens in one place.
   - `VikunjaSpacing` — spacing scale on a 4pt grid (`xxs` through `xxl`).
+  - `VikunjaRadius` — corner-radius scale (`sm`/`md`/`lg`) for fields, cards,
+    buttons, sheet corners.
   - **Toasts** (`Toast/`) — the app-wide toast system. `ToastCenter` is an
     `@Observable`/`@MainActor` queue (one toast on screen at a time; a second
     `show` while one is up waits its turn) that implements `VikunjaCore`'s
@@ -148,8 +214,8 @@ by the compiler, not just convention:
     `toastPresenter.show("Task created", style: .success)` — no setup beyond
     that one constructor parameter.
 
-- **`Features/Onboarding`** — the "connect to your instance" screen. Depends only
-  on `VikunjaCore`.
+- **`Features/Onboarding`** — the "connect to your instance" screen. Depends on
+  `VikunjaCore` + `VikunjaDesignSystem`.
   - `ViewModels/InstanceSetupViewModel.swift` — `@Observable`, `@MainActor`.
     Normalizes the typed URL via `InstanceURL`, probes it via
     `InstanceClientFactoryProtocol.makeCapabilityProvider(baseURL:).serverInfo()`
@@ -164,60 +230,168 @@ by the compiler, not just convention:
     happens next.
 
 - **`Features/Home`, `Features/Projects`, `Features/Search`, `Features/Settings`**
-  — one per main tab. Depend on `VikunjaCore` + `VikunjaNavigation` (`Projects`
-  also depends on `VikunjaDesignSystem`, now that it has real content — the
-  others are still placeholder screens on that front). Each follows the same
+  — one per main tab. `Search` still depends only on `VikunjaNavigation`
+  (bare placeholder — takes no domain types); `Home`, `Projects`, and
+  `Settings` all depend on `VikunjaCore` + `VikunjaNavigation` +
+  `VikunjaDesignSystem`, with real content behind each. Each follows the same
   shape: `Views/<Name>View.swift`, `Views/<Name>RootView.swift` (public entry
   point — owns a `NavigationStack` bound to its own `Router<FeatureRoute>`),
   and `Navigation/<Name>Route.swift` (an empty route enum until the feature has
   a screen to push). Only `<Name>RootView` is public; the content view stays
-  internal to the package.
-  - `Home` confirms the connected instance's name; `Search` is still a bare
-    placeholder.
-  - `Settings` is mostly placeholder but has one real action: "Update API
-    Token" clears the saved connection (via an `onResetConnection` callback
-    the app target wires to `AccountStoreProtocol`, behind a confirmation
-    dialog), dropping `RootView` back to onboarding.
+  internal to the package. `Home`, `Projects`, `Settings`, and `Tasks` also have
+  a `Models/ScreenLoadState.swift` (a shared `idle`/`loading`/`loaded`/
+  `failure(String)` request-lifecycle enum, not a domain model) and a
+  `Support/VikunjaError+DisplayMessage.swift` (per-feature user-facing error
+  copy).
+  - `Home` is the "Today" screen, fully built: `TodayViewModel` fetches every
+    project (`ProjectRepositoryProtocol.fetchProjects`) and then every
+    project's tasks concurrently (`TaskRepositoryProtocol.fetchTasks`,
+    dropping a project whose fetch fails rather than failing the whole
+    screen), flattening them into one account-wide list — unlike `Projects`'
+    screens, nothing here scopes the fetch to a single project. `TodayView`
+    groups the merged tasks by due date into Overdue/Today/Upcoming sections
+    (ascending by due date within a section) behind an
+    All/Overdue/Today/Upcoming filter chip row; tasks with no due date never
+    appear here, only inside their own project. Each row shows the task's
+    project (color dot + name, looked up from `projectsByID` since a task
+    only carries its `projectID`), an "Overdue" label or due date, a link
+    icon when the task `hasRelations`, and up to two label pills. The
+    completion toggle is optimistic with rollback
+    (`TodayViewModel.toggleDone`); tapping a row pushes `Features/Tasks`'
+    `TaskDetailView` via the same type-erased closure pattern `Projects` uses
+    (see below). Supports pull-to-refresh.
+  - `Settings` is fully built as multi-account management, not just a
+    single reset action: `SettingsView` is a landing screen showing the
+    active connection's name with a "Connections" row that pushes
+    `ConnectionsListView`/`ConnectionsListViewModel` — every saved
+    `InstanceAccount`, with a checkmark on the active one;
+    `setActive(_:)` calls `AccountStoreProtocol.setActiveAccount` and fires
+    an `onActiveAccountChanged` callback. Tapping an account (or a toolbar
+    "+") pushes `ConnectionFormView`/`ConnectionFormViewModel` in `.edit`/
+    `.create` mode (`ConnectionFormMode`) — the same normalize-URL-then-probe-
+    `/api/v1/info` flow as `Onboarding`'s `InstanceSetupViewModel`, plus
+    `deleteConnection()` (refuses, with a toast, to delete the last remaining
+    account) and, in `.edit` mode, an async `load()` that fills in the
+    existing token from the Keychain after the name/URL render immediately.
+    Saving or deleting fires `onActiveAccountChanged` too, since either can
+    change which account is active or edit the active one's own address.
   - `Projects` is fully built: `ProjectsListViewModel` loads the flat project
-    list and arranges it into a parent/child tree by `parentProjectID`;
-    `ProjectsView` renders it as an indented, per-project expand/collapsible
-    list (rows start **collapsed** — `expandedProjectIDs` is empty until the
-    user taps a disclosure chevron, nothing auto-expands on load) inside a
-    `Router<ProjectsRoute>`-driven `NavigationStack`. Selecting a project
-    pushes `ProjectOverviewViewModel`/`ProjectOverviewView` — subprojects as a
-    horizontal card row, the project's own tasks grouped into
-    Overdue/Pending/Completed sections behind an All/Pending/Overdue/Completed
-    filter. Selecting a task pushes into `Features/Tasks`'s `TaskDetailView`
+    list and arranges it into a parent/child tree by `parentProjectID`, then
+    fetches each project's own tasks concurrently to populate
+    `taskSummaries` (`ProjectTaskSummary`: done/total counts, dropped rather
+    than failing the screen if a project's fetch fails) for a per-row
+    completion indicator; `ProjectsView` renders the tree as an indented,
+    per-project expand/collapsible list (rows start **collapsed** —
+    `expandedProjectIDs` is empty until the user taps a disclosure chevron,
+    nothing auto-expands on load) inside a `Router<ProjectsRoute>`-driven
+    `NavigationStack`. A toolbar "+" opens
+    `CreateProjectSheetView`/`CreateProjectViewModel` — a compact sheet for
+    title + color swatch + parent project (parent defaults to "None"/root, or
+    is preset when opened from within a project), creating via
+    `ProjectRepositoryProtocol.create` and surfacing a success toast.
+    Selecting a project pushes `ProjectOverviewViewModel`/
+    `ProjectOverviewView` — subprojects as a horizontal card row (each with
+    its own recursively-fetched completion count), the project's own tasks
+    grouped into Overdue/Pending/Completed sections (ascending by due date)
+    behind an All/Pending/Overdue/Completed filter. A task row's completion
+    toggle persists optimistically; a long-press context menu offers
+    "Delete", which goes through a confirmation dialog to
+    `ProjectOverviewViewModel.delete` (`TaskRepositoryProtocol.delete` +
+    toast). Selecting a task pushes into `Features/Tasks`'s `TaskDetailView`
     (see below) via a type-erased `(VikunjaTask, Project) -> AnyView` closure
     supplied by `ProjectsRootView`'s initializer — `Projects` never imports
     `Tasks` directly; the app target's `AppContainer` is what actually
-    supplies that closure, keeping the cross-feature navigation decoupled the
-    same way networking is.
+    supplies that closure (and the `CreateProjectViewModel` factory), keeping
+    the cross-feature navigation and repository wiring decoupled the same
+    way networking is. `Home` reuses this exact same closure pattern for its
+    own push into `TaskDetailView`.
 
-- **`Features/Tasks`** — a single task's detail screen: completion toggle, due
-  date, priority, labels, subtasks, and dependencies (`dependsOn`/`blocks`, with
-  a "Blocked" banner when any `dependsOn` relation is incomplete). Depends on
-  `VikunjaCore` + `VikunjaDesignSystem` only — no `VikunjaNavigation` of its
-  own, since `TaskDetailView` is always pushed as a leaf screen onto whichever
-  feature's stack opened it (`Projects`, today). `TaskDetailViewModel.task`
-  starts as whatever was passed in at navigation time (no blank/spinner flash)
-  and `load()` refreshes it from the server; `toggleDone()` optimistically
-  flips completion, persists it, and carries the previously-loaded
-  `subtasks`/`dependsOn`/`blocks` onto the server's response since Vikunja's
-  task-update endpoint doesn't return relations (see the `Mappers/` note
-  above) — without that, toggling completion would make those sections vanish.
+- **`Features/Tasks`** — two things: a single task's detail screen
+  (`TaskDetailView`/`TaskDetailViewModel`) and the quick-add task flow
+  (`QuickAddSheetView`/`QuickAddTaskViewModel`). Depends on `VikunjaCore` +
+  `VikunjaDesignSystem` only — no `VikunjaNavigation` of its own, since neither
+  view owns push navigation: `TaskDetailView` is always pushed as a leaf screen
+  onto whichever feature's stack opened it (`Home` or `Projects`, today), and
+  `QuickAddSheetView` is a `.sheet` presented by whoever owns the FAB
+  (`MainTabView`).
+  - **Detail screen**: an inline-editable title and description (see below),
+    completion toggle, due date, priority, labels, subtasks (read-only
+    checklist), a combined "Relations" section covering `dependsOn`/`blocks`
+    plus every `otherRelations` kind (with a "Blocked" banner when any
+    `dependsOn` relation is incomplete), and a "Comments" section (see
+    below). `TaskDetailViewModel.task` starts as whatever was passed in at
+    navigation time (no blank/spinner flash) and `load()` refreshes it from
+    the server; the screen also supports pull-to-refresh. All edits are
+    optimistic with rollback: `toggleDone()`/`setDueDate()`/`setPriority()`/
+    `setTitle()`/`setDescription()` go through `persist(previous:)`, which
+    carries the previously-loaded relations/labels onto the server's
+    response since Vikunja's task-update endpoint doesn't return them (see
+    the `Mappers/` note above) — without that, editing would make those
+    sections vanish. Title and description are edited inline (not a
+    separate sheet) and committed via a nav bar checkmark, not the keyboard's
+    return key, matching Notes/Reminders.
+  - **Labels**: `LabelPickerSheet` (a `.searchable` list) toggles membership
+    via `LabelRepositoryProtocol.addLabel`/`removeLabel`, and can
+    create-and-attach a new label on the fly (`createAndAddLabel`); `allLabels`
+    is loaded lazily.
+  - **Relations**: a two-step sheet — pick a `RelationKind`, then pick the
+    other task. The task picker searches account-wide
+    (`TaskRepositoryProtocol.searchTasks`) and, before the user types,
+    suggests the current task's own project's other tasks (most relations are
+    intra-project). Tapping an existing relation row resolves the full task +
+    its project (`loadRelatedTask`) and pushes another `TaskDetailView` for it
+    — `makeDetailViewModel` reuses this view model's own dependencies so the
+    recursion needs nothing from `AppContainer`.
+  - **Comments**: `loadComments()` runs alongside `load()` but reports into
+    its own `commentsLoadState`, so a comments-fetch failure doesn't block the
+    rest of the screen. `addComment(_:)` posts via
+    `TaskCommentRepositoryProtocol.addComment` and appends the server's
+    response (no optimistic placeholder, since a comment's id/author/
+    timestamps only exist once the server assigns them). Comment bodies
+    arrive as the Vikunja rich-text editor's HTML output; `CommentTextFormatter`
+    strips that down to plain text since this feature has no rich-text
+    renderer yet. Editing/deleting an existing comment
+    (`TaskCommentRepositoryProtocol.updateComment`/`deleteComment`) is defined
+    on the protocol but not yet wired into `TaskDetailViewModel` or the view.
+  - `TaskDetailViewModel` takes `task` + `project` + **five** repository
+    protocols (`TaskRepositoryProtocol`, `LabelRepositoryProtocol`,
+    `TaskRelationRepositoryProtocol`, `TaskCommentRepositoryProtocol`,
+    `ProjectRepositoryProtocol`) + a `ToastPresenting`, all via constructor
+    injection.
+  - **Quick-add** (`QuickAddTaskViewModel`): title + project + priority only
+    (matching the mockup's `AddTaskSheet`). Opened from the tab bar FAB with
+    no project context, so `selectedProjectID` starts `nil` and `canSave`
+    stays false until one is picked. Creates via `TaskRepositoryProtocol.create`
+    and shows a success toast.
 
-Features should only ever import `VikunjaCore`/`VikunjaNavigation` and depend on
-`VikunjaCore`'s protocols — never import `VikunjaNetworking` or `VikunjaAuth`
-directly. The `AppContainer` composition root (`vikunja/AppContainer.swift`) is the
-only place expected to know about concrete `VikunjaNetworking`/`VikunjaAuth` types
-and wire them into the protocol-typed dependencies Features receive. This is what
-keeps a Vikunja API change contained to `VikunjaNetworking` instead of rippling
-into UI code.
+Features should only ever import `VikunjaCore`/`VikunjaNavigation`/
+`VikunjaDesignSystem` and depend on `VikunjaCore`'s protocols — never import
+`VikunjaNetworking` or `VikunjaAuth` directly. The `AppContainer` composition
+root (`vikunja/AppContainer.swift`) is the only place expected to know about
+concrete `VikunjaNetworking`/`VikunjaAuth` types and wire them into the
+protocol-typed dependencies Features receive. It exposes one `make…ViewModel`
+factory per screen; a screen scoped to one instance takes `account:` and each
+factory builds its repositories through `InstanceClientFactoryProtocol` with a
+`tokenProvider` closure that re-reads that account's bearer token from
+`AccountStoreProtocol` **per request** (so a rotated/removed token is never
+cached) — `Settings`' account-management factories
+(`makeConnectionsListViewModel`, `makeConnectionFormViewModel`) are the
+exception, since they operate across every saved account rather than one.
+Every factory passes the single `container.toastCenter` wherever a
+`ToastPresenting` is needed. This is what keeps a Vikunja API change contained
+to `VikunjaNetworking` instead of rippling into UI code.
 
 **Top-level navigation** (`vikunja/RootView.swift`, `vikunja/Navigation/`): `RootView`
-switches between `InstanceSetupView` (no connected account yet) and `MainTabView`
-(a connected account exists). `MainTabView` is the floating, Liquid Glass tab bar —
+switches between `InstanceSetupView` (no saved account yet) and `MainTabView`
+(the active account, once one exists). It re-reads the active account from
+`AccountStoreProtocol` on launch and again whenever `Settings`' connection
+screens report `onAccountsChanged` (switching accounts, deleting the active
+one, or editing its own address); `MainTabView` is rendered `.id(connectedAccount)`
+so any of those changes tears down and rebuilds the whole tab shell against
+the new account rather than trying to mutate view models built against the
+old `baseURL` in place. Deleting the last saved account surfaces here too:
+the re-read comes back `nil` and `RootView` falls back to onboarding.
+`MainTabView` is the floating, Liquid Glass tab bar —
 the default look for `TabView` on iOS 26+ — with one `Tab` per `AppTab` case
 (`.home`, `.projects`, `.settings`, plus `.search` using iOS 26's dedicated
 `.search` tab role, which renders as a separated glass pill) and a
@@ -225,7 +399,9 @@ the default look for `TabView` on iOS 26+ — with one `Tab` per `AppTab` case
 a plain `.overlay(alignment: .bottomTrailing)`, not `.tabViewBottomAccessory`:
 that API always paints a system glass background behind its content and
 centers it over the tab bar, which can't be suppressed or anchored to a
-corner. `AppTab` and `MainTabView` live in the app target, not a package,
+corner. The FAB presents `Tasks`' `QuickAddSheetView` as a `.sheet`
+(`container.makeQuickAddTaskViewModel(account:)`). `AppTab` and `MainTabView`
+live in the app target, not a package,
 because the `Tab(role:)` / `tabBarMinimizeBehavior` APIs require the iOS 26
 SDK, while packages floor at `.iOS(.v17)`.
 
@@ -251,24 +427,31 @@ behind each one.
   wire them in.
 - **Views use `VikunjaDesignSystem` tokens, not hardcoded values.** Colors go
   through `VikunjaColor`, fonts through `VikunjaFont`, spacing through
-  `VikunjaSpacing` — no raw `Color(...)`/`Font(...)` literals or magic-number
-  padding in `Features/*` views. Add a new token there first if the one you need
-  doesn't exist yet, rather than inlining a one-off value.
+  `VikunjaSpacing`, corner radii through `VikunjaRadius` — no raw
+  `Color(...)`/`Font(...)` literals or magic-number padding in `Features/*`
+  views. Add a new token there first if the one you need doesn't exist yet,
+  rather than inlining a one-off value.
 - **ViewModels take their dependency as a protocol via constructor injection**
   (e.g. `init(repository: TaskRepositoryProtocol)`), never a concrete networking
-  class. Views contain no business logic and no networking knowledge.
+  class. A screen that needs several takes one protocol parameter each (e.g.
+  `TaskDetailViewModel`'s five repositories), plus `ToastPresenting` for
+  user-facing feedback. Views contain no business logic and no networking
+  knowledge.
 - **Each `Features/<Name>` module follows the same internal shape**:
   `Models/` (view-specific state only), `ViewModels/`, `Views/`, `Navigation/`
   (a per-feature `Router<Route>` from `VikunjaNavigation`, typed to a private
   route enum — no direct cross-feature `NavigationLink(destination:)`). The
   package's only public view is `<Name>RootView`, which owns the
   `NavigationStack`/`Router` pair; the app target never touches a feature's
-  route enum or `NavigationPath` directly. Exception: a feature that's only
-  ever pushed as a leaf screen onto another feature's stack (`Features/Tasks`
-  today) has no `Navigation/`/`Router` of its own — it exposes a plain public
-  view instead, and the feature that pushes it supplies a type-erased
+  route enum or `NavigationPath` directly. Exception: a feature whose screens
+  are only ever pushed as a leaf onto another feature's stack or presented as a
+  `.sheet` (`Features/Tasks` today — `TaskDetailView` and `QuickAddSheetView`)
+  has no `Navigation/`/`Router` of its own — it exposes plain public views
+  instead, and the feature that pushes a leaf screen supplies a type-erased
   `AnyView`-returning closure (built by `AppContainer`) rather than importing
-  it directly.
+  it directly. (`TaskDetailView` does push a nested copy of *itself* for a
+  tapped relation, via `navigationDestination(item:)` onto the host stack —
+  that's intra-feature, so no new `Router` is needed.)
 - **No third-party DI framework.** Dependency wiring is a plain `AppContainer`
   with constructor injection.
 - **Credentials (JWT, API tokens) live in the Keychain, never `UserDefaults`.**
