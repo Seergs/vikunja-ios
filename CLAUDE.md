@@ -275,6 +275,19 @@ by the compiler, not just convention:
     existing token from the Keychain after the name/URL render immediately.
     Saving or deleting fires `onActiveAccountChanged` too, since either can
     change which account is active or edit the active one's own address.
+    `SettingsView` also has a "Manage Labels" row that pushes
+    `ManageLabelsView`/`ManageLabelsViewModel` (route `.manageLabels`): the
+    account-wide label list (`LabelRepositoryProtocol.fetchLabels`, sorted by
+    title) with per-row swatch + title, swipe-to-delete behind a
+    `confirmationDialog` (`deleteLabel` — optimistic removal with rollback),
+    and create / rename+recolor through `LabelEditorSheet` — a compact
+    `.sheet` (not a route) in `.create`/`.edit(Label)` mode
+    (`LabelEditorMode`) with a title field and preset `VikunjaColor.SwatchPalette`
+    swatches only, no free-form picker. `createLabel`/`updateLabel` surface a
+    toast; `updateLabel` is optimistic with rollback. This is label
+    management only — nothing here attaches a label to a task (that's
+    `Features/Tasks`' `LabelPickerSheet`). `AppContainer.makeManageLabelsViewModel(account:)`
+    wires the `LabelRepository` through `InstanceClientFactoryProtocol`.
   - `Projects` is fully built: `ProjectsListViewModel` loads the flat project
     list and arranges it into a parent/child tree by `parentProjectID`, then
     fetches each project's own tasks concurrently to populate

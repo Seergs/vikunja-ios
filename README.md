@@ -49,8 +49,8 @@ You can find this app in the App Store
     - Add relations between tasks
     - Remove relations between tasks
 - Labels
-    - Create labels (Partial)
-    - Delete labels (Pending)
+    - Create labels
+    - Delete labels
     - Assign/Unassign Labels to tasks
 
 ## Companion Service
