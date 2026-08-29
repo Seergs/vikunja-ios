@@ -74,6 +74,17 @@ struct MainTabView: View {
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(VikunjaColor.brandPrimary)
+        .overlay(alignment: .topTrailing) {
+            if BuildConfig.isDevBuild {
+                Text("DEV")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(Color.orange, in: Circle())
+                    .padding(VikunjaSpacing.md)
+            }
+        }
         .overlay(alignment: .bottomTrailing) {
             QuickAddButton {
                 isShowingQuickAdd = true
