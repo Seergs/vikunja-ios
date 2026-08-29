@@ -134,6 +134,7 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
     var comments: [TaskComment] = []
     var fetchError: VikunjaError?
     var addError: VikunjaError?
+    var deleteError: VikunjaError?
     private var nextID = 100
 
     func fetchComments(taskID: Int) async throws -> [TaskComment] {
@@ -164,6 +165,7 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
     }
 
     func deleteComment(_ commentID: Int, fromTask taskID: Int) async throws {
+        if let deleteError { throw deleteError }
         comments.removeAll { $0.id == commentID }
     }
 }

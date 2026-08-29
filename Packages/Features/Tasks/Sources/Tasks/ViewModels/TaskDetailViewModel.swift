@@ -354,6 +354,22 @@ public final class TaskDetailViewModel {
         }
     }
 
+    /// Deletes `comment` from the task, optimistically removing it from
+    /// `comments` and restoring the whole list if the server rejects the
+    /// delete — mirrors `removeRelation(_:kind:)`. No author check: whether
+    /// the current user is allowed to delete this comment is the server's
+    /// call, and a rejection just rolls back with a toast.
+    public func deleteComment(_ comment: TaskComment) async {
+        let previous = comments
+        comments.removeAll { $0.id == comment.id }
+        do {
+            try await commentRepository.deleteComment(comment.id, fromTask: task.id)
+        } catch {
+            comments = previous
+            toastPresenter.show("Couldn't delete comment", style: .error)
+        }
+    }
+
     /// Resolves `id` to a project title — the current task's own project
     /// (always known, no network needed) or, once `loadAllProjects()` has
     /// run, any other project on the instance. Returns `nil` if `id` isn't

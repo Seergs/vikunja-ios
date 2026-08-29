@@ -817,6 +817,60 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func deleteCommentRemovesItFromTheList() async {
+        let commentRepository = FakeTaskCommentRepository()
+        let author = User(id: 1, username: "me")
+        commentRepository.comments = [
+            TaskComment(id: 1, comment: "Keep", author: author, created: Date(), updated: Date()),
+            TaskComment(id: 2, comment: "Drop", author: author, created: Date(), updated: Date())
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+        await viewModel.loadComments()
+
+        await viewModel.deleteComment(commentRepository.comments[1])
+
+        #expect(viewModel.comments.map(\.id) == [1])
+    }
+
+    @Test
+    func deleteCommentRestoresTheListAndShowsAnErrorToastOnFailure() async {
+        let commentRepository = FakeTaskCommentRepository()
+        commentRepository.deleteError = .network("offline")
+        let author = User(id: 1, username: "me")
+        let doomed = TaskComment(id: 2, comment: "Drop", author: author, created: Date(), updated: Date())
+        commentRepository.comments = [
+            TaskComment(id: 1, comment: "Keep", author: author, created: Date(), updated: Date()),
+            doomed
+        ]
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: commentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter
+        )
+        await viewModel.loadComments()
+
+        await viewModel.deleteComment(doomed)
+
+        #expect(viewModel.comments.map(\.id) == [1, 2])
+        #expect(toastPresenter.shownMessages.map(\.style) == [.error])
+    }
+
+    @Test
     func moveUpdatesTheTasksProjectAndShowsASuccessToast() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]

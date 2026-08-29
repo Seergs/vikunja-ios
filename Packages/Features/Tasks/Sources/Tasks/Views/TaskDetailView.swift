@@ -18,6 +18,7 @@ public struct TaskDetailView: View {
     @State private var isShowingLabelPicker = false
     @State private var isShowingMovePicker = false
     @State private var isShowingDeleteConfirmation = false
+    @State private var commentPendingDeletion: TaskComment?
     @State private var relationSheetStep: RelationSheetStep?
     @State private var relatedTaskDestination: RelatedTaskDestination?
     @State private var projectDestinationBox: ProjectDestinationBox?
@@ -132,6 +133,20 @@ public struct TaskDetailView: View {
                         dismiss()
                     }
                 }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .confirmationDialog(
+            "This permanently deletes the comment.",
+            isPresented: Binding(
+                get: { commentPendingDeletion != nil },
+                set: { if !$0 { commentPendingDeletion = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: commentPendingDeletion
+        ) { comment in
+            Button("Delete Comment", role: .destructive) {
+                Task { await viewModel.deleteComment(comment) }
             }
             Button("Cancel", role: .cancel) {}
         }
@@ -364,7 +379,8 @@ public struct TaskDetailView: View {
                 loadState: viewModel.commentsLoadState,
                 onSubmit: { text in
                     Task { await viewModel.addComment(text) }
-                }
+                },
+                onDelete: { comment in commentPendingDeletion = comment }
             )
         }
     }
@@ -1370,6 +1386,7 @@ private struct CommentsSection: View {
     let comments: [TaskComment]
     let loadState: ScreenLoadState
     let onSubmit: (String) -> Void
+    let onDelete: (TaskComment) -> Void
     @State private var draft = ""
 
     private var emptyStateMessage: String {
@@ -1386,7 +1403,7 @@ private struct CommentsSection: View {
             } else {
                 VStack(alignment: .leading, spacing: VikunjaSpacing.md - VikunjaSpacing.xxs) {
                     ForEach(comments) { comment in
-                        CommentRow(comment: comment)
+                        CommentRow(comment: comment) { onDelete(comment) }
                     }
                 }
             }
@@ -1403,6 +1420,7 @@ private struct CommentsSection: View {
 
 private struct CommentRow: View {
     let comment: TaskComment
+    let onDelete: () -> Void
 
     private var displayName: String {
         let name = comment.author.name?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1442,6 +1460,15 @@ private struct CommentRow: View {
             .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+        }
+        .contentShape(Rectangle())
+        .contextMenu {
+            // `role: .destructive` alone renders blue here, not red: the tab
+            // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
+            // menu — an explicit `.tint` is what forces the red, mirroring
+            // `ProjectTaskRow`'s context menu in `Features/Projects`.
+            Button("Delete Comment", systemImage: "trash", role: .destructive, action: onDelete)
+                .tint(VikunjaColor.Semantic.danger)
         }
     }
 }
