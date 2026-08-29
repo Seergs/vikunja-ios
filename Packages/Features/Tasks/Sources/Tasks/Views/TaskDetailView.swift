@@ -66,7 +66,7 @@ public struct TaskDetailView: View {
         // doesn't need it: it's single-line, so its own Return key already
         // submits.
         .toolbar {
-            if focusedField == .description {
+            if focusedField == .description || focusedField == .title {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         focusedField = nil
@@ -226,15 +226,10 @@ public struct TaskDetailView: View {
             .padding(.top, VikunjaSpacing.xxs)
 
             if isEditingTitle {
-                // Single-line (no `axis:`) so Return submits via `onSubmit`
-                // instead of inserting a line break — a task title shouldn't
-                // wrap across lines anyway.
-                TextField("Task title", text: $titleDraft)
+                TextField("Task title", text: $titleDraft, axis: .vertical)
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Color.primary)
                     .focused($focusedField, equals: .title)
-                    .submitLabel(.done)
-                    .onSubmit { focusedField = nil }
             } else {
                 Text(task.title)
                     .font(.system(size: 24, weight: .bold))
