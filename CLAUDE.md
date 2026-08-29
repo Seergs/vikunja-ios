@@ -27,6 +27,7 @@ cd Packages/Features/Home && swift build && swift test
 cd Packages/Features/Projects && swift build && swift test
 cd Packages/Features/Tasks && swift build && swift test
 cd Packages/Features/Settings && swift build && swift test
+cd Packages/VikunjaWidgetKit && swift build && swift test
 ```
 
 Run a single test (packages use swift-testing, not XCTest):
@@ -396,6 +397,58 @@ exception, since they operate across every saved account rather than one.
 Every factory passes the single `container.toastCenter` wherever a
 `ToastPresenting` is needed. This is what keeps a Vikunja API change contained
 to `VikunjaNetworking` instead of rippling into UI code.
+
+- **`VikunjaWidgetKit`** — the Today home-screen widget. Not a `Feature`: it's
+  the widget extension's own composition root, so it's the one other module
+  besides `AppContainer` allowed to import `VikunjaNetworking`/`VikunjaAuth`.
+  Depends on `VikunjaCore` + `VikunjaNetworking` + `VikunjaAuth` +
+  `VikunjaDesignSystem`.
+  - `Config/VikunjaWidgetConfig` — the identifiers the app target and the
+    extension must agree on (App Group, `keychain-access-group`,
+    `KeychainAccountStore` service, widget `kind`, URL scheme, refresh
+    interval). Mirrored in the two targets' entitlements.
+  - `Data/TodaySnapshotLoader` — one refresh: resolve the active account +
+    token, fetch every project's tasks concurrently (dropping a project whose
+    fetch fails, exactly like `TodayViewModel`), bucket them via
+    `VikunjaCore.TodayDigest`, and write the result to the App Group cache.
+    Returns a `TodayWidgetState` (`.notConnected`/`.needsAuth`/`.unavailable`/
+    `.content`). **The app also runs this loader** (via
+    `AppContainer.refreshTodayWidgetSnapshot()`, on launch + backgrounding) so
+    the App Group cache is always populated with the app's own credentials —
+    when the widget process can't read the shared keychain (the iOS Simulator,
+    an un-provisioned build) it renders that cache instead of
+    `.notConnected`. Takes `VikunjaCore` protocols for testing;
+    `VikunjaWidgetEnvironment` wires the concrete types.
+  - `Data/TodaySnapshotCache` — best-effort JSON in the App Group container;
+    every op degrades to `nil`/no-op.
+  - `Model/TodayWidgetContent` — flat, `Codable`, capped at
+    `VikunjaWidgetConfig.taskLimit`; deliberately not `VikunjaTask`.
+  - `WidgetKit/` (guarded `#if canImport(WidgetKit)`) — `TodayTimelineProvider`
+    (`.after(30 min)` reload policy), `TodayWidget` (`StaticConfiguration`,
+    small/medium/large), `TodayWidgetView` (design-system tokens only),
+    `ToggleTaskDoneIntent` (`AppIntent` — complete a task from the widget).
+  - The `@main WidgetBundle`, Info.plist and entitlements live in
+    `vikunja-widgets/` (a `PBXFileSystemSynchronizedRootGroup`, like `vikunja/`).
+    The `vikunja-widgets` app-extension target embeds `VikunjaWidgetKit`, is
+    embedded into the `vikunja` app, and shares its App Group + keychain group
+    (`vikunja/vikunja.entitlements` ↔ `vikunja-widgets/vikunja-widgets.entitlements`).
+    `AppContainer` builds its `KeychainAccountStore` with
+    `accessGroup: VikunjaWidgetConfig.keychainAccessGroup` and runs
+    `migrateToAccessGroup()` from `RootView`'s `.task` (via
+    `AppContainer.bootstrap()`). The app nudges the widget via
+    `WidgetCenter.shared.reloadAllTimelines()` on `scenePhase == .background`
+    (`vikunjaApp.swift`). Background/history: `vikunja-widgets/WIDGET_SETUP.md`.
+
+`VikunjaCore.TodayDigest`/`TaskDueBucket` is the shared due-date bucketing rule
+— `Features/Home`'s `TodaySection.sections` and the widget both build on it, so
+the "Today" grouping stays identical in both places.
+
+**Multi-instance credential sharing**: `KeychainAccountStore(accessGroup:)`
+stores the account index, the active-account pointer, and each account's token
+in a shared `keychain-access-group` so the widget process can read them;
+`migrateToAccessGroup()` is a one-time move of pre-existing items from the
+app's private group (safe to call every launch). Passing `accessGroup: nil`
+(the default) keeps the single-process behavior.
 
 **Top-level navigation** (`vikunja/RootView.swift`, `vikunja/Navigation/`): `RootView`
 switches between `InstanceSetupView` (no saved account yet) and `MainTabView`
