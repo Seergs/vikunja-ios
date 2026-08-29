@@ -66,7 +66,10 @@ struct MainTabView: View {
             }
 
             Tab(value: AppTab.search, role: .search) {
-                SearchRootView()
+                SearchRootView(
+                    viewModel: container.makeSearchViewModel(account: account),
+                    onTaskSelected: taskDetailDestination
+                )
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)

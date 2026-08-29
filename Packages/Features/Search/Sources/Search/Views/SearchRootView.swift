@@ -1,20 +1,34 @@
 import SwiftUI
+import VikunjaCore
 import VikunjaNavigation
 
-/// Search's entry point for the app target: owns the tab's own
-/// `NavigationStack` and `Router<SearchRoute>`, so pushing a screen from
-/// inside Search never needs the app target or another feature to know about
-/// it.
 public struct SearchRootView: View {
     @State private var router = Router<SearchRoute>()
+    @State private var viewModel: SearchViewModel
 
-    public init() {}
+    private let onTaskSelected: ((VikunjaTask, Project) -> AnyView)?
+
+    public init(
+        viewModel: SearchViewModel,
+        onTaskSelected: ((VikunjaTask, Project) -> AnyView)? = nil
+    ) {
+        _viewModel = State(initialValue: viewModel)
+        self.onTaskSelected = onTaskSelected
+    }
 
     public var body: some View {
-        // `.navigationDestination(for: SearchRoute.self)` lands here once
-        // `SearchRoute` has its first real case.
         NavigationStack(path: $router.path) {
-            SearchView()
+            SearchView(viewModel: viewModel, onTaskSelected: onTaskSelected)
+                .searchable(
+                    text: $viewModel.query,
+                    placement: .automatic,
+                    prompt: "Search tasks"
+                )
+                .onChange(of: viewModel.query) { _, _ in
+                    Task {
+                        await viewModel.search()
+                    }
+                }
         }
     }
 }

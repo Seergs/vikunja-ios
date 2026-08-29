@@ -2,6 +2,7 @@ import Foundation
 import Home
 import Onboarding
 import Projects
+import Search
 import Settings
 import Tasks
 import VikunjaAuth
@@ -137,6 +138,18 @@ final class AppContainer {
             clientFactory: clientFactory,
             toastPresenter: toastCenter,
             onActiveAccountChanged: onActiveAccountChanged
+        )
+    }
+
+    func makeSearchViewModel(account: InstanceAccount) -> SearchViewModel {
+        let accountStore = self.accountStore
+        let tokenProvider: @Sendable () async -> String? = {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        return SearchViewModel(
+            taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            toastPresenter: toastCenter
         )
     }
 }
