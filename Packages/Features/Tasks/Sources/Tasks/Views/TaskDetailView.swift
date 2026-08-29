@@ -1009,23 +1009,23 @@ private struct DueDatePickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                DatePicker("Due date", selection: $date)
-                    .datePickerStyle(.graphical)
-                    .labelsHidden()
+            ScrollView {
+                VStack {
+                    DatePicker("Due date", selection: $date)
+                        .datePickerStyle(.graphical)
+                        .labelsHidden()
 
-                if hadInitialDate {
-                    Button("Remove Due Date", role: .destructive) {
-                        onSave(nil)
-                        dismiss()
+                    if hadInitialDate {
+                        Button("Remove Due Date", role: .destructive) {
+                            onSave(nil)
+                            dismiss()
+                        }
+                        .padding(.top, VikunjaSpacing.sm)
                     }
-                    .padding(.top, VikunjaSpacing.sm)
                 }
-
-                Spacer(minLength: 0)
+                .padding(.horizontal, VikunjaSpacing.md)
+                .padding(.top, VikunjaSpacing.sm)
             }
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.top, VikunjaSpacing.sm)
             .navigationTitle("Due Date")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -1043,7 +1043,11 @@ private struct DueDatePickerSheet: View {
                 }
             }
         }
-        .presentationDetents([.fraction(0.6)])
+        // Two detents (not one fixed height) so the sheet can be dragged
+        // taller — the graphical calendar plus the hour/minute wheel the
+        // `.graphical` style appends below it don't both fit at the smaller
+        // detent, and a fixed single detent left the wheel unreachable.
+        .presentationDetents([.fraction(0.6), .large])
         .presentationDragIndicator(.visible)
     }
 }
