@@ -10,6 +10,8 @@ struct TodayView: View {
     @Bindable var viewModel: TodayViewModel
     let router: Router<HomeRoute>
     @State private var filter: TodayFilter = .all
+    @State private var taskPendingDelete: VikunjaTask?
+    @State private var taskPendingMove: VikunjaTask?
 
     var body: some View {
         content
@@ -19,6 +21,26 @@ struct TodayView: View {
             .refreshable { await viewModel.load() }
             .navigationTitle("Today")
             .task { await viewModel.load() }
+            .confirmationDialog(
+                "This permanently deletes the task.",
+                isPresented: Binding(
+                    get: { taskPendingDelete != nil },
+                    set: { isPresented in if !isPresented { taskPendingDelete = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                if let taskPendingDelete {
+                    Button("Delete Task", role: .destructive) {
+                        Task { await viewModel.delete(taskPendingDelete) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+            .sheet(item: $taskPendingMove) { task in
+                MoveTodayTaskProjectPickerSheet(viewModel: viewModel) { destination in
+                    Task { await viewModel.move(task, to: destination) }
+                }
+            }
     }
 
     @ViewBuilder
@@ -109,6 +131,10 @@ struct TodayView: View {
                         if let project = viewModel.projectsByID[task.projectID] {
                             router.push(.taskDetail(task, project))
                         }
+                    } onMove: {
+                        taskPendingMove = task
+                    } onDelete: {
+                        taskPendingDelete = task
                     }
                     .padding(.horizontal, VikunjaSpacing.md)
                     .padding(.vertical, VikunjaSpacing.sm)
@@ -262,6 +288,8 @@ private struct TodayTaskRow: View {
     let project: Project?
     let onToggle: () -> Void
     let onOpen: () -> Void
+    let onMove: () -> Void
+    let onDelete: () -> Void
 
     private var projectColor: Color {
         project.flatMap { Color(vikunjaHex: $0.hexColor) } ?? VikunjaColor.brandPrimary
@@ -367,6 +395,11 @@ private struct TodayTaskRow: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
+        .contextMenu {
+            Button("Move", systemImage: "folder", action: onMove)
+            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+                .tint(VikunjaColor.Semantic.danger)
+        }
     }
 }
 
@@ -448,5 +481,87 @@ private struct TodayStatusView: View {
         }
         .padding(VikunjaSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// The "Move to Project" sheet, opened from a task row's long-press menu:
+/// every other project on the instance, grouped under its top-level project,
+/// filterable by `.searchable`.
+private struct MoveTodayTaskProjectPickerSheet: View {
+    @Bindable var viewModel: TodayViewModel
+    let onSelect: (Project) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
+
+    private var filteredGroups: [TodayViewModel.ProjectGroup] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return viewModel.moveProjectGroups }
+        return viewModel.moveProjectGroups.compactMap { group in
+            let rootMatches = group.root.title.localizedCaseInsensitiveContains(trimmed)
+            let matchingChildren = group.children.filter { $0.title.localizedCaseInsensitiveContains(trimmed) }
+            guard rootMatches || !matchingChildren.isEmpty else { return nil }
+            return TodayViewModel.ProjectGroup(root: group.root, children: rootMatches ? group.children : matchingChildren)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: VikunjaSpacing.lg) {
+                    ForEach(filteredGroups) { group in
+                        VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                            MoveTodayTaskProjectPickerRow(project: group.root, isBold: true) { select(group.root) }
+                            ForEach(group.children) { child in
+                                MoveTodayTaskProjectPickerRow(project: child, isBold: false) { select(child) }
+                                    .padding(.leading, VikunjaSpacing.lg)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical, VikunjaSpacing.sm)
+            }
+            .searchable(text: $query, prompt: "Search projects...")
+            .navigationTitle("Move to Project")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.75), .large])
+        .presentationDragIndicator(.visible)
+        .task { await viewModel.loadMoveCandidates() }
+    }
+
+    private func select(_ project: Project) {
+        dismiss()
+        onSelect(project)
+    }
+}
+
+private struct MoveTodayTaskProjectPickerRow: View {
+    let project: Project
+    let isBold: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: VikunjaSpacing.sm) {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
+                    .frame(width: 8, height: 8)
+                Text(project.title)
+                    .font(.system(size: 15, weight: isBold ? .semibold : .regular))
+                    .foregroundStyle(Color.primary)
+                Spacer()
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.vertical, VikunjaSpacing.sm)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }

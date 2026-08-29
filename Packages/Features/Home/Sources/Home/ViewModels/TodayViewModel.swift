@@ -14,6 +14,10 @@ public final class TodayViewModel {
     /// carries its `projectID`.
     public private(set) var projectsByID: [Int: Project] = [:]
     public private(set) var loadState: ScreenLoadState = .idle
+    /// Every project on the instance, for the "Move to Project" picker —
+    /// loaded lazily via `loadMoveCandidates()` rather than alongside
+    /// `load()`, since most visits to this screen never open that picker.
+    public private(set) var allProjects: [Project] = []
 
     public var isLoading: Bool { loadState == .loading }
 
@@ -84,6 +88,61 @@ public final class TodayViewModel {
             tasks[index] = try await taskRepository.update(updated)
         } catch {
             tasks[index] = task
+        }
+    }
+
+    /// Deletes a task from the server and drops it from the local list on
+    /// success. Vikunja soft-deletes tasks server-side rather than cascading
+    /// the delete to subtasks/relations, so nothing else in the tree needs
+    /// updating here.
+    public func delete(_ task: VikunjaTask) async {
+        do {
+            try await taskRepository.delete(id: task.id)
+            tasks.removeAll { $0.id == task.id }
+            toastPresenter.show("Task deleted", style: .success)
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
+        }
+    }
+
+    /// Loads every project on the instance, for the "Move to Project"
+    /// picker. Failures leave `allProjects` at whatever it already was.
+    public func loadMoveCandidates() async {
+        allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
+    }
+
+    /// `allProjects` arranged for the "Move to Project" picker: one group per
+    /// top-level project, each carrying its direct children.
+    public var moveProjectGroups: [ProjectGroup] {
+        let childrenByParentID = Dictionary(grouping: allProjects, by: \.parentProjectID)
+        return (childrenByParentID[nil] ?? [])
+            .sorted { $0.position < $1.position }
+            .map { root in
+                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
+            }
+    }
+
+    public struct ProjectGroup: Identifiable, Hashable {
+        public let root: Project
+        public let children: [Project]
+        public var id: Int { root.id }
+    }
+
+    /// Moves `task` to `destination` and drops it from the local list on
+    /// success — it no longer belongs to the Today view after the move.
+    public func move(_ task: VikunjaTask, to destination: Project) async {
+        var updated = task
+        updated.projectID = destination.id
+        do {
+            _ = try await taskRepository.update(updated)
+            tasks.removeAll { $0.id == task.id }
+            toastPresenter.show("Task moved to \(destination.title)", style: .success)
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
         }
     }
 }
