@@ -25,6 +25,9 @@ final class AppContainer {
     /// needs to surface a toast (e.g. `toastPresenter:` in a `make...ViewModel`
     /// factory below); it never needs to import `VikunjaDesignSystem` itself.
     let toastCenter = ToastCenter()
+    /// Tracks which project (if any) the visible screen represents, so the
+    /// tab-bar quick-add sheet defaults to it — see `QuickAddContext`.
+    let quickAddContext = QuickAddContext()
 
     init(
         accountStore: AccountStoreProtocol = KeychainAccountStore(
@@ -115,7 +118,8 @@ final class AppContainer {
             subprojects: node.children,
             repository: repository,
             projectRepository: projectRepository,
-            toastPresenter: toastCenter
+            toastPresenter: toastCenter,
+            quickAddContext: quickAddContext
         )
     }
 
@@ -145,18 +149,28 @@ final class AppContainer {
             relationRepository: relationRepository,
             commentRepository: commentRepository,
             projectRepository: projectRepository,
-            toastPresenter: toastCenter
+            toastPresenter: toastCenter,
+            quickAddContext: quickAddContext
         )
     }
 
-    func makeQuickAddTaskViewModel(account: InstanceAccount) -> QuickAddTaskViewModel {
+    /// - Parameter preselectedProjectID: snapshotted by the caller (see
+    ///   `MainTabView`) at the moment the quick-add sheet is opened — not read
+    ///   from `quickAddContext` here, since this factory runs inside a
+    ///   SwiftUI view body and an `@Observable` read would rebuild the sheet.
+    func makeQuickAddTaskViewModel(
+        preselectedProjectID: Int?,
+        account: InstanceAccount
+    ) -> QuickAddTaskViewModel {
         let accountStore = self.accountStore
         let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
         return QuickAddTaskViewModel(
+            preselectedProjectID: preselectedProjectID,
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            userRepository: clientFactory.makeUserRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             toastPresenter: toastCenter
         )
     }

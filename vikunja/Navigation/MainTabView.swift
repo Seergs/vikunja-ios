@@ -29,7 +29,6 @@ struct MainTabView: View {
     let onAccountsChanged: () -> Void
 
     @State private var selection: AppTab = .home
-    @State private var isShowingQuickAdd = false
 
     var body: some View {
         TabView(selection: $selection) {
@@ -92,14 +91,9 @@ struct MainTabView: View {
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            QuickAddButton {
-                isShowingQuickAdd = true
-            }
-            .padding(.trailing, VikunjaSpacing.md)
-            .padding(.bottom, VikunjaSpacing.xxl + VikunjaSpacing.lg)
-        }
-        .sheet(isPresented: $isShowingQuickAdd) {
-            QuickAddSheetView(viewModel: container.makeQuickAddTaskViewModel(account: account))
+            QuickAddOverlay(container: container, account: account)
+                .padding(.trailing, VikunjaSpacing.md)
+                .padding(.bottom, VikunjaSpacing.xxl + VikunjaSpacing.lg)
         }
     }
 
@@ -134,5 +128,38 @@ struct MainTabView: View {
                 taskDetailDestination: taskDetailDestination
             )
         )
+    }
+}
+
+/// The floating quick-add button and its sheet, split out of `MainTabView` so
+/// that opening/closing the sheet — and snapshotting the quick-add project
+/// context on tap — only re-evaluates this small view, never `MainTabView`'s
+/// body. Left in `MainTabView`, that `@State` toggle rebuilt every tab's
+/// `NavigationStack` and its view models on each open, blanking whatever
+/// screen was behind the sheet.
+private struct QuickAddOverlay: View {
+    let container: AppContainer
+    let account: InstanceAccount
+
+    @State private var isShowingSheet = false
+    /// Snapshot of `container.quickAddContext.preselectedProjectID` taken in
+    /// the tap handler (not in `body`) so reading the `@Observable` context
+    /// doesn't rebuild the sheet's view model whenever a project screen's
+    /// scope enters or leaves the stack.
+    @State private var preselectedProjectID: Int?
+
+    var body: some View {
+        QuickAddButton {
+            preselectedProjectID = container.quickAddContext.preselectedProjectID
+            isShowingSheet = true
+        }
+        .sheet(isPresented: $isShowingSheet) {
+            QuickAddSheetView(
+                viewModel: container.makeQuickAddTaskViewModel(
+                    preselectedProjectID: preselectedProjectID,
+                    account: account
+                )
+            )
+        }
     }
 }
