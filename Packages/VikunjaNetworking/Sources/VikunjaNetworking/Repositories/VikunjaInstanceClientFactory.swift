@@ -14,55 +14,55 @@ public struct VikunjaInstanceClientFactory: InstanceClientFactoryProtocol {
 
     public func makeProjectRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> ProjectRepositoryProtocol {
         VikunjaProjectRepository(
-            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
         )
     }
 
     public func makeTaskRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> TaskRepositoryProtocol {
         VikunjaTaskRepository(
-            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
         )
     }
 
     public func makeLabelRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> LabelRepositoryProtocol {
         VikunjaLabelRepository(
-            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
         )
     }
 
     public func makeTaskRelationRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> TaskRelationRepositoryProtocol {
         VikunjaTaskRelationRepository(
-            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
         )
     }
 
     public func makeTaskCommentRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> TaskCommentRepositoryProtocol {
         VikunjaTaskCommentRepository(
-            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
         )
     }
 
     public func makeUserRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> UserRepositoryProtocol {
         VikunjaUserRepository(
-            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
         )
     }
 }

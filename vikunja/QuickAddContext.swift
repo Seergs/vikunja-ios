@@ -17,7 +17,9 @@ import VikunjaCore
 final class QuickAddContext: QuickAddContextTracking {
     private var scopes: [Int] = []
 
-    var preselectedProjectID: Int? { scopes.last }
+    var preselectedProjectID: Int? {
+        scopes.last
+    }
 
     func enterProjectScope(_ projectID: Int) {
         scopes.append(projectID)

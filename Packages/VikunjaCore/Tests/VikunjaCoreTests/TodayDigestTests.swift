@@ -15,7 +15,7 @@ struct TodayDigestTests {
     }
 
     @Test
-    func groupsTasksIntoOverdueTodayAndUpcoming() {
+    func `groups tasks into overdue today and upcoming`() {
         let overdue = VikunjaTask(id: 1, title: "Overdue", dueDate: Self.yesterday, projectID: 1)
         let today = VikunjaTask(id: 2, title: "Today", dueDate: Self.laterToday, projectID: 1)
         let upcoming = VikunjaTask(id: 3, title: "Upcoming", dueDate: Self.nextWeek, projectID: 1)
@@ -28,32 +28,32 @@ struct TodayDigestTests {
     }
 
     @Test
-    func excludesTasksWithNoDueDate() {
+    func `excludes tasks with no due date`() {
         let result = digest([VikunjaTask(id: 1, title: "Someday", projectID: 1)])
 
         #expect(result.allTasks.isEmpty)
     }
 
     @Test
-    func dropsADoneOverdueTaskFromEveryBucket() {
+    func `drops A done overdue task from every bucket`() {
         let doneOverdue = VikunjaTask(id: 1, title: "Done", isDone: true, dueDate: Self.yesterday, projectID: 1)
 
         #expect(digest([doneOverdue]).allTasks.isEmpty)
     }
 
     @Test
-    func keepsATaskDoneTodayInTheTodayBucket() {
+    func `keeps A task done today in the today bucket`() {
         let doneToday = VikunjaTask(id: 1, title: "Done today", isDone: true, dueDate: Self.laterToday, projectID: 1)
 
         #expect(digest([doneToday]).today.map(\.id) == [1])
     }
 
     @Test
-    func sortsEachBucketByAscendingDueDateThenID() {
+    func `sorts each bucket by ascending due date then ID`() throws {
         let overdueOlder = VikunjaTask(id: 1, title: "Older", dueDate: Self.twoDaysAgo, projectID: 1)
         let overdueNewer = VikunjaTask(id: 2, title: "Newer", dueDate: Self.yesterday, projectID: 1)
-        let todayLater = VikunjaTask(
-            id: 3, title: "Later", dueDate: Self.calendar.date(byAdding: .hour, value: 2, to: Self.now)!, projectID: 1
+        let todayLater = try VikunjaTask(
+            id: 3, title: "Later", dueDate: #require(Self.calendar.date(byAdding: .hour, value: 2, to: Self.now)), projectID: 1,
         )
         let todayEarlier = VikunjaTask(id: 4, title: "Earlier", dueDate: Self.laterToday, projectID: 1)
 
@@ -64,7 +64,7 @@ struct TodayDigestTests {
     }
 
     @Test
-    func breaksDueDateTiesByID() {
+    func `breaks due date ties by ID`() {
         let higher = VikunjaTask(id: 5, title: "Higher", dueDate: Self.laterToday, projectID: 1)
         let lower = VikunjaTask(id: 2, title: "Lower", dueDate: Self.laterToday, projectID: 1)
 
@@ -72,7 +72,7 @@ struct TodayDigestTests {
     }
 
     @Test
-    func pendingCountIgnoresDoneTasks() {
+    func `pending count ignores done tasks`() {
         let pending = VikunjaTask(id: 1, title: "Pending", dueDate: Self.laterToday, projectID: 1)
         let doneToday = VikunjaTask(id: 2, title: "Done", isDone: true, dueDate: Self.laterToday, projectID: 1)
 
@@ -80,7 +80,7 @@ struct TodayDigestTests {
     }
 
     @Test
-    func bucketForClassifiesASingleTask() {
+    func `bucket for classifies A single task`() {
         let task = VikunjaTask(id: 1, title: "T", dueDate: Self.nextWeek, projectID: 1)
 
         #expect(TaskDueBucket.bucket(for: task, now: Self.now, calendar: Self.calendar) == .upcoming)

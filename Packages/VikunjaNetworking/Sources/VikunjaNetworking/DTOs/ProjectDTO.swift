@@ -9,7 +9,10 @@ struct ProjectDTO: Codable {
     let hexColor: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, description, position
+        case id
+        case title
+        case description
+        case position
         case isArchived = "is_archived"
         case isFavorite = "is_favorite"
         case parentProjectId = "parent_project_id"

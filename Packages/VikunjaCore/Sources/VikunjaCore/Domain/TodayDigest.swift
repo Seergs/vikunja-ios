@@ -18,7 +18,7 @@ public enum TaskDueBucket: String, Sendable, CaseIterable, Hashable, Codable {
     public static func bucket(
         for task: VikunjaTask,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
     ) -> TaskDueBucket? {
         guard let dueDate = task.dueDate else { return nil }
         let startOfToday = calendar.startOfDay(for: now)
@@ -54,7 +54,7 @@ public struct TodayDigest: Sendable, Hashable {
     public init(
         tasks: [VikunjaTask],
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
     ) {
         var overdue: [VikunjaTask] = []
         var today: [VikunjaTask] = []
@@ -86,16 +86,18 @@ public struct TodayDigest: Sendable, Hashable {
 
     public func tasks(in bucket: TaskDueBucket) -> [VikunjaTask] {
         switch bucket {
-        case .overdue: return overdue
-        case .today: return today
-        case .upcoming: return upcoming
+        case .overdue: overdue
+        case .today: today
+        case .upcoming: upcoming
         }
     }
 
     private static func sortedByDueDate(_ tasks: [VikunjaTask]) -> [VikunjaTask] {
         tasks.sorted { lhs, rhs in
             guard let lhsDate = lhs.dueDate, let rhsDate = rhs.dueDate else { return false }
-            if lhsDate != rhsDate { return lhsDate < rhsDate }
+            if lhsDate != rhsDate {
+                return lhsDate < rhsDate
+            }
             return lhs.id < rhs.id
         }
     }

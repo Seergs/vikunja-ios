@@ -13,7 +13,7 @@ public struct InstanceAccount: Identifiable, Hashable, Sendable, Codable {
         id: UUID = UUID(),
         displayName: String,
         baseURL: URL,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
     ) {
         self.id = id
         self.displayName = displayName

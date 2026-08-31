@@ -25,9 +25,13 @@ struct TodayView: View {
                 "This permanently deletes the task.",
                 isPresented: Binding(
                     get: { taskPendingDelete != nil },
-                    set: { isPresented in if !isPresented { taskPendingDelete = nil } }
+                    set: {
+                        isPresented in if !isPresented {
+                            taskPendingDelete = nil
+                        }
+                    },
                 ),
-                titleVisibility: .visible
+                titleVisibility: .visible,
             ) {
                 if let taskPendingDelete {
                     Button("Delete Task", role: .destructive) {
@@ -43,7 +47,6 @@ struct TodayView: View {
             }
     }
 
-    @ViewBuilder
     private var content: some View {
         List {
             switch viewModel.loadState {
@@ -57,7 +60,7 @@ struct TodayView: View {
                 TodayStatusView(
                     systemImage: "exclamationmark.triangle.fill",
                     title: "Couldn't load your tasks",
-                    message: message
+                    message: message,
                 ) {
                     Task { await viewModel.load() }
                 }
@@ -98,7 +101,7 @@ struct TodayView: View {
                 message: datedTaskCount == 0
                     ? "Tasks with a due date will show up here."
                     : "No tasks match this filter.",
-                iconSize: 28
+                iconSize: 28,
             )
             .padding(.top, VikunjaSpacing.lg)
             .listRowInsets(EdgeInsets())
@@ -150,8 +153,8 @@ struct TodayView: View {
                             bottomLeadingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
                             bottomTrailingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
                             topTrailingRadius: index == 0 ? VikunjaRadius.lg : 0,
-                            style: .continuous
-                        )
+                            style: .continuous,
+                        ),
                     )
                     .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
                     .listRowInsets(EdgeInsets())
@@ -174,14 +177,17 @@ struct TodayView: View {
 
 /// Status filter for the Today screen's due-date buckets.
 enum TodayFilter: CaseIterable {
-    case all, overdue, today, upcoming
+    case all
+    case overdue
+    case today
+    case upcoming
 
     var title: String {
         switch self {
-        case .all: return "All"
-        case .overdue: return "Overdue"
-        case .today: return "Today"
-        case .upcoming: return "Upcoming"
+        case .all: "All"
+        case .overdue: "Overdue"
+        case .today: "Today"
+        case .upcoming: "Upcoming"
         }
     }
 }
@@ -219,7 +225,7 @@ private struct TodayFilterChip: View {
                 .padding(.vertical, VikunjaSpacing.sm - VikunjaSpacing.xxs)
                 .foregroundStyle(isSelected ? Color.white : VikunjaColor.textSecondary)
                 .background(
-                    Capsule().fill(isSelected ? VikunjaColor.brandPrimary : VikunjaColor.Surface.field)
+                    Capsule().fill(isSelected ? VikunjaColor.brandPrimary : VikunjaColor.Surface.field),
                 )
         }
         .buttonStyle(.plain)
@@ -231,7 +237,9 @@ private struct TodayFilterChip: View {
 struct TodaySection: Identifiable {
     let title: String
     let tasks: [VikunjaTask]
-    var id: String { title }
+    var id: String {
+        title
+    }
 
     static func sections(from tasks: [VikunjaTask], filter: TodayFilter) -> [TodaySection] {
         // Bucketing/sorting lives in `VikunjaCore.TodayDigest` so the Today
@@ -239,16 +247,15 @@ struct TodaySection: Identifiable {
         // current filter keeps onto titled sections.
         let digest = TodayDigest(tasks: tasks)
 
-        let buckets: [(String, [VikunjaTask])]
-        switch filter {
+        let buckets: [(String, [VikunjaTask])] = switch filter {
         case .all:
-            buckets = [("Overdue", digest.overdue), ("Today", digest.today), ("Upcoming", digest.upcoming)]
+            [("Overdue", digest.overdue), ("Today", digest.today), ("Upcoming", digest.upcoming)]
         case .overdue:
-            buckets = [("Overdue", digest.overdue)]
+            [("Overdue", digest.overdue)]
         case .today:
-            buckets = [("Today", digest.today)]
+            [("Today", digest.today)]
         case .upcoming:
-            buckets = [("Upcoming", digest.upcoming)]
+            [("Upcoming", digest.upcoming)]
         }
 
         return buckets.compactMap { title, tasks in
@@ -278,11 +285,11 @@ private struct TodayTaskRow: View {
 
     private var priorityColor: Color? {
         switch task.priority {
-        case .unset: return nil
-        case .low: return VikunjaColor.Priority.low
-        case .medium: return VikunjaColor.Priority.medium
-        case .high: return VikunjaColor.Priority.high
-        case .urgent, .doNow: return VikunjaColor.Priority.urgent
+        case .unset: nil
+        case .low: VikunjaColor.Priority.low
+        case .medium: VikunjaColor.Priority.medium
+        case .high: VikunjaColor.Priority.high
+        case .urgent, .doNow: VikunjaColor.Priority.urgent
         }
     }
 

@@ -21,17 +21,17 @@ public enum RelationKind: String, Sendable, CaseIterable, Hashable, Codable {
     /// Section title shown in the UI for this relation kind.
     public var displayName: String {
         switch self {
-        case .subtask: return "Subtasks"
-        case .parenttask: return "Parent Task"
-        case .related: return "Related Tasks"
-        case .duplicateof: return "Duplicate Of"
-        case .duplicates: return "Duplicates"
-        case .blocking: return "Blocks"
-        case .blocked: return "Depends On"
-        case .precedes: return "Precedes"
-        case .follows: return "Follows"
-        case .copiedfrom: return "Copied From"
-        case .copiedto: return "Copied To"
+        case .subtask: "Subtasks"
+        case .parenttask: "Parent Task"
+        case .related: "Related Tasks"
+        case .duplicateof: "Duplicate Of"
+        case .duplicates: "Duplicates"
+        case .blocking: "Blocks"
+        case .blocked: "Depends On"
+        case .precedes: "Precedes"
+        case .follows: "Follows"
+        case .copiedfrom: "Copied From"
+        case .copiedto: "Copied To"
         }
     }
 }

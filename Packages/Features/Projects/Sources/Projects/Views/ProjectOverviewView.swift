@@ -44,9 +44,13 @@ struct ProjectOverviewView: View {
                 "This permanently deletes the task.",
                 isPresented: Binding(
                     get: { taskPendingDelete != nil },
-                    set: { isPresented in if !isPresented { taskPendingDelete = nil } }
+                    set: {
+                        isPresented in if !isPresented {
+                            taskPendingDelete = nil
+                        }
+                    },
                 ),
-                titleVisibility: .visible
+                titleVisibility: .visible,
             ) {
                 if let taskPendingDelete {
                     Button("Delete Task", role: .destructive) {
@@ -62,7 +66,6 @@ struct ProjectOverviewView: View {
             }
     }
 
-    @ViewBuilder
     private var content: some View {
         List {
             switch viewModel.loadState {
@@ -76,7 +79,7 @@ struct ProjectOverviewView: View {
                 ProjectOverviewStatusView(
                     systemImage: "exclamationmark.triangle.fill",
                     title: "Couldn't load this project",
-                    message: message
+                    message: message,
                 ) {
                     Task { await viewModel.load() }
                 }
@@ -114,7 +117,7 @@ struct ProjectOverviewView: View {
 
                     SubprojectScrollRow(
                         subprojects: viewModel.subprojects,
-                        taskSummaries: viewModel.subprojectTaskSummaries
+                        taskSummaries: viewModel.subprojectTaskSummaries,
                     ) { subproject in
                         onSelectSubproject(subproject)
                     }
@@ -141,7 +144,7 @@ struct ProjectOverviewView: View {
                 message: viewModel.tasks.isEmpty
                     ? "Tasks in this project will show up here."
                     : "No tasks match this filter.",
-                iconSize: 28
+                iconSize: 28,
             )
             .padding(.top, VikunjaSpacing.lg)
             .listRowInsets(EdgeInsets())
@@ -197,8 +200,8 @@ struct ProjectOverviewView: View {
                             bottomLeadingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
                             bottomTrailingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
                             topTrailingRadius: index == 0 ? VikunjaRadius.lg : 0,
-                            style: .continuous
-                        )
+                            style: .continuous,
+                        ),
                     )
                     // Only the card itself gets breathing room from the
                     // screen edges — the label above it stays flush with
@@ -330,14 +333,17 @@ private struct SubprojectCard: View {
 
 /// Status filter for this project's own task list.
 enum ProjectTaskFilter: CaseIterable {
-    case all, pending, overdue, completed
+    case all
+    case pending
+    case overdue
+    case completed
 
     var title: String {
         switch self {
-        case .all: return "All"
-        case .pending: return "Pending"
-        case .overdue: return "Overdue"
-        case .completed: return "Completed"
+        case .all: "All"
+        case .pending: "Pending"
+        case .overdue: "Overdue"
+        case .completed: "Completed"
         }
     }
 }
@@ -375,7 +381,7 @@ private struct FilterChip: View {
                 .padding(.vertical, VikunjaSpacing.sm - VikunjaSpacing.xxs)
                 .foregroundStyle(isSelected ? Color.white : VikunjaColor.textSecondary)
                 .background(
-                    Capsule().fill(isSelected ? VikunjaColor.brandPrimary : VikunjaColor.Surface.field)
+                    Capsule().fill(isSelected ? VikunjaColor.brandPrimary : VikunjaColor.Surface.field),
                 )
         }
         .buttonStyle(.plain)
@@ -388,7 +394,9 @@ private struct FilterChip: View {
 private struct ProjectTaskSection: Identifiable {
     let title: String
     let tasks: [VikunjaTask]
-    var id: String { title }
+    var id: String {
+        title
+    }
 
     static func sections(from tasks: [VikunjaTask], filter: ProjectTaskFilter) -> [ProjectTaskSection] {
         let now = Date()
@@ -397,19 +405,20 @@ private struct ProjectTaskSection: Identifiable {
             return dueDate < now
         }
 
-        let filtered: [VikunjaTask]
-        switch filter {
-        case .all: filtered = tasks
-        case .pending: filtered = tasks.filter { !$0.isDone }
-        case .overdue: filtered = tasks.filter(isOverdue)
-        case .completed: filtered = tasks.filter(\.isDone)
+        let filtered: [VikunjaTask] = switch filter {
+        case .all: tasks
+        case .pending: tasks.filter { !$0.isDone }
+        case .overdue: tasks.filter(isOverdue)
+        case .completed: tasks.filter(\.isDone)
         }
 
         func sortedByDueDate(_ tasks: [VikunjaTask]) -> [VikunjaTask] {
             tasks.sorted { lhs, rhs in
                 switch (lhs.dueDate, rhs.dueDate) {
                 case let (lhsDate?, rhsDate?):
-                    if lhsDate != rhsDate { return lhsDate < rhsDate }
+                    if lhsDate != rhsDate {
+                        return lhsDate < rhsDate
+                    }
                     return lhs.id < rhs.id
                 case (nil, nil):
                     return lhs.id < rhs.id
@@ -429,7 +438,7 @@ private struct ProjectTaskSection: Identifiable {
             overdue.isEmpty ? nil : ProjectTaskSection(title: "Overdue", tasks: sortedByDueDate(overdue)),
             pending.isEmpty ? nil : ProjectTaskSection(title: "Pending", tasks: sortedByDueDate(pending)),
             completed.isEmpty ? nil : ProjectTaskSection(title: "Completed", tasks: sortedByDueDate(completed)),
-        ].compactMap { $0 }
+        ].compactMap(\.self)
     }
 }
 
@@ -450,11 +459,11 @@ private struct ProjectTaskRow: View {
 
     private var priorityColor: Color? {
         switch task.priority {
-        case .unset: return nil
-        case .low: return VikunjaColor.Priority.low
-        case .medium: return VikunjaColor.Priority.medium
-        case .high: return VikunjaColor.Priority.high
-        case .urgent, .doNow: return VikunjaColor.Priority.urgent
+        case .unset: nil
+        case .low: VikunjaColor.Priority.low
+        case .medium: VikunjaColor.Priority.medium
+        case .high: VikunjaColor.Priority.high
+        case .urgent, .doNow: VikunjaColor.Priority.urgent
         }
     }
 

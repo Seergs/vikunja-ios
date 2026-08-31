@@ -14,7 +14,7 @@ enum ProjectMapper {
             // parent" as a single, unambiguous value.
             parentProjectID: dto.parentProjectId == 0 ? nil : dto.parentProjectId,
             position: dto.position ?? 0,
-            hexColor: dto.hexColor ?? ""
+            hexColor: dto.hexColor ?? "",
         )
     }
 
@@ -27,7 +27,7 @@ enum ProjectMapper {
             isFavorite: project.isFavorite,
             parentProjectId: project.parentProjectID,
             position: project.position,
-            hexColor: project.hexColor
+            hexColor: project.hexColor,
         )
     }
 }

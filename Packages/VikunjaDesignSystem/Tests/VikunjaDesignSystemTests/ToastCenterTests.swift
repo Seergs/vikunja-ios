@@ -5,7 +5,7 @@ import VikunjaCore
 @MainActor
 struct ToastCenterTests {
     @Test
-    func showPresentsImmediatelyWhenIdle() {
+    func `show presents immediately when idle`() {
         let center = ToastCenter()
 
         center.show("Task created", style: .success)
@@ -15,7 +15,7 @@ struct ToastCenterTests {
     }
 
     @Test
-    func secondToastQueuesUntilTheFirstIsDismissed() {
+    func `second toast queues until the first is dismissed`() {
         let center = ToastCenter()
 
         center.show("First")
@@ -30,7 +30,7 @@ struct ToastCenterTests {
     }
 
     @Test
-    func toastPresentingDefaultsToInfoStyle() {
+    func `toast presenting defaults to info style`() {
         let center = ToastCenter()
         let presenter: ToastPresenting = center
 

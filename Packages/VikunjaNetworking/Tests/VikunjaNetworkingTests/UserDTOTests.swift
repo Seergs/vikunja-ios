@@ -4,7 +4,7 @@ import Testing
 
 struct UserDTOTests {
     @Test
-    func decodesTheCurrentUserPayloadWithNestedSettings() throws {
+    func `decodes the current user payload with nested settings`() throws {
         let dto = try loadUserDTO()
 
         #expect(dto.id == 3)
@@ -13,8 +13,8 @@ struct UserDTOTests {
     }
 
     @Test
-    func mapsTheNestedDefaultProjectIDOntoTheDomainUser() throws {
-        let user = UserMapper.toDomain(try loadUserDTO())
+    func `maps the nested default project ID onto the domain user`() throws {
+        let user = try UserMapper.toDomain(loadUserDTO())
 
         #expect(user.defaultProjectID == 6)
     }
@@ -23,20 +23,20 @@ struct UserDTOTests {
     /// project; the mapper must normalize that to `nil` so quick-add doesn't
     /// try to preselect a project with id 0.
     @Test
-    func normalizesAnUnsetDefaultProjectToNil() {
+    func `normalizes an unset default project to nil`() {
         let dto = UserDTO(
             id: 1,
             username: "x",
             name: nil,
             email: nil,
-            settings: UserSettingsDTO(defaultProjectId: 0)
+            settings: UserSettingsDTO(defaultProjectId: 0),
         )
 
         #expect(UserMapper.toDomain(dto).defaultProjectID == nil)
     }
 
     @Test
-    func toleratesAUserPayloadWithNoSettingsBlock() throws {
+    func `tolerates A user payload with no settings block`() throws {
         let data = #"{"id": 9, "username": "author", "name": "Author"}"#.data(using: .utf8)!
         let dto = try JSONDecoder().decode(UserDTO.self, from: data)
 

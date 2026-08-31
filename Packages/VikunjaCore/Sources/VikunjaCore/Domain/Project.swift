@@ -18,7 +18,7 @@ public struct Project: Identifiable, Hashable, Sendable {
         isFavorite: Bool = false,
         parentProjectID: Int? = nil,
         position: Double = 0,
-        hexColor: String = ""
+        hexColor: String = "",
     ) {
         self.id = id
         self.title = title

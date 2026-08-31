@@ -1,7 +1,7 @@
 import Foundation
+@testable import Home
 import Testing
 import VikunjaCore
-@testable import Home
 
 struct TodaySectionTests {
     private static let calendar = Calendar.current
@@ -11,7 +11,7 @@ struct TodaySectionTests {
     private static let nextWeek = calendar.date(byAdding: .day, value: 7, to: now)!
 
     @Test
-    func groupsTasksIntoOverdueTodayAndUpcoming() {
+    func `groups tasks into overdue today and upcoming`() {
         let overdueTask = VikunjaTask(id: 1, title: "Overdue", dueDate: Self.yesterday, projectID: 1)
         let todayTask = VikunjaTask(id: 2, title: "Today", dueDate: Self.laterToday, projectID: 1)
         let upcomingTask = VikunjaTask(id: 3, title: "Upcoming", dueDate: Self.nextWeek, projectID: 1)
@@ -25,7 +25,7 @@ struct TodaySectionTests {
     }
 
     @Test
-    func excludesTasksWithNoDueDate() {
+    func `excludes tasks with no due date`() {
         let noDueDate = VikunjaTask(id: 1, title: "Someday", projectID: 1)
 
         let sections = TodaySection.sections(from: [noDueDate], filter: .all)
@@ -34,7 +34,7 @@ struct TodaySectionTests {
     }
 
     @Test
-    func excludesADoneTaskFromTheOverdueSection() {
+    func `excludes A done task from the overdue section`() {
         let doneOverdue = VikunjaTask(id: 1, title: "Done", isDone: true, dueDate: Self.yesterday, projectID: 1)
 
         let sections = TodaySection.sections(from: [doneOverdue], filter: .all)
@@ -45,7 +45,7 @@ struct TodaySectionTests {
     }
 
     @Test
-    func aTaskDoneTodayStillShowsInTheTodaySection() {
+    func `a task done today still shows in the today section`() {
         let doneToday = VikunjaTask(id: 1, title: "Done today", isDone: true, dueDate: Self.laterToday, projectID: 1)
 
         let sections = TodaySection.sections(from: [doneToday], filter: .all)
@@ -55,25 +55,25 @@ struct TodaySectionTests {
     }
 
     @Test
-    func sortsTasksWithinEachSectionByAscendingDueDate() {
-        let overdueTwoDaysAgo = VikunjaTask(
+    func `sorts tasks within each section by ascending due date`() throws {
+        let overdueTwoDaysAgo = try VikunjaTask(
             id: 1,
             title: "Overdue, older",
-            dueDate: Self.calendar.date(byAdding: .day, value: -2, to: Self.now)!,
-            projectID: 1
+            dueDate: #require(Self.calendar.date(byAdding: .day, value: -2, to: Self.now)),
+            projectID: 1,
         )
         let overdueYesterday = VikunjaTask(id: 2, title: "Overdue, newer", dueDate: Self.yesterday, projectID: 1)
-        let laterTonight = VikunjaTask(
+        let laterTonight = try VikunjaTask(
             id: 3,
             title: "Today, later",
-            dueDate: Self.calendar.date(byAdding: .hour, value: 2, to: Self.now)!,
-            projectID: 1
+            dueDate: #require(Self.calendar.date(byAdding: .hour, value: 2, to: Self.now)),
+            projectID: 1,
         )
         let earlierToday = VikunjaTask(id: 4, title: "Today, earlier", dueDate: Self.laterToday, projectID: 1)
 
         let sections = TodaySection.sections(
             from: [overdueYesterday, overdueTwoDaysAgo, laterTonight, earlierToday],
-            filter: .all
+            filter: .all,
         )
 
         #expect(sections[0].tasks.map(\.id) == [1, 2])
@@ -81,7 +81,7 @@ struct TodaySectionTests {
     }
 
     @Test
-    func breaksDueDateTiesById() {
+    func `breaks due date ties by id`() {
         let sameDueDate = Self.laterToday
         let higherID = VikunjaTask(id: 5, title: "Higher id", dueDate: sameDueDate, projectID: 1)
         let lowerID = VikunjaTask(id: 2, title: "Lower id", dueDate: sameDueDate, projectID: 1)
@@ -92,7 +92,7 @@ struct TodaySectionTests {
     }
 
     @Test
-    func filteringNarrowsToOnlyTheSelectedBucket() {
+    func `filtering narrows to only the selected bucket`() {
         let overdueTask = VikunjaTask(id: 1, title: "Overdue", dueDate: Self.yesterday, projectID: 1)
         let todayTask = VikunjaTask(id: 2, title: "Today", dueDate: Self.laterToday, projectID: 1)
         let tasks = [overdueTask, todayTask]

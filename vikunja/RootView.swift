@@ -32,7 +32,7 @@ struct RootView: View {
                         onConnectionSaved: { account in
                             connectedAccount = account
                             Task { await container.refreshDefaultProject(account: account) }
-                        }
+                        },
                     )
                 }
             } else {

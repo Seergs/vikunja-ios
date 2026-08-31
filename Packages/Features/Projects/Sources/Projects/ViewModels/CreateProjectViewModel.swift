@@ -18,7 +18,9 @@ public final class CreateProjectViewModel {
     public private(set) var isSaving: Bool = false
     public private(set) var saveErrorMessage: String?
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     public var canSave: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSaving
@@ -45,7 +47,9 @@ public final class CreateProjectViewModel {
     public struct ProjectGroup: Identifiable, Hashable {
         public let root: Project
         public let children: [Project]
-        public var id: Int { root.id }
+        public var id: Int {
+            root.id
+        }
     }
 
     private let repository: ProjectRepositoryProtocol
@@ -54,7 +58,7 @@ public final class CreateProjectViewModel {
     public init(
         parentProjectID: Int? = nil,
         repository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
     ) {
         self.parentProjectID = parentProjectID
         self.repository = repository
@@ -93,8 +97,8 @@ public final class CreateProjectViewModel {
                     id: 0,
                     title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                     parentProjectID: parentProjectID,
-                    hexColor: hexColor
-                )
+                    hexColor: hexColor,
+                ),
             )
             toastPresenter.show("Project created", style: .success)
             return created

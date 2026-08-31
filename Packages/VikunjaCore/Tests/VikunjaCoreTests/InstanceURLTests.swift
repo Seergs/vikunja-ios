@@ -3,56 +3,56 @@ import Testing
 
 struct InstanceURLTests {
     @Test
-    func acceptsABareDomainAndDefaultsToHTTPS() throws {
+    func `accepts A bare domain and defaults to HTTPS`() throws {
         let url = try InstanceURL.normalize("tasks.example.com")
 
         #expect(url.absoluteString == "https://tasks.example.com")
     }
 
     @Test
-    func acceptsAFullHTTPSURL() throws {
+    func `accepts A full HTTPSURL`() throws {
         let url = try InstanceURL.normalize("https://tasks.example.com")
 
         #expect(url.absoluteString == "https://tasks.example.com")
     }
 
     @Test
-    func acceptsHTTPForLocalInstances() throws {
+    func `accepts HTTP for local instances`() throws {
         let url = try InstanceURL.normalize("http://localhost:3456")
 
         #expect(url.absoluteString == "http://localhost:3456")
     }
 
     @Test
-    func trimsSurroundingWhitespace() throws {
+    func `trims surrounding whitespace`() throws {
         let url = try InstanceURL.normalize("  tasks.example.com  ")
 
         #expect(url.absoluteString == "https://tasks.example.com")
     }
 
     @Test
-    func stripsAPastedPathQueryAndTrailingSlash() throws {
+    func `strips A pasted path query and trailing slash`() throws {
         let url = try InstanceURL.normalize("https://tasks.example.com/login?next=/tasks")
 
         #expect(url.absoluteString == "https://tasks.example.com")
     }
 
     @Test
-    func rejectsAnEmptyString() {
+    func `rejects an empty string`() {
         #expect(throws: VikunjaError.invalidInstanceURL) {
             try InstanceURL.normalize("   ")
         }
     }
 
     @Test
-    func rejectsAnUnsupportedScheme() {
+    func `rejects an unsupported scheme`() {
         #expect(throws: VikunjaError.invalidInstanceURL) {
             try InstanceURL.normalize("ftp://tasks.example.com")
         }
     }
 
     @Test
-    func rejectsGarbageInput() {
+    func `rejects garbage input`() {
         #expect(throws: VikunjaError.invalidInstanceURL) {
             try InstanceURL.normalize("not a url")
         }

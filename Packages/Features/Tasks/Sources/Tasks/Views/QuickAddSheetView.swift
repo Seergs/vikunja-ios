@@ -29,7 +29,7 @@ public struct QuickAddSheetView: View {
     private var detent: Binding<PresentationDetent> {
         Binding(
             get: { .height(viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight) },
-            set: { _ in }
+            set: { _ in },
         )
     }
 
@@ -110,7 +110,7 @@ public struct QuickAddSheetView: View {
     @ViewBuilder
     private var projectSection: some View {
         switch viewModel.loadState {
-        case .failure(let message):
+        case let .failure(message):
             Text(message)
                 .font(VikunjaFont.footnote)
                 .foregroundStyle(VikunjaColor.textSecondary)
@@ -133,7 +133,7 @@ public struct QuickAddSheetView: View {
                 ForEach(Self.priorityOptions, id: \.priority) { option in
                     PriorityChip(
                         option: option,
-                        isSelected: viewModel.priority == option.priority
+                        isSelected: viewModel.priority == option.priority,
                     ) {
                         viewModel.priority = viewModel.priority == option.priority ? .unset : option.priority
                     }
@@ -190,7 +190,9 @@ private struct SaveErrorBanner: View {
 private struct FieldLabel: View {
     let title: String
 
-    init(_ title: String) { self.title = title }
+    init(_ title: String) {
+        self.title = title
+    }
 
     var body: some View {
         Text(title)
@@ -261,10 +263,10 @@ private struct PriorityChip: View {
             .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
             .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
             .background(
-                Capsule().fill(isSelected ? option.color.opacity(0.14) : VikunjaColor.Surface.field)
+                Capsule().fill(isSelected ? option.color.opacity(0.14) : VikunjaColor.Surface.field),
             )
             .overlay(
-                Capsule().strokeBorder(isSelected ? option.color : Color.clear, lineWidth: 1.5)
+                Capsule().strokeBorder(isSelected ? option.color : Color.clear, lineWidth: 1.5),
             )
         }
         .buttonStyle(.plain)
@@ -303,14 +305,14 @@ private struct ProjectPickerView: View {
                                 project: group.root,
                                 isBold: true,
                                 isSelected: selectedProjectID == group.root.id,
-                                action: { select(group.root) }
+                                action: { select(group.root) },
                             )
                             ForEach(group.children) { child in
                                 ProjectPickerRow(
                                     project: child,
                                     isBold: false,
                                     isSelected: selectedProjectID == child.id,
-                                    action: { select(child) }
+                                    action: { select(child) },
                                 )
                                 .padding(.leading, VikunjaSpacing.lg)
                             }
@@ -367,7 +369,7 @@ private struct ProjectPickerRow: View {
             .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
             .background(
                 isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous)
+                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
             )
         }
         .buttonStyle(.plain)

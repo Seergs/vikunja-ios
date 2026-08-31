@@ -17,7 +17,7 @@ public struct Endpoint: Sendable {
         path: String,
         method: Method = .get,
         queryItems: [URLQueryItem] = [],
-        body: Data? = nil
+        body: Data? = nil,
     ) {
         self.path = path
         self.method = method
@@ -25,14 +25,14 @@ public struct Endpoint: Sendable {
         self.body = body
     }
 
-    static func encoding<Body: Encodable>(
+    static func encoding(
         path: String,
         method: Method,
         queryItems: [URLQueryItem] = [],
-        body: Body
+        body: some Encodable,
     ) throws -> Endpoint {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        return Endpoint(path: path, method: method, queryItems: queryItems, body: try encoder.encode(body))
+        return try Endpoint(path: path, method: method, queryItems: queryItems, body: encoder.encode(body))
     }
 }

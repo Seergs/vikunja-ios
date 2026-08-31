@@ -1,5 +1,5 @@
-import VikunjaCore
 @testable import Projects
+import VikunjaCore
 
 final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendable {
     var projects: [Project] = []
@@ -10,7 +10,9 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     private(set) var deletedIDs: [Int] = []
 
     func fetchProjects() async throws -> [Project] {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         return projects
     }
 
@@ -22,15 +24,21 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     }
 
     func create(_ project: Project) async throws -> Project {
-        if let createError { throw createError }
+        if let createError {
+            throw createError
+        }
         createdProjects.append(project)
         return project
     }
 
-    func update(_ project: Project) async throws -> Project { project }
+    func update(_ project: Project) async throws -> Project {
+        project
+    }
 
     func delete(id: Int) async throws {
-        if let deleteError { throw deleteError }
+        if let deleteError {
+            throw deleteError
+        }
         deletedIDs.append(id)
         projects.removeAll { $0.id == id }
     }
@@ -44,7 +52,9 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     private(set) var updatedTasks: [VikunjaTask] = []
 
     func fetchTasks(projectID: Int) async throws -> [VikunjaTask] {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         return tasks.filter { $0.projectID == projectID }
     }
 
@@ -55,10 +65,14 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
         return task
     }
 
-    func create(_ task: VikunjaTask) async throws -> VikunjaTask { task }
+    func create(_ task: VikunjaTask) async throws -> VikunjaTask {
+        task
+    }
 
     func update(_ task: VikunjaTask) async throws -> VikunjaTask {
-        if let updateError { throw updateError }
+        if let updateError {
+            throw updateError
+        }
         updatedTasks.append(task)
         if let index = tasks.firstIndex(where: { $0.id == task.id }) {
             tasks[index] = task
@@ -67,7 +81,9 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     }
 
     func delete(id: Int) async throws {
-        if let deleteError { throw deleteError }
+        if let deleteError {
+            throw deleteError
+        }
         tasks.removeAll { $0.id == id }
     }
 
@@ -87,11 +103,17 @@ final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
 @MainActor
 final class FakeQuickAddContext: QuickAddContextTracking {
     private(set) var scopes: [Int] = []
-    var preselectedProjectID: Int? { scopes.last }
+    var preselectedProjectID: Int? {
+        scopes.last
+    }
 
-    func enterProjectScope(_ projectID: Int) { scopes.append(projectID) }
+    func enterProjectScope(_ projectID: Int) {
+        scopes.append(projectID)
+    }
 
     func exitProjectScope(_ projectID: Int) {
-        if let index = scopes.lastIndex(of: projectID) { scopes.remove(at: index) }
+        if let index = scopes.lastIndex(of: projectID) {
+            scopes.remove(at: index)
+        }
     }
 }

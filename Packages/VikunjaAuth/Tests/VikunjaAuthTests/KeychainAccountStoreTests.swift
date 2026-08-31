@@ -1,11 +1,11 @@
 import Foundation
 import Testing
-import VikunjaCore
 @testable import VikunjaAuth
+import VikunjaCore
 
-// Exercises the real Keychain (generic password items), so this suite runs
-// serialized against a service namespace unique to the test process to avoid
-// clobbering state across parallel test runs.
+/// Exercises the real Keychain (generic password items), so this suite runs
+/// serialized against a service namespace unique to the test process to avoid
+/// clobbering state across parallel test runs.
 @Suite(.serialized)
 struct KeychainAccountStoreTests {
     private func makeStore() -> KeychainAccountStore {
@@ -17,7 +17,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func fallsBackToThePrivateKeychainWhenTheAccessGroupIsUnusable() async throws {
+    func `falls back to the private keychain when the access group is unusable`() async throws {
         // A bogus access group the test process has no entitlement for: the
         // store must not fail every call, it must transparently fall back to
         // the app's private keychain.
@@ -36,7 +36,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func startsWithNoAccounts() async throws {
+    func `starts with no accounts`() async throws {
         let store = makeStore()
 
         #expect(try await store.fetchAccounts().isEmpty)
@@ -44,7 +44,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func addingAnAccountPersistsItAndItsTokenAndMakesItActive() async throws {
+    func `adding an account persists it and its token and makes it active`() async throws {
         let store = makeStore()
         let account = makeAccount()
 
@@ -56,7 +56,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func addingASecondAccountMakesItTheActiveOneWithoutLosingTheFirst() async throws {
+    func `adding A second account makes it the active one without losing the first`() async throws {
         let store = makeStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -64,13 +64,13 @@ struct KeychainAccountStoreTests {
         try await store.addAccount(first, token: "first-token")
         try await store.addAccount(second, token: "second-token")
 
-        #expect(Set(try await store.fetchAccounts().map(\.id)) == Set([first.id, second.id]))
+        #expect(try await Set(store.fetchAccounts().map(\.id)) == Set([first.id, second.id]))
         #expect(try await store.activeAccount() == second)
         #expect(try await store.token(forAccountID: first.id) == "first-token")
     }
 
     @Test
-    func setActiveAccountSwitchesTheActivePointer() async throws {
+    func `set active account switches the active pointer`() async throws {
         let store = makeStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -83,7 +83,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func setActiveAccountThrowsForAnUnknownID() async throws {
+    func `set active account throws for an unknown ID`() async throws {
         let store = makeStore()
 
         await #expect(throws: VikunjaError.notFound) {
@@ -92,7 +92,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func updatingAnAccountChangesItsMetadataWithoutTouchingTheActivePointer() async throws {
+    func `updating an account changes its metadata without touching the active pointer`() async throws {
         let store = makeStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -110,7 +110,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func updatingAnAccountWithATokenRotatesTheStoredCredential() async throws {
+    func `updating an account with A token rotates the stored credential`() async throws {
         let store = makeStore()
         let account = makeAccount()
         try await store.addAccount(account, token: "old-token")
@@ -121,7 +121,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func updatingAnUnknownAccountThrows() async throws {
+    func `updating an unknown account throws`() async throws {
         let store = makeStore()
 
         await #expect(throws: VikunjaError.notFound) {
@@ -130,7 +130,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func removingTheActiveAccountPromotesAnotherOne() async throws {
+    func `removing the active account promotes another one`() async throws {
         let store = makeStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -145,7 +145,7 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
-    func removingTheLastAccountLeavesNoActiveAccount() async throws {
+    func `removing the last account leaves no active account`() async throws {
         let store = makeStore()
         let account = makeAccount()
         try await store.addAccount(account, token: "secret-token")

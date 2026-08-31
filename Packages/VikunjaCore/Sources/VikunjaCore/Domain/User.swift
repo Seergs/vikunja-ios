@@ -15,7 +15,7 @@ public struct User: Identifiable, Equatable, Sendable {
         username: String,
         name: String? = nil,
         email: String? = nil,
-        defaultProjectID: Int? = nil
+        defaultProjectID: Int? = nil,
     ) {
         self.id = id
         self.username = username

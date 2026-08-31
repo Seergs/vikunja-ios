@@ -5,7 +5,7 @@ import VikunjaCore
 
 struct TaskDTOTests {
     @Test
-    func decodesRealisticTaskPayload() throws {
+    func `decodes realistic task payload`() throws {
         let dto = try loadTaskDTO()
 
         #expect(dto.id == 1)
@@ -15,7 +15,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func mapsToDomainModel() throws {
+    func `maps to domain model`() throws {
         let dto = try loadTaskDTO()
         let task = TaskMapper.toDomain(dto)
 
@@ -26,7 +26,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func mapsRelatedTasksBySubtaskBlockedAndBlockingKind() throws {
+    func `maps related tasks by subtask blocked and blocking kind`() throws {
         let dto = try loadTaskDTO()
         let task = TaskMapper.toDomain(dto)
 
@@ -37,7 +37,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func mapsOtherRelationKindsGenerically() throws {
+    func `maps other relation kinds generically`() throws {
         let dto = try loadTaskDTO()
         let task = TaskMapper.toDomain(dto)
 
@@ -50,7 +50,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func toleratesAMissingRelatedTasksField() throws {
+    func `tolerates A missing related tasks field`() throws {
         let dto = try loadTaskDTO(named: "task-no-due-date")
         let task = TaskMapper.toDomain(dto)
 
@@ -61,7 +61,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func mergePreservesFieldsVikunjaTaskDoesntTrack() throws {
+    func `merge preserves fields vikunja task doesnt track`() throws {
         let current = try loadTaskDTO()
         var task = TaskMapper.toDomain(current)
         task.isDone.toggle()
@@ -84,7 +84,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func mergeNeverWritesLabelsFromTheDomainModel() throws {
+    func `merge never writes labels from the domain model`() throws {
         let current = try loadTaskDTO()
         var task = TaskMapper.toDomain(current)
         // Mutating `task.labels` must have no effect on the merged body —
@@ -99,7 +99,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func createDTOOmitsLabels() throws {
+    func `create DTO omits labels`() throws {
         let dto = try loadTaskDTO()
         let task = TaskMapper.toDomain(dto)
 
@@ -109,7 +109,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func mergedTaskRoundTripsOpaqueFieldsThroughEncoding() throws {
+    func `merged task round trips opaque fields through encoding`() throws {
         let current = try loadTaskDTO()
         var task = TaskMapper.toDomain(current)
         task.isDone.toggle()
@@ -132,7 +132,7 @@ struct TaskDTOTests {
     }
 
     @Test
-    func mapsZeroValueDueDateToNil() throws {
+    func `maps zero value due date to nil`() throws {
         let dto = try loadTaskDTO(named: "task-no-due-date")
         let task = TaskMapper.toDomain(dto)
 

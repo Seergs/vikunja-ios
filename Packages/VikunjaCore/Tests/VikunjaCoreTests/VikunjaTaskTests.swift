@@ -3,7 +3,7 @@ import Testing
 
 struct VikunjaTaskTests {
     @Test
-    func defaultsToUnsetPriorityAndNoLabels() {
+    func `defaults to unset priority and no labels`() {
         let task = VikunjaTask(id: 1, title: "Buy coffee", projectID: 4)
 
         #expect(task.priority == .unset)
@@ -12,7 +12,7 @@ struct VikunjaTaskTests {
     }
 
     @Test
-    func defaultsToNoRelations() {
+    func `defaults to no relations`() {
         let task = VikunjaTask(id: 1, title: "Buy coffee", projectID: 4)
 
         #expect(task.subtasks.isEmpty)
@@ -22,7 +22,7 @@ struct VikunjaTaskTests {
     }
 
     @Test
-    func isBlockedWhenAnyDependsOnTaskIsNotDone() {
+    func `is blocked when any depends on task is not done`() {
         let task = VikunjaTask(
             id: 1,
             title: "Ship release",
@@ -30,19 +30,19 @@ struct VikunjaTaskTests {
             dependsOn: [
                 TaskRelation(id: 2, title: "Write tests", isDone: true, projectID: 4),
                 TaskRelation(id: 3, title: "Fix bug", isDone: false, projectID: 4),
-            ]
+            ],
         )
 
         #expect(task.isBlocked == true)
     }
 
     @Test
-    func isNotBlockedWhenEveryDependsOnTaskIsDone() {
+    func `is not blocked when every depends on task is done`() {
         let task = VikunjaTask(
             id: 1,
             title: "Ship release",
             projectID: 4,
-            dependsOn: [TaskRelation(id: 2, title: "Write tests", isDone: true, projectID: 4)]
+            dependsOn: [TaskRelation(id: 2, title: "Write tests", isDone: true, projectID: 4)],
         )
 
         #expect(task.isBlocked == false)

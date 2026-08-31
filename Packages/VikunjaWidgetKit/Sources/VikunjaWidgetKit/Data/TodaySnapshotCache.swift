@@ -17,8 +17,8 @@ public struct TodaySnapshotCache: Sendable {
     public init(appGroupIdentifier: String) {
         self.init(
             directory: FileManager.default.containerURL(
-                forSecurityApplicationGroupIdentifier: appGroupIdentifier
-            )
+                forSecurityApplicationGroupIdentifier: appGroupIdentifier,
+            ),
         )
     }
 

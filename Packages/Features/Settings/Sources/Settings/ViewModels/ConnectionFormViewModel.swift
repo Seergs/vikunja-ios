@@ -27,14 +27,25 @@ public final class ConnectionFormViewModel {
     /// on a successful probe. Drives post-save dismissal.
     public private(set) var savedAccount: InstanceAccount?
 
-    public var isSaving: Bool { validationState == .validating }
-    public var isEditing: Bool { if case .edit = mode { return true } else { return false } }
+    public var isSaving: Bool {
+        validationState == .validating
+    }
+
+    public var isEditing: Bool {
+        if case .edit = mode {
+            true
+        } else {
+            false
+        }
+    }
 
     public var canSave: Bool {
         !trimmedDisplayName.isEmpty && !trimmedURLText.isEmpty && !trimmedToken.isEmpty && !isSaving
     }
 
-    public var canTestConnection: Bool { !trimmedURLText.isEmpty && !isSaving }
+    public var canTestConnection: Bool {
+        !trimmedURLText.isEmpty && !isSaving
+    }
 
     private let accountStore: AccountStoreProtocol
     private let clientFactory: InstanceClientFactoryProtocol
@@ -50,7 +61,7 @@ public final class ConnectionFormViewModel {
         accountStore: AccountStoreProtocol,
         clientFactory: InstanceClientFactoryProtocol,
         toastPresenter: ToastPresenting,
-        onActiveAccountChanged: @escaping () -> Void
+        onActiveAccountChanged: @escaping () -> Void,
     ) {
         self.mode = mode
         self.accountStore = accountStore
@@ -59,8 +70,8 @@ public final class ConnectionFormViewModel {
         self.onActiveAccountChanged = onActiveAccountChanged
 
         if case let .edit(account) = mode {
-            displayName = account.displayName
-            urlText = account.baseURL.absoluteString
+            self.displayName = account.displayName
+            self.urlText = account.baseURL.absoluteString
         }
     }
 
@@ -70,7 +81,7 @@ public final class ConnectionFormViewModel {
     /// later, same as any other server-backed load in this app.
     public func load() async {
         guard case let .edit(account) = mode else { return }
-        apiToken = (try? await accountStore.token(forAccountID: account.id)) ?? ""
+        apiToken = await (try? accountStore.token(forAccountID: account.id)) ?? ""
     }
 
     /// Probes the typed address without persisting anything — backs a
@@ -148,7 +159,15 @@ public final class ConnectionFormViewModel {
         }
     }
 
-    private var trimmedDisplayName: String { displayName.trimmingCharacters(in: .whitespacesAndNewlines) }
-    private var trimmedURLText: String { urlText.trimmingCharacters(in: .whitespacesAndNewlines) }
-    private var trimmedToken: String { apiToken.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var trimmedDisplayName: String {
+        displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedURLText: String {
+        urlText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedToken: String {
+        apiToken.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }

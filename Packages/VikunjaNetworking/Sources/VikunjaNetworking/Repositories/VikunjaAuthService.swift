@@ -10,10 +10,10 @@ public final class VikunjaAuthService: AuthServiceProtocol {
         self.client = client
     }
 
-    // `/api/v1/login` only returns the JWT, not the user — that's why
-    // `AuthSession.user` is a placeholder here; resolving the real user
-    // (GET /api/v1/user) is future `VikunjaAuth` work, once it knows where to
-    // persist the token.
+    /// `/api/v1/login` only returns the JWT, not the user — that's why
+    /// `AuthSession.user` is a placeholder here; resolving the real user
+    /// (GET /api/v1/user) is future `VikunjaAuth` work, once it knows where to
+    /// persist the token.
     public func login(username: String, password: String) async throws -> AuthSession {
         let endpoint = try VikunjaEndpoints.login(username: username, password: password)
         let tokenDTO: AuthTokenDTO = try await client.send(endpoint)

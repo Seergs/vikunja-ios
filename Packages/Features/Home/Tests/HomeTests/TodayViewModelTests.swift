@@ -1,11 +1,11 @@
+@testable import Home
 import Testing
 import VikunjaCore
-@testable import Home
 
 @MainActor
 struct TodayViewModelTests {
     @Test
-    func loadMergesTasksAcrossEveryProject() async {
+    func `load merges tasks across every project`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work"),
@@ -19,7 +19,7 @@ struct TodayViewModelTests {
         let viewModel = TodayViewModel(
             taskRepository: taskRepository,
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -31,7 +31,7 @@ struct TodayViewModelTests {
     }
 
     @Test
-    func loadDropsATaskListWhoseProjectFetchFails() async {
+    func `load drops A task list whose project fetch fails`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work"),
@@ -46,7 +46,7 @@ struct TodayViewModelTests {
         let viewModel = TodayViewModel(
             taskRepository: taskRepository,
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -56,13 +56,13 @@ struct TodayViewModelTests {
     }
 
     @Test
-    func loadSurfacesAFriendlyMessageWhenFetchingProjectsFails() async {
+    func `load surfaces A friendly message when fetching projects fails`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.fetchError = .network("offline")
         let viewModel = TodayViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -72,7 +72,7 @@ struct TodayViewModelTests {
     }
 
     @Test
-    func toggleDonePersistsTheFlippedStateThroughTheRepository() async {
+    func `toggle done persists the flipped state through the repository`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 1, title: "Work")]
         let taskRepository = FakeTaskRepository()
@@ -80,7 +80,7 @@ struct TodayViewModelTests {
         let viewModel = TodayViewModel(
             taskRepository: taskRepository,
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.load()
 
@@ -90,7 +90,7 @@ struct TodayViewModelTests {
     }
 
     @Test
-    func toggleDoneRevertsWhenTheServerRejectsTheUpdate() async {
+    func `toggle done reverts when the server rejects the update`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 1, title: "Work")]
         let taskRepository = FakeTaskRepository()
@@ -98,7 +98,7 @@ struct TodayViewModelTests {
         let viewModel = TodayViewModel(
             taskRepository: taskRepository,
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.load()
         taskRepository.updateError = .network("offline")

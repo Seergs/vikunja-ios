@@ -3,7 +3,9 @@ import Foundation
 actor RequestCapture {
     private(set) var requests: [URLRequest] = []
 
-    var lastRequest: URLRequest? { requests.last }
+    var lastRequest: URLRequest? {
+        requests.last
+    }
 
     func record(_ request: URLRequest) {
         requests.append(request)
@@ -16,7 +18,7 @@ final class MockURLProtocol: URLProtocol {
         let body: Data
     }
 
-    nonisolated(unsafe) private static var responses: [Response] = []
+    private nonisolated(unsafe) static var responses: [Response] = []
     nonisolated(unsafe) static var capture: RequestCapture?
 
     /// Single canned response reused for every request the session makes.
@@ -38,15 +40,20 @@ final class MockURLProtocol: URLProtocol {
         return (URLSession(configuration: configuration), capture)
     }
 
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override class func canInit(with _: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
 
     override func startLoading() {
         // `URLSession` moves a POST/PUT body into `httpBodyStream` when
         // dispatching through a custom `URLProtocol`, leaving `httpBody`
         // nil — read the stream now (it can only be consumed once) so
         // callers inspecting the captured request's body don't see nil.
-        var request = self.request
+        var request = request
         if request.httpBody == nil, let bodyData = Self.readBody(from: request) {
             request.httpBody = bodyData
         }
@@ -59,20 +66,19 @@ final class MockURLProtocol: URLProtocol {
             await capture?.record(capturedRequest)
         }
 
-        let response: Response
-        if Self.responses.count > 1 {
-            response = Self.responses.removeFirst()
+        let response: Response = if Self.responses.count > 1 {
+            Self.responses.removeFirst()
         } else if let only = Self.responses.first {
-            response = only
+            only
         } else {
-            response = Response(statusCode: 200, body: Data())
+            Response(statusCode: 200, body: Data())
         }
 
         let httpResponse = HTTPURLResponse(
             url: request.url!,
             statusCode: response.statusCode,
             httpVersion: "HTTP/1.1",
-            headerFields: nil
+            headerFields: nil,
         )!
         client?.urlProtocol(self, didReceive: httpResponse, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: response.body)

@@ -20,7 +20,7 @@ public struct TodayEntry: TimelineEntry, Sendable {
 public struct TodayTimelineProvider: TimelineProvider {
     public init() {}
 
-    public func placeholder(in context: Context) -> TodayEntry {
+    public func placeholder(in _: Context) -> TodayEntry {
         TodayEntry(date: Date(), state: .content(.placeholder))
     }
 
@@ -35,7 +35,7 @@ public struct TodayTimelineProvider: TimelineProvider {
         }
     }
 
-    public func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<TodayEntry>) -> Void) {
+    public func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<TodayEntry>) -> Void) {
         Task {
             let now = Date()
             let state = await VikunjaWidgetEnvironment.makeSnapshotLoader().loadState()

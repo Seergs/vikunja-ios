@@ -43,7 +43,7 @@ public struct TaskDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 switch viewModel.loadState {
-                case .failure(let message):
+                case let .failure(message):
                     TaskDetailStatusView(message: message) {
                         Task { await viewModel.load() }
                     }
@@ -128,7 +128,7 @@ public struct TaskDetailView: View {
         .confirmationDialog(
             "This permanently deletes the task.",
             isPresented: $isShowingDeleteConfirmation,
-            titleVisibility: .visible
+            titleVisibility: .visible,
         ) {
             Button("Delete Task", role: .destructive) {
                 Task {
@@ -143,10 +143,14 @@ public struct TaskDetailView: View {
             "This permanently deletes the comment.",
             isPresented: Binding(
                 get: { commentPendingDeletion != nil },
-                set: { if !$0 { commentPendingDeletion = nil } }
+                set: {
+                    if !$0 {
+                        commentPendingDeletion = nil
+                    }
+                },
             ),
             titleVisibility: .visible,
-            presenting: commentPendingDeletion
+            presenting: commentPendingDeletion,
         ) { comment in
             Button("Delete Comment", role: .destructive) {
                 Task { await viewModel.deleteComment(comment) }
@@ -164,7 +168,7 @@ public struct TaskDetailView: View {
                 RelationKindPickerSheet { kind in
                     relationSheetStep = .pickTask(kind)
                 }
-            case .pickTask(let kind):
+            case let .pickTask(kind):
                 RelationTaskPickerSheet(viewModel: viewModel, kind: kind) { candidate in
                     let relation = TaskRelation(id: candidate.id, title: candidate.title, isDone: candidate.isDone, projectID: candidate.projectID)
                     Task { await viewModel.addRelation(relation, kind: kind) }
@@ -175,7 +179,7 @@ public struct TaskDetailView: View {
         .navigationDestination(item: $relatedTaskDestination) { destination in
             TaskDetailView(
                 viewModel: viewModel.makeDetailViewModel(task: destination.task, project: destination.project),
-                projectDestination: projectDestination
+                projectDestination: projectDestination,
             )
         }
         // The `AnyView` is built once, at tap time, and stashed in
@@ -186,8 +190,12 @@ public struct TaskDetailView: View {
             box.content
         }
         .onChange(of: focusedField) { previous, current in
-            if previous == .title, current != .title { commitTitleEdit() }
-            if previous == .description, current != .description { commitDescriptionEdit() }
+            if previous == .title, current != .title {
+                commitTitleEdit()
+            }
+            if previous == .description, current != .description {
+                commitDescriptionEdit()
+            }
         }
     }
 
@@ -307,7 +315,7 @@ public struct TaskDetailView: View {
                     title: "Due",
                     value: task.dueDate.map(TaskDueDateFormatter.string(for:)) ?? "Set due date",
                     valueColor: task.dueDate == nil ? VikunjaColor.textTertiary : (isOverdue(task) ? VikunjaColor.Semantic.dangerText : nil),
-                    showsChevron: true
+                    showsChevron: true,
                 )
             }
             .buttonStyle(.plain)
@@ -332,7 +340,7 @@ public struct TaskDetailView: View {
                     title: "Priority",
                     value: priorityDisplay(task.priority)?.label ?? "Set priority",
                     valueColor: priorityDisplay(task.priority)?.color ?? VikunjaColor.textTertiary,
-                    showsChevron: true
+                    showsChevron: true,
                 )
             }
             .buttonStyle(.plain)
@@ -374,7 +382,7 @@ public struct TaskDetailView: View {
                             onTap: openRelation,
                             onRemove: { relation in
                                 Task { await viewModel.removeRelation(relation, kind: group.kind) }
-                            }
+                            },
                         )
                     }
                 }
@@ -389,7 +397,7 @@ public struct TaskDetailView: View {
                     Task { await viewModel.addComment(text) }
                 },
                 onEdit: { comment in commentPendingEdit = comment },
-                onDelete: { comment in commentPendingDeletion = comment }
+                onDelete: { comment in commentPendingDeletion = comment },
             )
         }
     }
@@ -400,8 +408,12 @@ public struct TaskDetailView: View {
     /// section above since it renders as a checklist, not a relation list.
     private func relationGroups(for task: VikunjaTask) -> [(kind: RelationKind, relations: [TaskRelation])] {
         var groups: [(kind: RelationKind, relations: [TaskRelation])] = []
-        if !task.dependsOn.isEmpty { groups.append((.blocked, task.dependsOn)) }
-        if !task.blocks.isEmpty { groups.append((.blocking, task.blocks)) }
+        if !task.dependsOn.isEmpty {
+            groups.append((.blocked, task.dependsOn))
+        }
+        if !task.blocks.isEmpty {
+            groups.append((.blocking, task.blocks))
+        }
         groups.append(contentsOf: orderedOtherRelations(task))
         return groups
     }
@@ -443,11 +455,11 @@ public struct TaskDetailView: View {
 
     private func priorityDisplay(_ priority: VikunjaTask.Priority) -> PriorityDisplay? {
         switch priority {
-        case .unset: return nil
-        case .low: return PriorityDisplay(label: "Low", color: VikunjaColor.Priority.low)
-        case .medium: return PriorityDisplay(label: "Medium", color: VikunjaColor.Priority.medium)
-        case .high: return PriorityDisplay(label: "High", color: VikunjaColor.Priority.high)
-        case .urgent, .doNow: return PriorityDisplay(label: "Urgent", color: VikunjaColor.Priority.urgent)
+        case .unset: nil
+        case .low: PriorityDisplay(label: "Low", color: VikunjaColor.Priority.low)
+        case .medium: PriorityDisplay(label: "Medium", color: VikunjaColor.Priority.medium)
+        case .high: PriorityDisplay(label: "High", color: VikunjaColor.Priority.high)
+        case .urgent, .doNow: PriorityDisplay(label: "Urgent", color: VikunjaColor.Priority.urgent)
         }
     }
 
@@ -554,7 +566,7 @@ private struct InfoRow: View {
 private struct SectionBlock<Content: View>: View {
     let title: String
     var count: String?
-    var trailing: AnyView = AnyView(EmptyView())
+    var trailing: AnyView = .init(EmptyView())
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -634,7 +646,7 @@ private struct LabelPill: View {
 private struct FlowLayout: Layout {
     var spacing: CGFloat
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
         let maxWidth = proposal.width ?? .infinity
         var rowWidth: CGFloat = 0
         var totalHeight: CGFloat = 0
@@ -654,7 +666,7 @@ private struct FlowLayout: Layout {
         return CGSize(width: maxWidth == .infinity ? rowWidth : maxWidth, height: totalHeight)
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
         var x = bounds.minX
         var y = bounds.minY
         var rowHeight: CGFloat = 0
@@ -738,7 +750,7 @@ private struct RelationGroupView: View {
                         relation: relation,
                         projectTitle: projectTitle(relation),
                         onTap: { onTap(relation) },
-                        onRemove: { onRemove(relation) }
+                        onRemove: { onRemove(relation) },
                     )
                 }
             }
@@ -750,8 +762,8 @@ private struct RelationGroupView: View {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .font(.system(size: 10, weight: .semibold))
                         Text(isExpanded
-                             ? "Show less"
-                             : "Show \(relations.count - Self.collapseThreshold) more")
+                            ? "Show less"
+                            : "Show \(relations.count - Self.collapseThreshold) more")
                     }
                     .font(VikunjaFont.caption)
                     .fontWeight(.semibold)
@@ -826,7 +838,9 @@ private struct RelatedTaskDestination: Identifiable, Hashable {
     let task: VikunjaTask
     let project: Project
 
-    var id: Int { task.id }
+    var id: Int {
+        task.id
+    }
 }
 
 /// Wraps the type-erased `AnyView` `projectDestination(_:)` builds, computed
@@ -847,8 +861,8 @@ private struct ProjectDestinationBox: Identifiable, Hashable {
     let id: Int
     let content: AnyView
 
-    // Written by hand: `AnyView` isn't `Hashable`, and identity here only
-    // ever needs to key off `id` anyway.
+    /// Written by hand: `AnyView` isn't `Hashable`, and identity here only
+    /// ever needs to key off `id` anyway.
     static func == (lhs: ProjectDestinationBox, rhs: ProjectDestinationBox) -> Bool {
         lhs.id == rhs.id
     }
@@ -887,8 +901,8 @@ private enum RelationSheetStep: Identifiable {
 
     var id: String {
         switch self {
-        case .pickKind: return "pickKind"
-        case .pickTask(let kind): return "pickTask-\(kind.rawValue)"
+        case .pickKind: "pickKind"
+        case let .pickTask(kind): "pickTask-\(kind.rawValue)"
         }
     }
 }
@@ -1005,11 +1019,11 @@ private struct RelationCandidateRow: View {
 
     private var priorityColor: Color? {
         switch task.priority {
-        case .unset: return nil
-        case .low: return VikunjaColor.Priority.low
-        case .medium: return VikunjaColor.Priority.medium
-        case .high: return VikunjaColor.Priority.high
-        case .urgent, .doNow: return VikunjaColor.Priority.urgent
+        case .unset: nil
+        case .low: VikunjaColor.Priority.low
+        case .medium: VikunjaColor.Priority.medium
+        case .high: VikunjaColor.Priority.high
+        case .urgent, .doNow: VikunjaColor.Priority.urgent
         }
     }
 
@@ -1300,7 +1314,7 @@ private struct LabelPickerRow: View {
             .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
             .background(
                 isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous)
+                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
             )
         }
         .buttonStyle(.plain)
@@ -1400,7 +1414,9 @@ private struct CommentsSection: View {
     @State private var draft = ""
 
     private var emptyStateMessage: String {
-        if case .failure(let message) = loadState { return message }
+        if case let .failure(message) = loadState {
+            return message
+        }
         return "No comments yet."
     }
 
@@ -1416,7 +1432,7 @@ private struct CommentsSection: View {
                         CommentRow(
                             comment: comment,
                             onEdit: { onEdit(comment) },
-                            onDelete: { onDelete(comment) }
+                            onDelete: { onDelete(comment) },
                         )
                     }
                 }

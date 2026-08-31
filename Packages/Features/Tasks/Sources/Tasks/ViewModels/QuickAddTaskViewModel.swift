@@ -23,7 +23,9 @@ public final class QuickAddTaskViewModel {
     public private(set) var isSaving: Bool = false
     public private(set) var saveErrorMessage: String?
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     public var canSave: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && selectedProjectID != nil && !isSaving
@@ -50,7 +52,9 @@ public final class QuickAddTaskViewModel {
     public struct ProjectGroup: Identifiable, Hashable {
         public let root: Project
         public let children: [Project]
-        public var id: Int { root.id }
+        public var id: Int {
+            root.id
+        }
     }
 
     private let taskRepository: TaskRepositoryProtocol
@@ -68,7 +72,7 @@ public final class QuickAddTaskViewModel {
         accountDefaultProjectID: Int? = nil,
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
     ) {
         self.preselectedProjectID = preselectedProjectID
         self.accountDefaultProjectID = accountDefaultProjectID
@@ -118,8 +122,8 @@ public final class QuickAddTaskViewModel {
                     id: 0,
                     title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                     priority: priority,
-                    projectID: selectedProjectID
-                )
+                    projectID: selectedProjectID,
+                ),
             )
             toastPresenter.show("Task created", style: .success)
             return created

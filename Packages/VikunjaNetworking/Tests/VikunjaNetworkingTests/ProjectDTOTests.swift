@@ -4,7 +4,7 @@ import Testing
 
 struct ProjectDTOTests {
     @Test
-    func decodesRealisticProjectsPayload() throws {
+    func `decodes realistic projects payload`() throws {
         let dtos = try loadProjectDTOs()
 
         #expect(dtos.count == 3)
@@ -19,7 +19,7 @@ struct ProjectDTOTests {
     /// normalize that `0` to `nil`, or `ProjectsListViewModel` can never find
     /// a root to attach the tree to.
     @Test
-    func mapsRootLevelZeroParentIDToNil() throws {
+    func `maps root level zero parent ID to nil`() throws {
         let dtos = try loadProjectDTOs()
         let projects = dtos.map(ProjectMapper.toDomain)
 

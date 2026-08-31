@@ -29,7 +29,7 @@ public struct ProjectOverviewRootView: View {
     public init(
         viewModel: ProjectOverviewViewModel,
         makeOverviewViewModel: @escaping (ProjectNode) -> ProjectOverviewViewModel,
-        taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView
+        taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView,
     ) {
         self.viewModel = viewModel
         self.makeOverviewViewModel = makeOverviewViewModel
@@ -43,10 +43,10 @@ public struct ProjectOverviewRootView: View {
             onSelectTask: { task in
                 taskDestinationBox = TaskDestinationBox(
                     id: task.id,
-                    content: taskDetailDestination(task, viewModel.project)
+                    content: taskDetailDestination(task, viewModel.project),
                 )
             },
-            onEditProject: { _ in }
+            onEditProject: { _ in },
         )
         // Concrete-typed content (another `ProjectOverviewRootView`), so this
         // one doesn't need the box treatment below — see
@@ -55,7 +55,7 @@ public struct ProjectOverviewRootView: View {
             ProjectOverviewRootView(
                 viewModel: makeOverviewViewModel(node),
                 makeOverviewViewModel: makeOverviewViewModel,
-                taskDetailDestination: taskDetailDestination
+                taskDetailDestination: taskDetailDestination,
             )
         }
         .navigationDestination(item: $taskDestinationBox) { box in
@@ -77,8 +77,8 @@ private struct TaskDestinationBox: Identifiable, Hashable {
     let id: Int
     let content: AnyView
 
-    // Written by hand: `AnyView` isn't `Hashable`, and identity here only
-    // ever needs to key off `id` anyway.
+    /// Written by hand: `AnyView` isn't `Hashable`, and identity here only
+    /// ever needs to key off `id` anyway.
     static func == (lhs: TaskDestinationBox, rhs: TaskDestinationBox) -> Bool {
         lhs.id == rhs.id
     }

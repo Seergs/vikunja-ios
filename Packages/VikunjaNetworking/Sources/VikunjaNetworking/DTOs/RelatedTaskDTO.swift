@@ -8,7 +8,9 @@ struct RelatedTaskDTO: Codable {
     let projectId: Int?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, done
+        case id
+        case title
+        case done
         case projectId = "project_id"
     }
 }

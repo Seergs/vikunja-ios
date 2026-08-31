@@ -6,7 +6,7 @@ enum ServerInfoMapper {
             version: dto.version,
             caldavEnabled: dto.caldavEnabled ?? false,
             totpEnabled: dto.totpEnabled ?? false,
-            registrationEnabled: dto.registrationEnabled ?? false
+            registrationEnabled: dto.registrationEnabled ?? false,
         )
     }
 }

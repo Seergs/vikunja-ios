@@ -37,7 +37,7 @@ public struct VikunjaTask: Identifiable, Equatable, Hashable, Sendable {
         subtasks: [TaskRelation] = [],
         dependsOn: [TaskRelation] = [],
         blocks: [TaskRelation] = [],
-        otherRelations: [RelationKind: [TaskRelation]] = [:]
+        otherRelations: [RelationKind: [TaskRelation]] = [:],
     ) {
         self.id = id
         self.title = title

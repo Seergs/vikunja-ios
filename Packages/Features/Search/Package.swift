@@ -14,5 +14,5 @@ let package = Package(
     ],
     targets: [
         .target(name: "Search", dependencies: ["VikunjaCore", "VikunjaNavigation", "VikunjaDesignSystem"]),
-    ]
+    ],
 )

@@ -1,12 +1,12 @@
 import Foundation
+@testable import Tasks
 import Testing
 import VikunjaCore
-@testable import Tasks
 
 @MainActor
 struct TaskDetailViewModelTests {
     @Test
-    func startsWithTheTaskPassedInAtConstruction() {
+    func `starts with the task passed in at construction`() {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
         let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), commentRepository: FakeTaskCommentRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
@@ -16,7 +16,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func markVisibleSelectsTheTasksProjectForQuickAddAndMarkHiddenReleasesIt() {
+    func `mark visible selects the tasks project for quick add and mark hidden releases it`() {
         let context = FakeQuickAddContext()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 4),
@@ -27,7 +27,7 @@ struct TaskDetailViewModelTests {
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
-            quickAddContext: context
+            quickAddContext: context,
         )
 
         viewModel.markVisible()
@@ -38,7 +38,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func loadReplacesTheTaskWithTheRepositorysFresherCopy() async {
+    func `load replaces the task with the repositorys fresher copy`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [
             VikunjaTask(id: 1, title: "Write report", description: "Add the missing appendix", projectID: 1),
@@ -51,7 +51,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -61,7 +61,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func loadSurfacesAFriendlyMessageOnFailure() async {
+    func `load surfaces A friendly message on failure`() async {
         let repository = FakeTaskRepository()
         repository.fetchError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -72,7 +72,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -81,7 +81,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func toggleDonePersistsTheFlippedStateThroughTheRepository() async {
+    func `toggle done persists the flipped state through the repository`() async {
         let repository = FakeTaskRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1),
@@ -91,7 +91,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.toggleDone()
@@ -100,7 +100,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func toggleDonePreservesRelationsTheUpdateResponseDoesntEcho() async {
+    func `toggle done preserves relations the update response doesnt echo`() async {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(
             id: 1,
@@ -110,7 +110,7 @@ struct TaskDetailViewModelTests {
             subtasks: [TaskRelation(id: 2, title: "Outline", isDone: true, projectID: 1)],
             dependsOn: [TaskRelation(id: 3, title: "Approve brief", isDone: false, projectID: 1)],
             blocks: [TaskRelation(id: 4, title: "Publish", isDone: false, projectID: 1)],
-            otherRelations: [.related: [TaskRelation(id: 5, title: "Related memo", isDone: false, projectID: 1)]]
+            otherRelations: [.related: [TaskRelation(id: 5, title: "Related memo", isDone: false, projectID: 1)]],
         )
         let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), commentRepository: FakeTaskCommentRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
 
@@ -124,7 +124,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func toggleDoneRevertsWhenTheServerRejectsTheUpdate() async {
+    func `toggle done reverts when the server rejects the update`() async {
         let repository = FakeTaskRepository()
         repository.updateError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -135,7 +135,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.toggleDone()
@@ -144,7 +144,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setDueDatePersistsTheChosenDate() async {
+    func `set due date persists the chosen date`() async {
         let repository = FakeTaskRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -154,7 +154,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         let dueDate = Date(timeIntervalSince1970: 1_700_000_000)
 
@@ -164,7 +164,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setDueDateRevertsWhenTheServerRejectsTheUpdate() async {
+    func `set due date reverts when the server rejects the update`() async {
         let repository = FakeTaskRepository()
         repository.updateError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -175,7 +175,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.setDueDate(Date())
@@ -184,7 +184,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setPriorityPersistsTheChosenPriority() async {
+    func `set priority persists the chosen priority`() async {
         let repository = FakeTaskRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -194,7 +194,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.setPriority(.urgent)
@@ -203,7 +203,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setPriorityRevertsWhenTheServerRejectsTheUpdate() async {
+    func `set priority reverts when the server rejects the update`() async {
         let repository = FakeTaskRepository()
         repository.updateError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -214,7 +214,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.setPriority(.high)
@@ -223,7 +223,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setTitlePersistsTheNewTitle() async {
+    func `set title persists the new title`() async {
         let repository = FakeTaskRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -233,7 +233,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.setTitle("Write annual report")
@@ -242,7 +242,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setTitleRevertsWhenTheServerRejectsTheUpdate() async {
+    func `set title reverts when the server rejects the update`() async {
         let repository = FakeTaskRepository()
         repository.updateError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -253,7 +253,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.setTitle("Write annual report")
@@ -262,7 +262,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setDescriptionPersistsTheNewDescription() async {
+    func `set description persists the new description`() async {
         let repository = FakeTaskRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -272,7 +272,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.setDescription("Quarterly numbers and highlights.")
@@ -281,7 +281,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func setDescriptionRevertsWhenTheServerRejectsTheUpdate() async {
+    func `set description reverts when the server rejects the update`() async {
         let repository = FakeTaskRepository()
         repository.updateError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -292,7 +292,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.setDescription("Changed")
@@ -301,7 +301,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func loadAllLabelsPopulatesFromTheRepository() async {
+    func `load all labels populates from the repository`() async {
         let labelRepository = FakeLabelRepository()
         labelRepository.labels = [Label(id: 1, title: "Design", hexColor: "8B5CF6")]
         let viewModel = TaskDetailViewModel(
@@ -312,7 +312,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadAllLabels()
@@ -321,7 +321,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func toggleLabelAddsAnUnattachedLabelAndPersistsTheAssociation() async {
+    func `toggle label adds an unattached label and persists the association`() async {
         let labelRepository = FakeLabelRepository()
         let label = Label(id: 1, title: "Design", hexColor: "8B5CF6")
         let viewModel = TaskDetailViewModel(
@@ -332,7 +332,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.toggleLabel(label)
@@ -342,7 +342,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func toggleLabelRemovesAnAttachedLabelAndPersistsTheAssociation() async {
+    func `toggle label removes an attached label and persists the association`() async {
         let labelRepository = FakeLabelRepository()
         let label = Label(id: 1, title: "Design", hexColor: "8B5CF6")
         let viewModel = TaskDetailViewModel(
@@ -353,7 +353,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.toggleLabel(label)
@@ -363,7 +363,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func toggleLabelRevertsWhenTheServerRejectsTheAssociation() async {
+    func `toggle label reverts when the server rejects the association`() async {
         let labelRepository = FakeLabelRepository()
         labelRepository.addError = .network("offline")
         let label = Label(id: 1, title: "Design", hexColor: "8B5CF6")
@@ -375,7 +375,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.toggleLabel(label)
@@ -384,7 +384,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func createAndAddLabelCreatesThenAttachesTheNewLabel() async {
+    func `create and add label creates then attaches the new label`() async {
         let labelRepository = FakeLabelRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -394,7 +394,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.createAndAddLabel(title: "Urgent", hexColor: "EF4444")
@@ -405,7 +405,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func createAndAddLabelDoesNothingWhenCreationFails() async {
+    func `create and add label does nothing when creation fails`() async {
         let labelRepository = FakeLabelRepository()
         labelRepository.createError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -416,7 +416,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.createAndAddLabel(title: "Urgent", hexColor: "EF4444")
@@ -426,7 +426,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addRelationAppendsToTheNamedFieldForSubtaskDependsOnAndBlocks() async {
+    func `add relation appends to the named field for subtask depends on and blocks`() async {
         let relationRepository = FakeTaskRelationRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -436,7 +436,7 @@ struct TaskDetailViewModelTests {
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         let subtask = TaskRelation(id: 2, title: "Outline", projectID: 1)
         let dependency = TaskRelation(id: 3, title: "Approve brief", projectID: 1)
@@ -454,7 +454,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addRelationAppendsToOtherRelationsForEveryOtherKind() async {
+    func `add relation appends to other relations for every other kind`() async {
         let relationRepository = FakeTaskRelationRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -464,7 +464,7 @@ struct TaskDetailViewModelTests {
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         let related = TaskRelation(id: 6, title: "Related memo", projectID: 1)
 
@@ -474,7 +474,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addRelationRevertsWhenTheServerRejectsIt() async {
+    func `add relation reverts when the server rejects it`() async {
         let relationRepository = FakeTaskRelationRepository()
         relationRepository.addError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -485,7 +485,7 @@ struct TaskDetailViewModelTests {
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.addRelation(TaskRelation(id: 2, title: "Outline", projectID: 1), kind: .subtask)
@@ -494,7 +494,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addRelationShowsASuccessToast() async {
+    func `add relation shows A success toast`() async {
         let toastPresenter = FakeToastPresenter()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -504,7 +504,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
 
         await viewModel.addRelation(TaskRelation(id: 2, title: "Outline", projectID: 1), kind: .subtask)
@@ -513,7 +513,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addRelationDoesNotShowAToastWhenTheServerRejectsIt() async {
+    func `add relation does not show A toast when the server rejects it`() async {
         let relationRepository = FakeTaskRelationRepository()
         relationRepository.addError = .network("offline")
         let toastPresenter = FakeToastPresenter()
@@ -525,7 +525,7 @@ struct TaskDetailViewModelTests {
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
 
         await viewModel.addRelation(TaskRelation(id: 2, title: "Outline", projectID: 1), kind: .subtask)
@@ -534,7 +534,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func removeRelationDropsFromTheNamedFieldAndPersistsTheRemoval() async {
+    func `remove relation drops from the named field and persists the removal`() async {
         let relationRepository = FakeTaskRelationRepository()
         let subtask = TaskRelation(id: 2, title: "Outline", projectID: 1)
         let viewModel = TaskDetailViewModel(
@@ -545,7 +545,7 @@ struct TaskDetailViewModelTests {
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.removeRelation(subtask, kind: .subtask)
@@ -555,7 +555,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func removeRelationRevertsWhenTheServerRejectsIt() async {
+    func `remove relation reverts when the server rejects it`() async {
         let relationRepository = FakeTaskRelationRepository()
         relationRepository.removeError = .network("offline")
         let subtask = TaskRelation(id: 2, title: "Outline", projectID: 1)
@@ -567,7 +567,7 @@ struct TaskDetailViewModelTests {
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.removeRelation(subtask, kind: .subtask)
@@ -576,7 +576,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func searchTasksForRelationExcludesTheTaskItselfAndAlreadyRelatedTasks() async {
+    func `search tasks for relation excludes the task itself and already related tasks`() async {
         let repository = FakeTaskRepository()
         repository.searchResults = [
             VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -590,7 +590,7 @@ struct TaskDetailViewModelTests {
                 title: "Write report",
                 projectID: 1,
                 subtasks: [TaskRelation(id: 2, title: "Outline", projectID: 1)],
-                dependsOn: [TaskRelation(id: 3, title: "Approve brief", projectID: 1)]
+                dependsOn: [TaskRelation(id: 3, title: "Approve brief", projectID: 1)],
             ),
             project: Project(id: 1, title: "Work"),
             repository: repository,
@@ -598,7 +598,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.searchTasksForRelation(query: "a")
@@ -607,7 +607,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func searchTasksForRelationFallsBackToProjectSuggestionsForABlankQuery() async {
+    func `search tasks for relation falls back to project suggestions for A blank query`() async {
         let repository = FakeTaskRepository()
         repository.searchResults = [VikunjaTask(id: 9, title: "Draft appendix", projectID: 1)]
         repository.tasks = [VikunjaTask(id: 8, title: "Outline appendix", projectID: 1)]
@@ -619,7 +619,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.searchTasksForRelation(query: "   ")
@@ -628,7 +628,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func loadRelationSuggestionsPopulatesFromTheCurrentProjectExcludingSelfAndAlreadyRelatedTasks() async {
+    func `load relation suggestions populates from the current project excluding self and already related tasks`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [
             VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -641,7 +641,7 @@ struct TaskDetailViewModelTests {
                 id: 1,
                 title: "Write report",
                 projectID: 1,
-                subtasks: [TaskRelation(id: 2, title: "Outline", projectID: 1)]
+                subtasks: [TaskRelation(id: 2, title: "Outline", projectID: 1)],
             ),
             project: Project(id: 1, title: "Work"),
             repository: repository,
@@ -649,7 +649,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadRelationSuggestions()
@@ -658,7 +658,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func searchTasksForRelationLeavesResultsEmptyOnFailure() async {
+    func `search tasks for relation leaves results empty on failure`() async {
         let repository = FakeTaskRepository()
         repository.searchError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -669,7 +669,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.searchTasksForRelation(query: "report")
@@ -678,7 +678,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func loadAllProjectsPopulatesFromTheRepository() async {
+    func `load all projects populates from the repository`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 2, title: "Personal"), Project(id: 3, title: "Health")]
         let viewModel = TaskDetailViewModel(
@@ -689,7 +689,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadAllProjects()
@@ -698,7 +698,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func projectTitleResolvesTheCurrentProjectWithoutLoadingAllProjects() async {
+    func `project title resolves the current project without loading all projects`() {
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
             project: Project(id: 1, title: "Work"),
@@ -707,14 +707,14 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         #expect(viewModel.projectTitle(forProjectID: 1) == "Work")
     }
 
     @Test
-    func projectTitleResolvesAnyLoadedProject() async {
+    func `project title resolves any loaded project`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 2, title: "Personal")]
         let viewModel = TaskDetailViewModel(
@@ -725,7 +725,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadAllProjects()
@@ -735,7 +735,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func loadCommentsPopulatesFromTheRepository() async {
+    func `load comments populates from the repository`() async {
         let commentRepository = FakeTaskCommentRepository()
         let author = User(id: 2, username: "sam", name: "Sam")
         commentRepository.comments = [
@@ -749,7 +749,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadComments()
@@ -759,7 +759,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func loadCommentsSurfacesAFriendlyMessageOnFailure() async {
+    func `load comments surfaces A friendly message on failure`() async {
         let commentRepository = FakeTaskCommentRepository()
         commentRepository.fetchError = .network("offline")
         let viewModel = TaskDetailViewModel(
@@ -770,7 +770,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadComments()
@@ -779,7 +779,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addCommentAppendsTheCreatedComment() async {
+    func `add comment appends the created comment`() async {
         let commentRepository = FakeTaskCommentRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -789,7 +789,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.addComment("Sounds good")
@@ -798,7 +798,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addCommentDoesNothingForBlankText() async {
+    func `add comment does nothing for blank text`() async {
         let commentRepository = FakeTaskCommentRepository()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -808,7 +808,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.addComment("   ")
@@ -817,7 +817,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func addCommentShowsAnErrorToastOnFailure() async {
+    func `add comment shows an error toast on failure`() async {
         let commentRepository = FakeTaskCommentRepository()
         commentRepository.addError = .network("offline")
         let toastPresenter = FakeToastPresenter()
@@ -829,7 +829,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
 
         await viewModel.addComment("Sounds good")
@@ -839,12 +839,12 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func deleteCommentRemovesItFromTheList() async {
+    func `delete comment removes it from the list`() async {
         let commentRepository = FakeTaskCommentRepository()
         let author = User(id: 1, username: "me")
         commentRepository.comments = [
             TaskComment(id: 1, comment: "Keep", author: author, created: Date(), updated: Date()),
-            TaskComment(id: 2, comment: "Drop", author: author, created: Date(), updated: Date())
+            TaskComment(id: 2, comment: "Drop", author: author, created: Date(), updated: Date()),
         ]
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -854,7 +854,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.loadComments()
 
@@ -864,14 +864,14 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func deleteCommentRestoresTheListAndShowsAnErrorToastOnFailure() async {
+    func `delete comment restores the list and shows an error toast on failure`() async {
         let commentRepository = FakeTaskCommentRepository()
         commentRepository.deleteError = .network("offline")
         let author = User(id: 1, username: "me")
         let doomed = TaskComment(id: 2, comment: "Drop", author: author, created: Date(), updated: Date())
         commentRepository.comments = [
             TaskComment(id: 1, comment: "Keep", author: author, created: Date(), updated: Date()),
-            doomed
+            doomed,
         ]
         let toastPresenter = FakeToastPresenter()
         let viewModel = TaskDetailViewModel(
@@ -882,7 +882,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
         await viewModel.loadComments()
 
@@ -893,11 +893,11 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func editCommentReplacesTheCommentWithTheServerResponse() async {
+    func `edit comment replaces the comment with the server response`() async {
         let commentRepository = FakeTaskCommentRepository()
         let author = User(id: 1, username: "me")
         commentRepository.comments = [
-            TaskComment(id: 1, comment: "Frist draft", author: author, created: Date(), updated: Date())
+            TaskComment(id: 1, comment: "Frist draft", author: author, created: Date(), updated: Date()),
         ]
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -907,7 +907,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.loadComments()
 
@@ -917,11 +917,11 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func editCommentDoesNothingForBlankText() async {
+    func `edit comment does nothing for blank text`() async {
         let commentRepository = FakeTaskCommentRepository()
         let author = User(id: 1, username: "me")
         commentRepository.comments = [
-            TaskComment(id: 1, comment: "Original", author: author, created: Date(), updated: Date())
+            TaskComment(id: 1, comment: "Original", author: author, created: Date(), updated: Date()),
         ]
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -931,7 +931,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.loadComments()
 
@@ -941,12 +941,12 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func editCommentKeepsTheOriginalAndShowsAnErrorToastOnFailure() async {
+    func `edit comment keeps the original and shows an error toast on failure`() async {
         let commentRepository = FakeTaskCommentRepository()
         commentRepository.updateError = .network("offline")
         let author = User(id: 1, username: "me")
         commentRepository.comments = [
-            TaskComment(id: 1, comment: "Original", author: author, created: Date(), updated: Date())
+            TaskComment(id: 1, comment: "Original", author: author, created: Date(), updated: Date()),
         ]
         let toastPresenter = FakeToastPresenter()
         let viewModel = TaskDetailViewModel(
@@ -957,7 +957,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
         await viewModel.loadComments()
 
@@ -968,7 +968,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func moveUpdatesTheTasksProjectAndShowsASuccessToast() async {
+    func `move updates the tasks project and shows A success toast`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
         let toastPresenter = FakeToastPresenter()
@@ -980,7 +980,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
 
         let succeeded = await viewModel.move(to: Project(id: 2, title: "Personal"))
@@ -991,7 +991,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func moveRevertsAndShowsAnErrorToastOnFailure() async {
+    func `move reverts and shows an error toast on failure`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
         repository.updateError = .network("offline")
@@ -1004,7 +1004,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
 
         let succeeded = await viewModel.move(to: Project(id: 2, title: "Personal"))
@@ -1015,7 +1015,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func moveProjectGroupsExcludesTheTasksCurrentProject() async {
+    func `move project groups excludes the tasks current project`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work"),
@@ -1030,7 +1030,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadAllProjects()
@@ -1040,7 +1040,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func deleteTaskShowsASuccessToast() async {
+    func `delete task shows A success toast`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
         let toastPresenter = FakeToastPresenter()
@@ -1052,7 +1052,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
 
         let succeeded = await viewModel.deleteTask()
@@ -1062,7 +1062,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func deleteTaskShowsAnErrorToastOnFailure() async {
+    func `delete task shows an error toast on failure`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", projectID: 1)]
         repository.deleteError = .network("offline")
@@ -1075,7 +1075,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
 
         let succeeded = await viewModel.deleteTask()

@@ -17,7 +17,7 @@ struct TodaySnapshotLoaderTests {
         tasks: [VikunjaTask] = [],
         failingProjectIDs: Set<Int> = [],
         projectsError: VikunjaError? = nil,
-        cacheDirectory: URL? = nil
+        cacheDirectory: URL? = nil,
     ) -> (TodaySnapshotLoader, TodaySnapshotCache) {
         let store = FakeAccountStore(account: account, token: token)
         let projectRepo = FakeProjectRepository()
@@ -31,20 +31,20 @@ struct TodaySnapshotLoaderTests {
             accountStore: store,
             clientFactory: FakeClientFactory(projectRepository: projectRepo, taskRepository: taskRepo),
             cache: cache,
-            now: { Self.now }
+            now: { Self.now },
         )
         return (loader, cache)
     }
 
     @Test
-    func reportsNotConnectedWhenThereIsNoActiveAccount() async {
+    func `reports not connected when there is no active account`() async {
         let (loader, _) = makeLoader(account: nil, token: nil)
 
         #expect(await loader.loadState() == .notConnected)
     }
 
     @Test
-    func aggregatesTasksAcrossEveryProjectAndBucketsThem() async {
+    func `aggregates tasks across every project and buckets them`() async {
         let projects = [
             Project(id: 1, title: "Work", hexColor: "#196AFF"),
             Project(id: 2, title: "Home", hexColor: "#1FA669"),
@@ -71,7 +71,7 @@ struct TodaySnapshotLoaderTests {
     }
 
     @Test
-    func oneProjectsFailingTaskFetchDoesNotSinkTheWholeSnapshot() async {
+    func `one projects failing task fetch does not sink the whole snapshot`() async {
         let projects = [Project(id: 1, title: "Work"), Project(id: 2, title: "Home")]
         let tasks = [
             VikunjaTask(id: 10, title: "Kept", dueDate: Self.laterToday, projectID: 1),
@@ -87,12 +87,12 @@ struct TodaySnapshotLoaderTests {
     }
 
     @Test
-    func writesTheSnapshotToTheCacheOnSuccess() async {
+    func `writes the snapshot to the cache on success`() async {
         let directory = TestSupport.tempCacheDirectory()
         let (loader, cache) = makeLoader(
             projects: [Project(id: 1, title: "Work")],
             tasks: [VikunjaTask(id: 10, title: "T", dueDate: Self.laterToday, projectID: 1)],
-            cacheDirectory: directory
+            cacheDirectory: directory,
         )
 
         _ = await loader.loadState()
@@ -101,20 +101,20 @@ struct TodaySnapshotLoaderTests {
     }
 
     @Test
-    func fallsBackToACachedStaleSnapshotWhenTheRefreshFails() async {
+    func `falls back to A cached stale snapshot when the refresh fails`() async {
         let directory = TestSupport.tempCacheDirectory()
         // Seed the cache with a good snapshot.
         let (goodLoader, cache) = makeLoader(
             projects: [Project(id: 1, title: "Work")],
             tasks: [VikunjaTask(id: 10, title: "Cached", dueDate: Self.laterToday, projectID: 1)],
-            cacheDirectory: directory
+            cacheDirectory: directory,
         )
         _ = await goodLoader.loadState()
 
         // Now a loader whose project fetch fails, sharing the same cache dir.
         let (failingLoader, _) = makeLoader(
             projectsError: .network("offline"),
-            cacheDirectory: directory
+            cacheDirectory: directory,
         )
 
         guard case let .content(content) = await failingLoader.loadState() else {
@@ -127,34 +127,34 @@ struct TodaySnapshotLoaderTests {
     }
 
     @Test
-    func reportsUnavailableWhenTheRefreshFailsAndNothingIsCached() async {
+    func `reports unavailable when the refresh fails and nothing is cached`() async {
         let (loader, _) = makeLoader(projectsError: .network("offline"))
 
         #expect(await loader.loadState() == .unavailable)
     }
 
     @Test
-    func reportsNeedsAuthWhenTheServerRejectsTheToken() async {
+    func `reports needs auth when the server rejects the token`() async {
         let (loader, _) = makeLoader(projectsError: .unauthorized)
 
         #expect(await loader.loadState() == .needsAuth)
     }
 
     @Test
-    func reportsNeedsAuthWhenThereIsNoTokenAndNoCache() async {
+    func `reports needs auth when there is no token and no cache`() async {
         let (loader, _) = makeLoader(token: nil)
 
         #expect(await loader.loadState() == .needsAuth)
     }
 
     @Test
-    func rendersTheAppWrittenCacheWhenTheWidgetCannotReachCredentials() async {
+    func `renders the app written cache when the widget cannot reach credentials`() async {
         let directory = TestSupport.tempCacheDirectory()
         // The app seeds the cache (it has working credentials)...
         let (appLoader, _) = makeLoader(
             projects: [Project(id: 1, title: "Work")],
             tasks: [VikunjaTask(id: 10, title: "From the app", dueDate: Self.laterToday, projectID: 1)],
-            cacheDirectory: directory
+            cacheDirectory: directory,
         )
         _ = await appLoader.loadState()
 
@@ -171,9 +171,9 @@ struct TodaySnapshotLoaderTests {
     }
 
     @Test
-    func capsTheTaskListAtTheConfiguredLimit() async {
+    func `caps the task list at the configured limit`() async {
         let projects = [Project(id: 1, title: "Work")]
-        let tasks = (0..<20).map {
+        let tasks = (0 ..< 20).map {
             VikunjaTask(id: $0, title: "T\($0)", dueDate: Self.laterToday, projectID: 1)
         }
         let (loader, _) = makeLoader(projects: projects, tasks: tasks)

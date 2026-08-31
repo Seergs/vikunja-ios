@@ -4,7 +4,7 @@ import Testing
 
 struct ServerInfoDTOTests {
     @Test
-    func mapsCapabilityFlagsToDomain() throws {
+    func `maps capability flags to domain`() throws {
         let url = try #require(Bundle.module.url(forResource: "server_info", withExtension: "json"))
         let data = try Data(contentsOf: url)
         let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: data)

@@ -24,9 +24,13 @@ struct SearchView: View {
                 "This permanently deletes the task.",
                 isPresented: Binding(
                     get: { taskPendingDelete != nil },
-                    set: { isPresented in if !isPresented { taskPendingDelete = nil } }
+                    set: {
+                        isPresented in if !isPresented {
+                            taskPendingDelete = nil
+                        }
+                    },
                 ),
-                titleVisibility: .visible
+                titleVisibility: .visible,
             ) {
                 if let taskPendingDelete {
                     Button("Delete Task", role: .destructive) {
@@ -37,7 +41,6 @@ struct SearchView: View {
             }
     }
 
-    @ViewBuilder
     private var searchContent: some View {
         List {
             switch viewModel.state {
@@ -53,7 +56,7 @@ struct SearchView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
-            case .loaded(let tasks):
+            case let .loaded(tasks):
                 if tasks.isEmpty {
                     emptySearchResultsState
                         .listRowSeparator(.hidden)
@@ -62,7 +65,7 @@ struct SearchView: View {
                     loadedContent(tasks)
                 }
 
-            case .failure(let message):
+            case let .failure(message):
                 VStack(spacing: VikunjaSpacing.sm) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 28))
@@ -113,7 +116,7 @@ struct SearchView: View {
                     },
                     onDelete: {
                         taskPendingDelete = task
-                    }
+                    },
                 )
                 .padding(.horizontal, VikunjaSpacing.md)
                 .padding(.vertical, VikunjaSpacing.md)
@@ -129,8 +132,8 @@ struct SearchView: View {
                         bottomLeadingRadius: index == tasks.count - 1 ? VikunjaRadius.lg : 0,
                         bottomTrailingRadius: index == tasks.count - 1 ? VikunjaRadius.lg : 0,
                         topTrailingRadius: index == 0 ? VikunjaRadius.lg : 0,
-                        style: .continuous
-                    )
+                        style: .continuous,
+                    ),
                 )
                 .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
                 .listRowInsets(EdgeInsets())
@@ -140,7 +143,6 @@ struct SearchView: View {
         }
     }
 
-    @ViewBuilder
     private var emptyState: some View {
         VStack(spacing: VikunjaSpacing.lg) {
             Image(systemName: "magnifyingglass")
@@ -156,7 +158,6 @@ struct SearchView: View {
         .padding(VikunjaSpacing.lg)
     }
 
-    @ViewBuilder
     private var emptySearchResultsState: some View {
         VStack(spacing: VikunjaSpacing.lg) {
             Image(systemName: "magnifyingglass")
@@ -193,11 +194,11 @@ private struct SearchTaskRow: View {
 
     private var priorityColor: Color? {
         switch task.priority {
-        case .unset: return nil
-        case .low: return VikunjaColor.Priority.low
-        case .medium: return VikunjaColor.Priority.medium
-        case .high: return VikunjaColor.Priority.high
-        case .urgent, .doNow: return VikunjaColor.Priority.urgent
+        case .unset: nil
+        case .low: VikunjaColor.Priority.low
+        case .medium: VikunjaColor.Priority.medium
+        case .high: VikunjaColor.Priority.high
+        case .urgent, .doNow: VikunjaColor.Priority.urgent
         }
     }
 
@@ -326,7 +327,7 @@ private struct SearchExtraLabelsPill: View {
         SearchView(viewModel: SearchViewModel(
             taskRepository: PreviewTaskRepository(),
             projectRepository: PreviewProjectRepository(),
-            toastPresenter: PreviewToastPresenter()
+            toastPresenter: PreviewToastPresenter(),
         ))
     }
 }
@@ -334,7 +335,9 @@ private struct SearchExtraLabelsPill: View {
 private struct SearchTaskPair: Identifiable, Hashable {
     let task: VikunjaTask
     let project: Project
-    var id: Int { task.id }
+    var id: Int {
+        task.id
+    }
 }
 
 private extension View {
@@ -354,23 +357,50 @@ private extension View {
 }
 
 // MARK: - Preview Helpers
+
 private final class PreviewTaskRepository: @unchecked Sendable, TaskRepositoryProtocol {
-    func fetchTasks(projectID: Int) async throws -> [VikunjaTask] { [] }
-    func fetchTask(id: Int) async throws -> VikunjaTask { VikunjaTask(id: 0, title: "", projectID: 0) }
-    func create(_ task: VikunjaTask) async throws -> VikunjaTask { task }
-    func update(_ task: VikunjaTask) async throws -> VikunjaTask { task }
-    func delete(id: Int) async throws {}
-    func searchTasks(query: String) async throws -> [VikunjaTask] { [] }
+    func fetchTasks(projectID _: Int) async throws -> [VikunjaTask] {
+        []
+    }
+
+    func fetchTask(id _: Int) async throws -> VikunjaTask {
+        VikunjaTask(id: 0, title: "", projectID: 0)
+    }
+
+    func create(_ task: VikunjaTask) async throws -> VikunjaTask {
+        task
+    }
+
+    func update(_ task: VikunjaTask) async throws -> VikunjaTask {
+        task
+    }
+
+    func delete(id _: Int) async throws {}
+    func searchTasks(query _: String) async throws -> [VikunjaTask] {
+        []
+    }
 }
 
 private final class PreviewProjectRepository: @unchecked Sendable, ProjectRepositoryProtocol {
-    func fetchProjects() async throws -> [Project] { [] }
-    func fetchProject(id: Int) async throws -> Project { Project(id: 0, title: "") }
-    func create(_ project: Project) async throws -> Project { project }
-    func update(_ project: Project) async throws -> Project { project }
-    func delete(id: Int) async throws {}
+    func fetchProjects() async throws -> [Project] {
+        []
+    }
+
+    func fetchProject(id _: Int) async throws -> Project {
+        Project(id: 0, title: "")
+    }
+
+    func create(_ project: Project) async throws -> Project {
+        project
+    }
+
+    func update(_ project: Project) async throws -> Project {
+        project
+    }
+
+    func delete(id _: Int) async throws {}
 }
 
 private final class PreviewToastPresenter: @unchecked Sendable, ToastPresenting {
-    func show(_ message: String, style: VikunjaCore.ToastStyle) {}
+    func show(_: String, style _: VikunjaCore.ToastStyle) {}
 }

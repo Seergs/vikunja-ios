@@ -1,6 +1,6 @@
 import Foundation
-import VikunjaCore
 @testable import Settings
+import VikunjaCore
 
 final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
     private(set) var accounts: [InstanceAccount] = []
@@ -13,7 +13,9 @@ final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
     var updateError: VikunjaError?
 
     func fetchAccounts() async throws -> [InstanceAccount] {
-        if let fetchAccountsError { throw fetchAccountsError }
+        if let fetchAccountsError {
+            throw fetchAccountsError
+        }
         return accounts
     }
 
@@ -29,7 +31,9 @@ final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
     }
 
     func updateAccount(_ account: InstanceAccount, token: String?) async throws {
-        if let updateError { throw updateError }
+        if let updateError {
+            throw updateError
+        }
         guard let index = accounts.firstIndex(where: { $0.id == account.id }) else {
             throw VikunjaError.notFound
         }
@@ -40,7 +44,9 @@ final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
     }
 
     func removeAccount(id: InstanceAccount.ID) async throws {
-        if let removeError { throw removeError }
+        if let removeError {
+            throw removeError
+        }
         accounts.removeAll { $0.id == id }
         tokens[id] = nil
         if activeID == id {
@@ -49,7 +55,9 @@ final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
     }
 
     func setActiveAccount(id: InstanceAccount.ID) async throws {
-        if let setActiveError { throw setActiveError }
+        if let setActiveError {
+            throw setActiveError
+        }
         guard accounts.contains(where: { $0.id == id }) else { throw VikunjaError.notFound }
         activeID = id
     }
@@ -66,12 +74,14 @@ struct FakeCapabilityProvider: CapabilityProvider {
         try result.get()
     }
 
-    func supports(_ feature: VikunjaFeature) async -> Bool { false }
+    func supports(_: VikunjaFeature) async -> Bool {
+        false
+    }
 }
 
 final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked Sendable {
     var result: Result<VikunjaServerInfo, VikunjaError> = .success(
-        VikunjaServerInfo(version: "0.24.6", caldavEnabled: false, totpEnabled: false, registrationEnabled: false)
+        VikunjaServerInfo(version: "0.24.6", caldavEnabled: false, totpEnabled: false, registrationEnabled: false),
     )
     private(set) var requestedBaseURLs: [URL] = []
 
@@ -81,43 +91,43 @@ final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked
     }
 
     func makeProjectRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> ProjectRepositoryProtocol {
         fatalError("not exercised by Settings tests")
     }
 
     func makeTaskRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> TaskRepositoryProtocol {
         fatalError("not exercised by Settings tests")
     }
 
     func makeLabelRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> LabelRepositoryProtocol {
         fatalError("not exercised by Settings tests")
     }
 
     func makeTaskRelationRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> TaskRelationRepositoryProtocol {
         fatalError("not exercised by Settings tests")
     }
 
     func makeTaskCommentRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> TaskCommentRepositoryProtocol {
         fatalError("not exercised by Settings tests")
     }
 
     func makeUserRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> UserRepositoryProtocol {
         fatalError("not exercised by Settings tests")
     }
@@ -139,12 +149,16 @@ final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
     }
 
     func fetchLabels() async throws -> [Label] {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         return labels
     }
 
     func create(_ label: Label) async throws -> Label {
-        if let createError { throw createError }
+        if let createError {
+            throw createError
+        }
         let created = Label(id: nextID, title: label.title, hexColor: label.hexColor)
         nextID += 1
         labels.append(created)
@@ -152,7 +166,9 @@ final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
     }
 
     func update(_ label: Label) async throws -> Label {
-        if let updateError { throw updateError }
+        if let updateError {
+            throw updateError
+        }
         guard let index = labels.firstIndex(where: { $0.id == label.id }) else {
             throw VikunjaError.notFound
         }
@@ -161,16 +177,18 @@ final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
     }
 
     func delete(id: Int) async throws {
-        if let deleteError { throw deleteError }
+        if let deleteError {
+            throw deleteError
+        }
         labels.removeAll { $0.id == id }
         deletedIDs.append(id)
     }
 
-    func addLabel(_ labelID: Int, toTask taskID: Int) async throws {
+    func addLabel(_: Int, toTask _: Int) async throws {
         fatalError("not exercised by Settings tests")
     }
 
-    func removeLabel(_ labelID: Int, fromTask taskID: Int) async throws {
+    func removeLabel(_: Int, fromTask _: Int) async throws {
         fatalError("not exercised by Settings tests")
     }
 }

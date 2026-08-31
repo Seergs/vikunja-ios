@@ -18,7 +18,7 @@ public actor URLSessionAPIClient: APIClient {
     public init(
         baseURL: URL,
         session: URLSession = .shared,
-        authTokenProvider: @escaping @Sendable () async -> String? = { nil }
+        authTokenProvider: @escaping @Sendable () async -> String? = { nil },
     ) {
         self.baseURL = baseURL
         self.session = session
@@ -74,7 +74,7 @@ public actor URLSessionAPIClient: APIClient {
         }
 
         switch httpResponse.statusCode {
-        case 200...299:
+        case 200 ... 299:
             return data
         case 401:
             Self.logResponseBody(data, statusCode: 401, endpoint: endpoint)
@@ -100,7 +100,7 @@ public actor URLSessionAPIClient: APIClient {
     private func makeURL(for endpoint: Endpoint) -> URL? {
         var components = URLComponents(
             url: baseURL.appendingPathComponent(endpoint.path),
-            resolvingAgainstBaseURL: false
+            resolvingAgainstBaseURL: false,
         )
         if !endpoint.queryItems.isEmpty {
             components?.queryItems = endpoint.queryItems

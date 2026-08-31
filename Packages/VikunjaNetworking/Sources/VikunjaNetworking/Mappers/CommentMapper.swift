@@ -7,7 +7,7 @@ enum CommentMapper {
             comment: dto.comment,
             author: UserMapper.toDomain(dto.author),
             created: dto.created,
-            updated: dto.updated
+            updated: dto.updated,
         )
     }
 }

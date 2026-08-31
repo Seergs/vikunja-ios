@@ -9,7 +9,9 @@ enum AppTab: Hashable, CaseIterable, Identifiable {
     case search
     case settings
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 
     var title: String {
         switch self {

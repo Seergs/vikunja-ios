@@ -1,7 +1,7 @@
 import Foundation
+@testable import Settings
 import Testing
 import VikunjaCore
-@testable import Settings
 
 @MainActor
 struct ConnectionsListViewModelTests {
@@ -12,13 +12,13 @@ struct ConnectionsListViewModelTests {
     private func makeViewModel(
         store: FakeAccountStore,
         toastPresenter: FakeToastPresenter = FakeToastPresenter(),
-        onActiveAccountChanged: @escaping () -> Void = {}
+        onActiveAccountChanged: @escaping () -> Void = {},
     ) -> ConnectionsListViewModel {
         ConnectionsListViewModel(accountStore: store, toastPresenter: toastPresenter, onActiveAccountChanged: onActiveAccountChanged)
     }
 
     @Test
-    func loadPopulatesAccountsAndTheActiveID() async throws {
+    func `load populates accounts and the active ID`() async throws {
         let store = FakeAccountStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -34,7 +34,7 @@ struct ConnectionsListViewModelTests {
     }
 
     @Test
-    func loadSurfacesAFriendlyMessageOnFailure() async {
+    func `load surfaces A friendly message on failure`() async {
         let store = FakeAccountStore()
         store.fetchAccountsError = .network("offline")
         let viewModel = makeViewModel(store: store)
@@ -45,7 +45,7 @@ struct ConnectionsListViewModelTests {
     }
 
     @Test
-    func setActiveSwitchesTheActiveAccountAndNotifies() async throws {
+    func `set active switches the active account and notifies`() async throws {
         let store = FakeAccountStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -63,7 +63,7 @@ struct ConnectionsListViewModelTests {
     }
 
     @Test
-    func setActiveOnTheAlreadyActiveAccountDoesNothing() async throws {
+    func `set active on the already active account does nothing`() async throws {
         let store = FakeAccountStore()
         let account = makeAccount()
         try await store.addAccount(account, token: "token")

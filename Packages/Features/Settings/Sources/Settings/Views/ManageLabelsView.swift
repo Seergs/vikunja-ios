@@ -49,9 +49,13 @@ struct ManageLabelsView: View {
             }
             .confirmationDialog(
                 "Delete this label?",
-                isPresented: Binding(get: { pendingDeletion != nil }, set: { if !$0 { pendingDeletion = nil } }),
+                isPresented: Binding(get: { pendingDeletion != nil }, set: {
+                    if !$0 {
+                        pendingDeletion = nil
+                    }
+                }),
                 titleVisibility: .visible,
-                presenting: pendingDeletion
+                presenting: pendingDeletion,
             ) { (label: VikunjaCore.Label) in
                 Button("Delete \"\(label.title)\"", role: .destructive) {
                     Task { await viewModel.deleteLabel(label) }
@@ -77,7 +81,7 @@ struct ManageLabelsView: View {
             LabelsStatusView(
                 systemImage: "exclamationmark.triangle.fill",
                 title: "Couldn't load labels",
-                message: message
+                message: message,
             ) {
                 Task { await viewModel.load() }
             }
@@ -87,7 +91,7 @@ struct ManageLabelsView: View {
                 LabelsStatusView(
                     systemImage: "tag",
                     title: "No labels yet",
-                    message: "Create a label to organize tasks across every project."
+                    message: "Create a label to organize tasks across every project.",
                 )
                 .padding(.top, VikunjaSpacing.xxl)
             } else {

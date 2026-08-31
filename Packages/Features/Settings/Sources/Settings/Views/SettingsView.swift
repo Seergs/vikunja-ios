@@ -14,7 +14,7 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     icon: "server.rack",
                     title: "Connections",
-                    subtitle: activeAccountName
+                    subtitle: activeAccountName,
                 ) {
                     router.push(.connections)
                 }
@@ -24,7 +24,7 @@ struct SettingsView: View {
                 SettingsNavigationRow(
                     icon: "tag",
                     title: "Manage Labels",
-                    subtitle: "View, edit, and create labels"
+                    subtitle: "View, edit, and create labels",
                 ) {
                     router.push(.manageLabels)
                 }

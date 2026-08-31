@@ -9,14 +9,14 @@ private enum TestRoute: Hashable {
 @MainActor
 struct RouterTests {
     @Test
-    func startsWithAnEmptyPath() {
+    func `starts with an empty path`() {
         let router = Router<TestRoute>()
 
         #expect(router.path.isEmpty)
     }
 
     @Test
-    func pushAppendsToThePath() {
+    func `push appends to the path`() {
         let router = Router<TestRoute>()
 
         router.push(.detail("42"))
@@ -25,7 +25,7 @@ struct RouterTests {
     }
 
     @Test
-    func popRemovesTheLastRoute() {
+    func `pop removes the last route`() {
         let router = Router<TestRoute>()
         router.push(.detail("42"))
         router.push(.settings)
@@ -36,7 +36,7 @@ struct RouterTests {
     }
 
     @Test
-    func popOnAnEmptyPathIsANoOp() {
+    func `pop on an empty path is A no op`() {
         let router = Router<TestRoute>()
 
         router.pop()
@@ -45,7 +45,7 @@ struct RouterTests {
     }
 
     @Test
-    func popToRootClearsThePath() {
+    func `pop to root clears the path`() {
         let router = Router<TestRoute>()
         router.push(.detail("1"))
         router.push(.detail("2"))

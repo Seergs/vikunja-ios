@@ -12,31 +12,31 @@ public protocol InstanceClientFactoryProtocol: Sendable {
     ///   rotated or removed.
     func makeProjectRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> ProjectRepositoryProtocol
 
     func makeTaskRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> TaskRepositoryProtocol
 
     func makeLabelRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> LabelRepositoryProtocol
 
     func makeTaskRelationRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> TaskRelationRepositoryProtocol
 
     func makeTaskCommentRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> TaskCommentRepositoryProtocol
 
     func makeUserRepository(
         baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        tokenProvider: @escaping @Sendable () async -> String?,
     ) -> UserRepositoryProtocol
 }

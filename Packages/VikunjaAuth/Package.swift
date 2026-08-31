@@ -13,5 +13,5 @@ let package = Package(
     targets: [
         .target(name: "VikunjaAuth", dependencies: ["VikunjaCore"]),
         .testTarget(name: "VikunjaAuthTests", dependencies: ["VikunjaAuth"]),
-    ]
+    ],
 )

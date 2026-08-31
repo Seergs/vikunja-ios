@@ -22,7 +22,9 @@ public final class InstanceSetupViewModel {
     /// a successful probe. Drives post-save navigation.
     public private(set) var savedAccount: InstanceAccount?
 
-    public var isSaving: Bool { validationState == .validating }
+    public var isSaving: Bool {
+        validationState == .validating
+    }
 
     private let accountStore: AccountStoreProtocol
     private let clientFactory: InstanceClientFactoryProtocol
@@ -36,10 +38,12 @@ public final class InstanceSetupViewModel {
         !trimmedDisplayName.isEmpty && !trimmedURLText.isEmpty && !trimmedToken.isEmpty
     }
 
-    public var canTestConnection: Bool { !trimmedURLText.isEmpty }
+    public var canTestConnection: Bool {
+        !trimmedURLText.isEmpty
+    }
 
     public func loadSavedAccounts() async {
-        savedAccounts = (try? await accountStore.fetchAccounts()) ?? []
+        savedAccounts = await (try? accountStore.fetchAccounts()) ?? []
     }
 
     /// Probes the typed address without persisting anything — backs a
@@ -81,9 +85,17 @@ public final class InstanceSetupViewModel {
         }
     }
 
-    private var trimmedDisplayName: String { displayName.trimmingCharacters(in: .whitespacesAndNewlines) }
-    private var trimmedURLText: String { urlText.trimmingCharacters(in: .whitespacesAndNewlines) }
-    private var trimmedToken: String { apiToken.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var trimmedDisplayName: String {
+        displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedURLText: String {
+        urlText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedToken: String {
+        apiToken.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 
     private func resetInputs() {
         displayName = ""
@@ -94,17 +106,17 @@ public final class InstanceSetupViewModel {
     private static func message(for error: VikunjaError) -> String {
         switch error {
         case .invalidInstanceURL:
-            return "That doesn't look like a valid instance address."
+            "That doesn't look like a valid instance address."
         case .network:
-            return "Couldn't reach that server. Check the address and your connection."
+            "Couldn't reach that server. Check the address and your connection."
         case .notFound, .decoding:
-            return "That address didn't respond like a Vikunja instance."
+            "That address didn't respond like a Vikunja instance."
         case .unauthorized:
-            return "That server rejected the request."
+            "That server rejected the request."
         case let .server(_, statusCode):
-            return "The server responded with an error (\(statusCode))."
+            "The server responded with an error (\(statusCode))."
         case let .unsupportedServerVersion(minimumRequired, _):
-            return "This app needs Vikunja \(minimumRequired) or newer."
+            "This app needs Vikunja \(minimumRequired) or newer."
         }
     }
 }

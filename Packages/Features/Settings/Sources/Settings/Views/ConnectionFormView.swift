@@ -80,7 +80,7 @@ struct ConnectionFormView: View {
         .confirmationDialog(
             "Remove this connection?",
             isPresented: $isConfirmingDelete,
-            titleVisibility: .visible
+            titleVisibility: .visible,
         ) {
             Button("Remove Connection", role: .destructive) {
                 Task {
@@ -173,7 +173,9 @@ struct ConnectionFormView: View {
 private struct FieldLabel: View {
     let title: String
 
-    init(_ title: String) { self.title = title }
+    init(_ title: String) {
+        self.title = title
+    }
 
     var body: some View {
         Text(title)

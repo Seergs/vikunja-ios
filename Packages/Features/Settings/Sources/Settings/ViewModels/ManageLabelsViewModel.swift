@@ -13,7 +13,9 @@ public final class ManageLabelsViewModel {
     public private(set) var labels: [Label] = []
     public private(set) var loadState: ScreenLoadState = .idle
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     private let repository: LabelRepositoryProtocol
     private let toastPresenter: ToastPresenting
@@ -28,7 +30,7 @@ public final class ManageLabelsViewModel {
             loadState = .loading
         }
         do {
-            labels = sorted(try await repository.fetchLabels())
+            labels = try await sorted(repository.fetchLabels())
             loadState = .loaded
         } catch let error as VikunjaError {
             loadState = .failure(error.displayMessage)

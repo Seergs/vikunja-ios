@@ -132,7 +132,9 @@ struct LabelEditorSheet: View {
 
 private extension LabelEditorMode {
     var isEdit: Bool {
-        if case .edit = self { return true }
+        if case .edit = self {
+            return true
+        }
         return false
     }
 }

@@ -15,7 +15,9 @@ extension Color {
     /// so callers can fall back to a design-system default.
     public init?(vikunjaHex hexString: String) {
         var hex = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
-        if hex.hasPrefix("#") { hex.removeFirst() }
+        if hex.hasPrefix("#") {
+            hex.removeFirst()
+        }
         guard hex.count == 6, let value = UInt32(hex, radix: 16) else { return nil }
         self.init(hex: value)
     }

@@ -3,14 +3,14 @@ import Testing
 import VikunjaCore
 @testable import VikunjaNetworking
 
-// MockURLProtocol uses static state shared across requests, so this suite runs
-// serialized to avoid clobbering itself with tests running in parallel.
+/// MockURLProtocol uses static state shared across requests, so this suite runs
+/// serialized to avoid clobbering itself with tests running in parallel.
 @Suite(.serialized)
 struct URLSessionAPIClientTests {
     @Test
-    func decodesSuccessfulResponse() async throws {
+    func `decodes successful response`() async throws {
         let (session, _) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"version":"0.24.6"}"#)
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
 
         let info: ServerInfoDTO = try await client.send(VikunjaEndpoints.info())
 
@@ -18,9 +18,9 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func mapsUnauthorizedStatusToDomainError() async throws {
+    func `maps unauthorized status to domain error`() async throws {
         let (session, _) = MockURLProtocol.makeSession(statusCode: 401, body: "")
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
 
         await #expect(throws: VikunjaError.unauthorized) {
             let _: ServerInfoDTO = try await client.send(VikunjaEndpoints.info())
@@ -28,12 +28,12 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func attachesBearerTokenFromProvider() async throws {
+    func `attaches bearer token from provider`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"version":"0.24.6"}"#)
-        let client = URLSessionAPIClient(
-            baseURL: URL(string: "https://vikunja.example.com")!,
+        let client = try URLSessionAPIClient(
+            baseURL: #require(URL(string: "https://vikunja.example.com")),
             session: session,
-            authTokenProvider: { "test-token" }
+            authTokenProvider: { "test-token" },
         )
 
         let _: ServerInfoDTO = try await client.send(VikunjaEndpoints.info())
@@ -47,7 +47,7 @@ struct URLSessionAPIClientTests {
     // serializes tests *within* one suite — a second suite touching that
     // state runs concurrently with this one by default and corrupts it.
     @Test
-    func updateFetchesTheCurrentTaskFirstThenSendsAMergedBody() async throws {
+    func `update fetches the current task first then sends A merged body`() async throws {
         let getResponse = #"""
         {
           "id": 1, "title": "Buy coffee", "description": "Whole beans", "done": false,
@@ -70,11 +70,11 @@ struct URLSessionAPIClientTests {
             (200, getResponse),
             (200, postResponse),
         ])
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaTaskRepository(client: client)
 
         let updated = try await repository.update(
-            VikunjaTask(id: 1, title: "Buy coffee", description: "Whole beans", isDone: true, priority: .high, projectID: 4)
+            VikunjaTask(id: 1, title: "Buy coffee", description: "Whole beans", isDone: true, priority: .high, projectID: 4),
         )
 
         #expect(updated.isDone == true)
@@ -104,12 +104,12 @@ struct URLSessionAPIClientTests {
     // concurrently with each other.
 
     @Test
-    func fetchLabelsDecodesTheLabelList() async throws {
+    func `fetch labels decodes the label list`() async throws {
         let (session, _) = MockURLProtocol.makeSession(
             statusCode: 200,
-            body: #"[{"id":10,"title":"home","hex_color":"ff00ff"}]"#
+            body: #"[{"id":10,"title":"home","hex_color":"ff00ff"}]"#,
         )
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaLabelRepository(client: client)
 
         let labels = try await repository.fetchLabels()
@@ -118,12 +118,12 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func createLabelPUTsToTheLabelsEndpoint() async throws {
+    func `create label PU ts to the labels endpoint`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(
             statusCode: 200,
-            body: #"{"id":11,"title":"work","hex_color":"00ff00"}"#
+            body: #"{"id":11,"title":"work","hex_color":"00ff00"}"#,
         )
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaLabelRepository(client: client)
 
         let created = try await repository.create(Label(id: 0, title: "work", hexColor: "00ff00"))
@@ -135,9 +135,9 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func deleteLabelDELETEsTheLabelByID() async throws {
+    func `delete label DELET es the label by ID`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaLabelRepository(client: client)
 
         try await repository.delete(id: 11)
@@ -148,9 +148,9 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func addLabelPUTsTheLabelIDOntoTheTasksLabelsEndpoint() async throws {
+    func `add label PU ts the label ID onto the tasks labels endpoint`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaLabelRepository(client: client)
 
         try await repository.addLabel(10, toTask: 1)
@@ -164,9 +164,9 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func removeLabelDELETEsTheLabelFromTheTask() async throws {
+    func `remove label DELET es the label from the task`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaLabelRepository(client: client)
 
         try await repository.removeLabel(10, fromTask: 1)
@@ -180,9 +180,9 @@ struct URLSessionAPIClientTests {
     // `VikunjaLabelRepository` above.
 
     @Test
-    func addRelationPUTsTheRelationKindAndOtherTaskIDOntoTheTasksRelationsEndpoint() async throws {
+    func `add relation PU ts the relation kind and other task ID onto the tasks relations endpoint`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaTaskRelationRepository(client: client)
 
         try await repository.addRelation(kind: .subtask, otherTaskID: 2, toTask: 1)
@@ -197,9 +197,9 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func removeRelationDELETEsTheRelationByKindAndOtherTaskID() async throws {
+    func `remove relation DELET es the relation by kind and other task ID`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaTaskRelationRepository(client: client)
 
         try await repository.removeRelation(kind: .blocked, otherTaskID: 3, fromTask: 1)
@@ -210,13 +210,13 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func fetchCurrentUserGETsTheUserAndReadsTheNestedDefaultProject() async throws {
+    func `fetch current user GE ts the user and reads the nested default project`() async throws {
         let body = #"""
         {"id": 3, "username": "qa-user", "name": "QA User",
          "settings": {"default_project_id": 6, "week_start": 0}}
         """#
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: body)
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaUserRepository(client: client)
 
         let user = try await repository.fetchCurrentUser()
@@ -228,9 +228,9 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
-    func deleteProjectDELETEsTheProjectByID() async throws {
+    func `delete project DELET es the project by ID`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
-        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
         let repository = VikunjaProjectRepository(client: client)
 
         try await repository.delete(id: 7)

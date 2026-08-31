@@ -12,16 +12,22 @@ actor FakeAccountStore: AccountStoreProtocol {
 
     init(account: InstanceAccount? = nil, token: String? = nil) {
         if let account {
-            accounts = [account]
-            activeID = account.id
-            if let token { tokens[account.id] = token }
+            self.accounts = [account]
+            self.activeID = account.id
+            if let token {
+                tokens[account.id] = token
+            }
         }
     }
 
-    func fetchAccounts() throws -> [InstanceAccount] { accounts }
+    func fetchAccounts() throws -> [InstanceAccount] {
+        accounts
+    }
 
     func activeAccount() throws -> InstanceAccount? {
-        if let activeAccountError { throw activeAccountError }
+        if let activeAccountError {
+            throw activeAccountError
+        }
         return accounts.first { $0.id == activeID }
     }
 
@@ -35,7 +41,9 @@ actor FakeAccountStore: AccountStoreProtocol {
         if let index = accounts.firstIndex(where: { $0.id == account.id }) {
             accounts[index] = account
         }
-        if let token { tokens[account.id] = token }
+        if let token {
+            tokens[account.id] = token
+        }
     }
 
     func removeAccount(id: InstanceAccount.ID) throws {
@@ -43,14 +51,20 @@ actor FakeAccountStore: AccountStoreProtocol {
         tokens[id] = nil
     }
 
-    func setActiveAccount(id: InstanceAccount.ID) throws { activeID = id }
+    func setActiveAccount(id: InstanceAccount.ID) throws {
+        activeID = id
+    }
 
     func token(forAccountID id: InstanceAccount.ID) throws -> String? {
-        if let tokenError { throw tokenError }
+        if let tokenError {
+            throw tokenError
+        }
         return tokens[id]
     }
 
-    func clearToken(for id: UUID) { tokens[id] = nil }
+    func clearToken(for id: UUID) {
+        tokens[id] = nil
+    }
 }
 
 final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendable {
@@ -58,7 +72,9 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     var fetchError: VikunjaError?
 
     func fetchProjects() async throws -> [Project] {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         return projects
     }
 
@@ -67,9 +83,17 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
         return project
     }
 
-    func create(_ project: Project) async throws -> Project { project }
-    func update(_ project: Project) async throws -> Project { project }
-    func delete(id: Int) async throws { projects.removeAll { $0.id == id } }
+    func create(_ project: Project) async throws -> Project {
+        project
+    }
+
+    func update(_ project: Project) async throws -> Project {
+        project
+    }
+
+    func delete(id: Int) async throws {
+        projects.removeAll { $0.id == id }
+    }
 }
 
 final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
@@ -78,8 +102,12 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     var fetchTasksError: VikunjaError?
 
     func fetchTasks(projectID: Int) async throws -> [VikunjaTask] {
-        if let fetchTasksError { throw fetchTasksError }
-        if failingProjectIDs.contains(projectID) { throw VikunjaError.network("offline") }
+        if let fetchTasksError {
+            throw fetchTasksError
+        }
+        if failingProjectIDs.contains(projectID) {
+            throw VikunjaError.network("offline")
+        }
         return tasks.filter { $0.projectID == projectID }
     }
 
@@ -88,10 +116,21 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
         return task
     }
 
-    func create(_ task: VikunjaTask) async throws -> VikunjaTask { task }
-    func update(_ task: VikunjaTask) async throws -> VikunjaTask { task }
-    func delete(id: Int) async throws { tasks.removeAll { $0.id == id } }
-    func searchTasks(query: String) async throws -> [VikunjaTask] { tasks }
+    func create(_ task: VikunjaTask) async throws -> VikunjaTask {
+        task
+    }
+
+    func update(_ task: VikunjaTask) async throws -> VikunjaTask {
+        task
+    }
+
+    func delete(id: Int) async throws {
+        tasks.removeAll { $0.id == id }
+    }
+
+    func searchTasks(query _: String) async throws -> [VikunjaTask] {
+        tasks
+    }
 }
 
 /// `InstanceClientFactoryProtocol` that hands back preconfigured fakes.
@@ -100,33 +139,45 @@ struct FakeClientFactory: InstanceClientFactoryProtocol {
     let projectRepository: FakeProjectRepository
     let taskRepository: FakeTaskRepository
 
-    func makeCapabilityProvider(baseURL: URL) -> CapabilityProvider {
+    func makeCapabilityProvider(baseURL _: URL) -> CapabilityProvider {
         fatalError("unused")
     }
 
     func makeProjectRepository(
-        baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
-    ) -> ProjectRepositoryProtocol { projectRepository }
+        baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
+    ) -> ProjectRepositoryProtocol {
+        projectRepository
+    }
 
     func makeTaskRepository(
-        baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
-    ) -> TaskRepositoryProtocol { taskRepository }
+        baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
+    ) -> TaskRepositoryProtocol {
+        taskRepository
+    }
 
     func makeLabelRepository(
-        baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
-    ) -> LabelRepositoryProtocol { fatalError("unused") }
+        baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
+    ) -> LabelRepositoryProtocol {
+        fatalError("unused")
+    }
 
     func makeTaskRelationRepository(
-        baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
-    ) -> TaskRelationRepositoryProtocol { fatalError("unused") }
+        baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
+    ) -> TaskRelationRepositoryProtocol {
+        fatalError("unused")
+    }
 
     func makeTaskCommentRepository(
-        baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
-    ) -> TaskCommentRepositoryProtocol { fatalError("unused") }
+        baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
+    ) -> TaskCommentRepositoryProtocol {
+        fatalError("unused")
+    }
 
     func makeUserRepository(
-        baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
-    ) -> UserRepositoryProtocol { fatalError("unused") }
+        baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
+    ) -> UserRepositoryProtocol {
+        fatalError("unused")
+    }
 }
 
 enum TestSupport {

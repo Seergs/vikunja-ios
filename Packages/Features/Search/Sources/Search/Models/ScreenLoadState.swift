@@ -21,7 +21,7 @@ enum ScreenLoadState<T: Sendable>: Sendable {
     }
 
     var value: T? {
-        if case .loaded(let value) = self {
+        if case let .loaded(value) = self {
             return value
         }
         return nil

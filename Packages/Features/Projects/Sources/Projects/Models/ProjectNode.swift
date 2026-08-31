@@ -9,17 +9,13 @@ public struct ProjectNode: Identifiable, Hashable, Sendable {
     public let project: Project
     public let children: [ProjectNode]
 
-    public var id: Int { project.id }
+    public var id: Int {
+        project.id
+    }
 
     public init(project: Project, children: [ProjectNode] = []) {
         self.project = project
         self.children = children
-    }
-
-    // Written by hand: the compiler can't synthesize `Hashable` for a type
-    // that holds an array of itself.
-    public static func == (lhs: ProjectNode, rhs: ProjectNode) -> Bool {
-        lhs.project == rhs.project && lhs.children == rhs.children
     }
 
     public func hash(into hasher: inout Hasher) {

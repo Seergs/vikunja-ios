@@ -56,7 +56,7 @@ struct ConnectionsListView: View {
             ConnectionsStatusView(
                 systemImage: "exclamationmark.triangle.fill",
                 title: "Couldn't load connections",
-                message: message
+                message: message,
             ) {
                 Task { await viewModel.load() }
             }
@@ -74,7 +74,7 @@ struct ConnectionsListView: View {
                                 account: account,
                                 isActive: account.id == viewModel.activeAccountID,
                                 onSelect: { Task { await viewModel.setActive(account) } },
-                                onEdit: { router.push(.connectionForm(.edit(account))) }
+                                onEdit: { router.push(.connectionForm(.edit(account))) },
                             )
                             .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
 
@@ -122,7 +122,7 @@ private struct AddConnectionButton: View {
                 RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .circular)
                     .strokeBorder(
                         VikunjaColor.textTertiary.opacity(0.4),
-                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 5])
+                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 5]),
                     )
             }
             // A dashed stroke only paints the outline, not the interior, so

@@ -16,7 +16,7 @@ public struct HomeRootView: View {
     /// mirroring `ProjectsRootView`'s `taskDetailDestination`.
     public init(
         viewModel: TodayViewModel,
-        taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView
+        taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView,
     ) {
         self.viewModel = viewModel
         self.taskDetailDestination = taskDetailDestination

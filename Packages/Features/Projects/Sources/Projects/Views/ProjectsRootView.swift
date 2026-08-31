@@ -28,7 +28,7 @@ public struct ProjectsRootView: View {
         makeOverviewViewModel: @escaping (ProjectNode) -> ProjectOverviewViewModel,
         makeCreateProjectViewModel: @escaping () -> CreateProjectViewModel,
         makeEditProjectViewModel: @escaping (Project) -> EditProjectViewModel,
-        taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView
+        taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView,
     ) {
         self.viewModel = viewModel
         self.makeOverviewViewModel = makeOverviewViewModel
@@ -49,7 +49,7 @@ public struct ProjectsRootView: View {
                             viewModel: makeOverviewViewModel(node),
                             onSelectSubproject: { router.push(.projectOverview($0)) },
                             onSelectTask: { task in router.push(.taskDetail(task, node.project)) },
-                            onEditProject: { editingProject = $0 }
+                            onEditProject: { editingProject = $0 },
                         )
                     case let .taskDetail(task, project):
                         taskDetailDestination(task, project)
@@ -58,7 +58,7 @@ public struct ProjectsRootView: View {
                             viewModel: makeOverviewViewModel(ProjectNode(project: project)),
                             onSelectSubproject: { router.push(.projectOverview($0)) },
                             onSelectTask: { task in router.push(.taskDetail(task, project)) },
-                            onEditProject: { editingProject = $0 }
+                            onEditProject: { editingProject = $0 },
                         )
                     }
                 }

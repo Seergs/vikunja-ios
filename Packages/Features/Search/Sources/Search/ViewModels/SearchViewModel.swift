@@ -23,7 +23,7 @@ public final class SearchViewModel {
     public init(
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
     ) {
         self.taskRepository = taskRepository
         self.projectRepository = projectRepository
@@ -64,7 +64,7 @@ public final class SearchViewModel {
             let tasks = try await taskRepository.searchTasks(query: trimmedQuery)
             guard !Task.isCancelled else { return }
 
-            let projectIDs = Set(tasks.map { $0.projectID })
+            let projectIDs = Set(tasks.map(\.projectID))
             await loadProjects(ids: Array(projectIDs))
             guard !Task.isCancelled else { return }
 
@@ -81,7 +81,7 @@ public final class SearchViewModel {
 
         do {
             let response = try await taskRepository.update(updated)
-            if case .loaded(var tasks) = state {
+            if case var .loaded(tasks) = state {
                 if let index = tasks.firstIndex(where: { $0.id == task.id }) {
                     tasks[index] = response
                     state = .loaded(tasks)
@@ -95,7 +95,7 @@ public final class SearchViewModel {
     public func delete(_ task: VikunjaTask) async {
         do {
             try await taskRepository.delete(id: task.id)
-            if case .loaded(var tasks) = state {
+            if case var .loaded(tasks) = state {
                 tasks.removeAll { $0.id == task.id }
                 state = .loaded(tasks)
             }
@@ -105,7 +105,7 @@ public final class SearchViewModel {
         }
     }
 
-    private func loadProjects(ids: [Int]) async {
+    private func loadProjects(ids _: [Int]) async {
         do {
             let projects = try await projectRepository.fetchProjects()
             for project in projects {

@@ -1,11 +1,11 @@
+@testable import Projects
 import Testing
 import VikunjaCore
-@testable import Projects
 
 @MainActor
 struct ProjectsListViewModelTests {
     @Test
-    func loadBuildsATreeFromParentProjectID() async {
+    func `load builds A tree from parent project ID`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Work", position: 1),
@@ -28,7 +28,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func loadOrdersSiblingsByPosition() async {
+    func `load orders siblings by position`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Third", position: 3),
@@ -43,7 +43,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func loadExcludesArchivedProjects() async {
+    func `load excludes archived projects`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Active"),
@@ -57,7 +57,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func loadDropsAnArchivedParentsChildrenSinceTheyHaveNoAttachmentPoint() async {
+    func `load drops an archived parents children since they have no attachment point`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Archived parent", isArchived: true),
@@ -71,7 +71,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func loadIsResilientToACyclicParentChain() async {
+    func `load is resilient to A cyclic parent chain`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "A", parentProjectID: 2),
@@ -86,7 +86,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func loadFetchesEachProjectsOwnTaskSummary() async {
+    func `load fetches each projects own task summary`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work", position: 1),
@@ -107,7 +107,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func loadStillSucceedsWhenTaskSummaryFetchFails() async {
+    func `load still succeeds when task summary fetch fails`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 1, title: "Work")]
         let taskRepository = FakeTaskRepository()
@@ -121,7 +121,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func loadSurfacesAFriendlyMessageOnFailure() async {
+    func `load surfaces A friendly message on failure`() async {
         let repository = FakeProjectRepository()
         repository.fetchError = .network("offline")
         let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
@@ -133,7 +133,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func deleteProjectRemovesTheSubtreeAndShowsASuccessToast() async {
+    func `delete project removes the subtree and shows A success toast`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Work", position: 1),
@@ -156,7 +156,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func deleteProjectRemovesANestedProjectWithoutTouchingItsSiblings() async {
+    func `delete project removes A nested project without touching its siblings`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Work", position: 1),
@@ -172,7 +172,7 @@ struct ProjectsListViewModelTests {
     }
 
     @Test
-    func deleteProjectLeavesTheTreeInPlaceAndShowsAnErrorToastOnFailure() async {
+    func `delete project leaves the tree in place and shows an error toast on failure`() async {
         let repository = FakeProjectRepository()
         repository.projects = [Project(id: 1, title: "Work")]
         repository.deleteError = .network("offline")

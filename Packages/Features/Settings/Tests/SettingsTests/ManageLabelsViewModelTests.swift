@@ -1,19 +1,19 @@
 import Foundation
+@testable import Settings
 import Testing
 import VikunjaCore
-@testable import Settings
 
 @MainActor
 struct ManageLabelsViewModelTests {
     private func makeViewModel(
         repository: FakeLabelRepository,
-        toastPresenter: FakeToastPresenter = FakeToastPresenter()
+        toastPresenter: FakeToastPresenter = FakeToastPresenter(),
     ) -> ManageLabelsViewModel {
         ManageLabelsViewModel(repository: repository, toastPresenter: toastPresenter)
     }
 
     @Test
-    func loadPopulatesLabelsSortedByTitle() async {
+    func `load populates labels sorted by title`() async {
         let repository = FakeLabelRepository(labels: [
             Label(id: 1, title: "Urgent", hexColor: "ff0000"),
             Label(id: 2, title: "backend", hexColor: "00ff00"),
@@ -27,7 +27,7 @@ struct ManageLabelsViewModelTests {
     }
 
     @Test
-    func loadSurfacesAFriendlyMessageOnFailure() async {
+    func `load surfaces A friendly message on failure`() async {
         let repository = FakeLabelRepository()
         repository.fetchError = .network("offline")
         let viewModel = makeViewModel(repository: repository)
@@ -38,7 +38,7 @@ struct ManageLabelsViewModelTests {
     }
 
     @Test
-    func createLabelAppendsTheServerAssignedLabel() async {
+    func `create label appends the server assigned label`() async {
         let repository = FakeLabelRepository()
         let toast = FakeToastPresenter()
         let viewModel = makeViewModel(repository: repository, toastPresenter: toast)
@@ -53,7 +53,7 @@ struct ManageLabelsViewModelTests {
     }
 
     @Test
-    func createLabelIgnoresABlankTitle() async {
+    func `create label ignores A blank title`() async {
         let repository = FakeLabelRepository()
         let viewModel = makeViewModel(repository: repository)
         await viewModel.load()
@@ -64,7 +64,7 @@ struct ManageLabelsViewModelTests {
     }
 
     @Test
-    func updateLabelRenamesAndRecolors() async {
+    func `update label renames and recolors`() async {
         let repository = FakeLabelRepository(labels: [Label(id: 7, title: "old", hexColor: "000000")])
         let viewModel = makeViewModel(repository: repository)
         await viewModel.load()
@@ -76,7 +76,7 @@ struct ManageLabelsViewModelTests {
     }
 
     @Test
-    func updateLabelRollsBackOnFailure() async {
+    func `update label rolls back on failure`() async {
         let original = Label(id: 7, title: "old", hexColor: "000000")
         let repository = FakeLabelRepository(labels: [original])
         repository.updateError = .server(message: "boom", statusCode: 500)
@@ -91,7 +91,7 @@ struct ManageLabelsViewModelTests {
     }
 
     @Test
-    func deleteLabelRemovesItOptimistically() async {
+    func `delete label removes it optimistically`() async {
         let repository = FakeLabelRepository(labels: [
             Label(id: 1, title: "a", hexColor: "000000"),
             Label(id: 2, title: "b", hexColor: "000000"),
@@ -106,7 +106,7 @@ struct ManageLabelsViewModelTests {
     }
 
     @Test
-    func deleteLabelRollsBackOnFailure() async {
+    func `delete label rolls back on failure`() async {
         let labels = [
             Label(id: 1, title: "a", hexColor: "000000"),
             Label(id: 2, title: "b", hexColor: "000000"),

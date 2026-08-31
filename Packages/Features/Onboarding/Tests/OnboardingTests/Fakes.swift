@@ -1,6 +1,6 @@
 import Foundation
-import VikunjaCore
 @testable import Onboarding
+import VikunjaCore
 
 final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
     private(set) var accounts: [InstanceAccount] = []
@@ -8,7 +8,9 @@ final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
     private var activeID: InstanceAccount.ID?
     var addAccountCallCount = 0
 
-    func fetchAccounts() async throws -> [InstanceAccount] { accounts }
+    func fetchAccounts() async throws -> [InstanceAccount] {
+        accounts
+    }
 
     func activeAccount() async throws -> InstanceAccount? {
         accounts.first { $0.id == activeID }
@@ -53,12 +55,14 @@ struct FakeCapabilityProvider: CapabilityProvider {
         try result.get()
     }
 
-    func supports(_ feature: VikunjaFeature) async -> Bool { false }
+    func supports(_: VikunjaFeature) async -> Bool {
+        false
+    }
 }
 
 final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked Sendable {
     var result: Result<VikunjaServerInfo, VikunjaError> = .success(
-        VikunjaServerInfo(version: "0.24.6", caldavEnabled: false, totpEnabled: false, registrationEnabled: false)
+        VikunjaServerInfo(version: "0.24.6", caldavEnabled: false, totpEnabled: false, registrationEnabled: false),
     )
     private(set) var requestedBaseURLs: [URL] = []
 
@@ -68,43 +72,43 @@ final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked
     }
 
     func makeProjectRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> ProjectRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }
 
     func makeTaskRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> TaskRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }
 
     func makeLabelRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> LabelRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }
 
     func makeTaskRelationRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> TaskRelationRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }
 
     func makeTaskCommentRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> TaskCommentRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }
 
     func makeUserRepository(
-        baseURL: URL,
-        tokenProvider: @escaping @Sendable () async -> String?
+        baseURL _: URL,
+        tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> UserRepositoryProtocol {
         fatalError("not exercised by Onboarding tests")
     }

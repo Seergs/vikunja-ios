@@ -34,19 +34,19 @@ struct TodayWidgetView: View {
             TodayWidgetMessage(
                 systemImage: "link.circle",
                 title: "Not connected",
-                message: "Open Vikunja to add your instance."
+                message: "Open Vikunja to add your instance.",
             )
         case .needsAuth:
             TodayWidgetMessage(
                 systemImage: "lock.circle",
                 title: "Sign in again",
-                message: "Your token was rejected. Re-add the connection in Settings."
+                message: "Your token was rejected. Re-add the connection in Settings.",
             )
         case .unavailable:
             TodayWidgetMessage(
                 systemImage: "wifi.slash",
                 title: "Couldn't refresh",
-                message: "No connection and nothing saved yet."
+                message: "No connection and nothing saved yet.",
             )
         case let .content(content):
             loadedContent(content)

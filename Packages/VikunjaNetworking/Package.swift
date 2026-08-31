@@ -15,7 +15,7 @@ let package = Package(
         .testTarget(
             name: "VikunjaNetworkingTests",
             dependencies: ["VikunjaNetworking"],
-            resources: [.process("Fixtures")]
+            resources: [.process("Fixtures")],
         ),
-    ]
+    ],
 )

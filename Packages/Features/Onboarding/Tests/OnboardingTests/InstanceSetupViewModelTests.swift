@@ -1,19 +1,19 @@
 import Foundation
+@testable import Onboarding
 import Testing
 import VikunjaCore
-@testable import Onboarding
 
 @MainActor
 struct InstanceSetupViewModelTests {
     private func makeViewModel(
         accountStore: FakeAccountStore = FakeAccountStore(),
-        clientFactory: FakeInstanceClientFactory = FakeInstanceClientFactory()
+        clientFactory: FakeInstanceClientFactory = FakeInstanceClientFactory(),
     ) -> InstanceSetupViewModel {
         InstanceSetupViewModel(accountStore: accountStore, clientFactory: clientFactory)
     }
 
     @Test
-    func canSaveIsFalseUntilAllFieldsAreFilled() {
+    func `can save is false until all fields are filled`() {
         let viewModel = makeViewModel()
         #expect(viewModel.canSave == false)
 
@@ -28,7 +28,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func canSaveIsFalseWhenFieldsAreOnlyWhitespace() {
+    func `can save is false when fields are only whitespace`() {
         let viewModel = makeViewModel()
         viewModel.displayName = "   "
         viewModel.urlText = "tasks.example.com"
@@ -38,7 +38,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func savingAValidConnectionProbesTheNormalizedURLAndPersistsTheAccount() async {
+    func `saving A valid connection probes the normalized URL and persists the account`() async throws {
         let accountStore = FakeAccountStore()
         let clientFactory = FakeInstanceClientFactory()
         let viewModel = makeViewModel(accountStore: accountStore, clientFactory: clientFactory)
@@ -49,15 +49,15 @@ struct InstanceSetupViewModelTests {
         await viewModel.saveConnection()
 
         #expect(viewModel.validationState == .success)
-        #expect(clientFactory.requestedBaseURLs == [URL(string: "https://tasks.example.com")!])
+        #expect(try clientFactory.requestedBaseURLs == [#require(URL(string: "https://tasks.example.com"))])
         #expect(accountStore.accounts.count == 1)
         #expect(accountStore.accounts.first?.displayName == "Home")
         #expect(accountStore.accounts.first?.baseURL == URL(string: "https://tasks.example.com")!)
-        #expect(accountStore.tokens[accountStore.accounts.first!.id] == "a-token")
+        #expect(try accountStore.tokens[#require(accountStore.accounts.first?.id)] == "a-token")
     }
 
     @Test
-    func savingAValidConnectionExposesTheSavedAccount() async {
+    func `saving A valid connection exposes the saved account`() async {
         let viewModel = makeViewModel()
         viewModel.displayName = "Home"
         viewModel.urlText = "tasks.example.com"
@@ -70,7 +70,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func testingSuccessfullyDoesNotExposeASavedAccount() async {
+    func `ing successfully does not expose A saved account`() async {
         let viewModel = makeViewModel()
         viewModel.urlText = "tasks.example.com"
 
@@ -81,7 +81,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func savingClearsTheInputFieldsOnSuccess() async {
+    func `saving clears the input fields on success`() async {
         let viewModel = makeViewModel()
         viewModel.displayName = "Home"
         viewModel.urlText = "tasks.example.com"
@@ -95,7 +95,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func savingReloadsTheAccountList() async {
+    func `saving reloads the account list`() async {
         let viewModel = makeViewModel()
         viewModel.displayName = "Home"
         viewModel.urlText = "tasks.example.com"
@@ -108,7 +108,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func savingAnInvalidURLFailsWithoutTouchingTheAccountStore() async {
+    func `saving an invalid URL fails without touching the account store`() async {
         let accountStore = FakeAccountStore()
         let viewModel = makeViewModel(accountStore: accountStore)
         viewModel.displayName = "Home"
@@ -122,7 +122,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func savingWhenTheServerProbeFailsSurfacesAFriendlyMessageAndDoesNotPersist() async {
+    func `saving when the server probe fails surfaces A friendly message and does not persist`() async {
         let accountStore = FakeAccountStore()
         let clientFactory = FakeInstanceClientFactory()
         clientFactory.result = .failure(.network("offline"))
@@ -138,7 +138,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func savingWhenNotAllFieldsAreFilledDoesNothing() async {
+    func `saving when not all fields are filled does nothing`() async {
         let accountStore = FakeAccountStore()
         let clientFactory = FakeInstanceClientFactory()
         let viewModel = makeViewModel(accountStore: accountStore, clientFactory: clientFactory)
@@ -152,7 +152,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func canTestConnectionIsFalseUntilAnAddressIsTyped() {
+    func `can test connection is false until an address is typed`() {
         let viewModel = makeViewModel()
         #expect(viewModel.canTestConnection == false)
 
@@ -164,7 +164,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func testingAValidAddressProbesItWithoutPersistingAnAccount() async {
+    func `ing A valid address probes it without persisting an account`() async throws {
         let accountStore = FakeAccountStore()
         let clientFactory = FakeInstanceClientFactory()
         let viewModel = makeViewModel(accountStore: accountStore, clientFactory: clientFactory)
@@ -173,13 +173,13 @@ struct InstanceSetupViewModelTests {
         await viewModel.testConnection()
 
         #expect(viewModel.validationState == .success)
-        #expect(clientFactory.requestedBaseURLs == [URL(string: "https://tasks.example.com")!])
+        #expect(try clientFactory.requestedBaseURLs == [#require(URL(string: "https://tasks.example.com"))])
         #expect(accountStore.addAccountCallCount == 0)
         #expect(viewModel.urlText == "tasks.example.com")
     }
 
     @Test
-    func testingWhenTheServerProbeFailsSurfacesAFriendlyMessage() async {
+    func `ing when the server probe fails surfaces A friendly message`() async {
         let clientFactory = FakeInstanceClientFactory()
         clientFactory.result = .failure(.network("offline"))
         let viewModel = makeViewModel(clientFactory: clientFactory)
@@ -191,7 +191,7 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func testingWithNoAddressDoesNothing() async {
+    func `ing with no address does nothing`() async {
         let clientFactory = FakeInstanceClientFactory()
         let viewModel = makeViewModel(clientFactory: clientFactory)
 
@@ -202,9 +202,9 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
-    func loadSavedAccountsPopulatesFromTheStore() async {
+    func `load saved accounts populates from the store`() async throws {
         let accountStore = FakeAccountStore()
-        let existing = InstanceAccount(displayName: "Work", baseURL: URL(string: "https://work.example.com")!)
+        let existing = try InstanceAccount(displayName: "Work", baseURL: #require(URL(string: "https://work.example.com")))
         try? await accountStore.addAccount(existing, token: "work-token")
         let viewModel = makeViewModel(accountStore: accountStore)
 

@@ -24,7 +24,9 @@ public final class ProjectOverviewViewModel {
     /// `load()`, since most visits to this screen never open that picker.
     public private(set) var allProjects: [Project] = []
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     private let repository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
@@ -40,7 +42,7 @@ public final class ProjectOverviewViewModel {
         repository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting,
-        quickAddContext: QuickAddContextTracking? = nil
+        quickAddContext: QuickAddContextTracking? = nil,
     ) {
         self.project = project
         self.subprojects = subprojects
@@ -91,7 +93,7 @@ public final class ProjectOverviewViewModel {
     /// the whole screen — its card just falls back to "No tasks yet".
     private static func fetchSubprojectSummaries(
         _ nodes: [ProjectNode],
-        repository: TaskRepositoryProtocol
+        repository: TaskRepositoryProtocol,
     ) async -> [Int: TaskSummary] {
         await withTaskGroup(of: (Int, TaskSummary)?.self) { group in
             for node in nodes {
@@ -146,7 +148,7 @@ public final class ProjectOverviewViewModel {
     /// picker just shows fewer candidates, mirroring
     /// `TaskDetailViewModel.loadAllProjects()`.
     public func loadMoveCandidates() async {
-        allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
+        allProjects = await (try? projectRepository.fetchProjects()) ?? allProjects
     }
 
     /// `allProjects` arranged for the "Move to Project" picker: one group per
@@ -167,7 +169,9 @@ public final class ProjectOverviewViewModel {
     public struct ProjectGroup: Identifiable, Hashable {
         public let root: Project
         public let children: [Project]
-        public var id: Int { root.id }
+        public var id: Int {
+            root.id
+        }
     }
 
     /// Moves `task` to `destination` and drops it from the local list on

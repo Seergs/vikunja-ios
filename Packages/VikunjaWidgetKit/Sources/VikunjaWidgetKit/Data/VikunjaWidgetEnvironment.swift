@@ -11,7 +11,7 @@ public enum VikunjaWidgetEnvironment {
     public static func makeAccountStore() -> KeychainAccountStore {
         KeychainAccountStore(
             service: VikunjaWidgetConfig.accountStoreService,
-            accessGroup: VikunjaWidgetConfig.keychainAccessGroup
+            accessGroup: VikunjaWidgetConfig.keychainAccessGroup,
         )
     }
 
@@ -23,7 +23,7 @@ public enum VikunjaWidgetEnvironment {
         TodaySnapshotLoader(
             accountStore: makeAccountStore(),
             clientFactory: VikunjaInstanceClientFactory(),
-            cache: makeSnapshotCache()
+            cache: makeSnapshotCache(),
         )
     }
 

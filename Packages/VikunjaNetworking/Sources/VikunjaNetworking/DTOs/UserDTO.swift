@@ -8,7 +8,11 @@ struct UserDTO: Codable {
     let settings: UserSettingsDTO?
 
     enum CodingKeys: String, CodingKey {
-        case id, username, name, email, settings
+        case id
+        case username
+        case name
+        case email
+        case settings
     }
 }
 

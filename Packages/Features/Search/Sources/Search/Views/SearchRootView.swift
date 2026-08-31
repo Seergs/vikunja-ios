@@ -10,7 +10,7 @@ public struct SearchRootView: View {
 
     public init(
         viewModel: SearchViewModel,
-        onTaskSelected: ((VikunjaTask, Project) -> AnyView)? = nil
+        onTaskSelected: ((VikunjaTask, Project) -> AnyView)? = nil,
     ) {
         _viewModel = State(initialValue: viewModel)
         self.onTaskSelected = onTaskSelected
@@ -22,7 +22,7 @@ public struct SearchRootView: View {
                 .searchable(
                     text: $viewModel.query,
                     placement: .automatic,
-                    prompt: "Search tasks"
+                    prompt: "Search tasks",
                 )
                 .onChange(of: viewModel.query) { _, _ in
                     viewModel.queryChanged()

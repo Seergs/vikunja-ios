@@ -51,9 +51,13 @@ struct ProjectsView: View {
                 deleteConfirmationMessage,
                 isPresented: Binding(
                     get: { projectPendingDelete != nil },
-                    set: { isPresented in if !isPresented { projectPendingDelete = nil } }
+                    set: {
+                        isPresented in if !isPresented {
+                            projectPendingDelete = nil
+                        }
+                    },
                 ),
-                titleVisibility: .visible
+                titleVisibility: .visible,
             ) {
                 if let projectPendingDelete {
                     Button("Delete Project", role: .destructive) {
@@ -67,7 +71,6 @@ struct ProjectsView: View {
             }
     }
 
-    @ViewBuilder
     private var content: some View {
         List {
             switch viewModel.loadState {
@@ -81,7 +84,7 @@ struct ProjectsView: View {
                 ProjectsStatusView(
                     systemImage: "exclamationmark.triangle.fill",
                     title: "Couldn't load projects",
-                    message: message
+                    message: message,
                 ) {
                     Task { await viewModel.load() }
                 }
@@ -92,7 +95,7 @@ struct ProjectsView: View {
                 ProjectsStatusView(
                     systemImage: "folder.badge.plus",
                     title: "No projects yet",
-                    message: "Projects you create on your Vikunja instance will show up here."
+                    message: "Projects you create on your Vikunja instance will show up here.",
                 )
                 .padding(.top, VikunjaSpacing.xxl)
                 .listRowSeparator(.hidden)
@@ -109,7 +112,7 @@ struct ProjectsView: View {
                             onSelect: { router.push(.projectOverview(row.node)) },
                             onToggleExpand: { toggleExpanded(row.node.id) },
                             onEdit: { editingProject = $0 },
-                            onDelete: { projectPendingDelete = row.node }
+                            onDelete: { projectPendingDelete = row.node },
                         )
                     }
                 } header: {
@@ -151,7 +154,7 @@ struct ProjectsView: View {
     private static func flatten(
         _ nodes: [ProjectNode],
         level: Int = 0,
-        expandedProjectIDs: Set<Int>
+        expandedProjectIDs: Set<Int>,
     ) -> [ProjectDisplayRow] {
         nodes.flatMap { node -> [ProjectDisplayRow] in
             var rows = [ProjectDisplayRow(node: node, level: level)]
@@ -166,7 +169,9 @@ struct ProjectsView: View {
 private struct ProjectDisplayRow: Identifiable {
     let node: ProjectNode
     let level: Int
-    var id: Int { node.id }
+    var id: Int {
+        node.id
+    }
 }
 
 /// A single row: a color swatch (from the project's `hexColor`, falling back
@@ -227,7 +232,7 @@ private struct ProjectRow: View {
                     } else {
                         ProjectProgressCount(
                             summary: ProjectTaskSummary(done: 0, total: 1),
-                            color: swatchColor
+                            color: swatchColor,
                         )
                         .redacted(reason: .placeholder)
                     }

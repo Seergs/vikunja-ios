@@ -30,7 +30,9 @@ public final class TaskDetailViewModel {
     public private(set) var comments: [TaskComment] = []
     public private(set) var commentsLoadState: ScreenLoadState = .idle
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     private let repository: TaskRepositoryProtocol
     private let labelRepository: LabelRepositoryProtocol
@@ -52,7 +54,7 @@ public final class TaskDetailViewModel {
         commentRepository: TaskCommentRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting,
-        quickAddContext: QuickAddContextTracking? = nil
+        quickAddContext: QuickAddContextTracking? = nil,
     ) {
         self.task = task
         self.project = project
@@ -136,7 +138,7 @@ public final class TaskDetailViewModel {
     /// rather than surfacing an error — the sheet just shows fewer/no
     /// suggestions to pick from.
     public func loadAllLabels() async {
-        allLabels = (try? await labelRepository.fetchLabels()) ?? allLabels
+        allLabels = await (try? labelRepository.fetchLabels()) ?? allLabels
     }
 
     /// Adds or removes `label` from the task, optimistically, rolling back if
@@ -214,7 +216,7 @@ public final class TaskDetailViewModel {
             return
         }
         let excludedIDs = relatedTaskIDs.union([task.id])
-        let results = (try? await repository.searchTasks(query: query)) ?? []
+        let results = await (try? repository.searchTasks(query: query)) ?? []
         relationSearchResults = results.filter { !excludedIDs.contains($0.id) }
     }
 
@@ -225,7 +227,7 @@ public final class TaskDetailViewModel {
     /// already related to it, the same as `searchTasksForRelation(query:)`.
     public func loadRelationSuggestions() async {
         let excludedIDs = relatedTaskIDs.union([task.id])
-        let results = (try? await repository.fetchTasks(projectID: project.id)) ?? []
+        let results = await (try? repository.fetchTasks(projectID: project.id)) ?? []
         relationSearchResults = results.filter { !excludedIDs.contains($0.id) }
     }
 
@@ -234,7 +236,7 @@ public final class TaskDetailViewModel {
     /// leave `allProjects` at whatever it already was — the picker just
     /// shows fewer project names, the same tradeoff `loadAllLabels()` makes.
     public func loadAllProjects() async {
-        allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
+        allProjects = await (try? projectRepository.fetchProjects()) ?? allProjects
     }
 
     /// `allProjects` arranged for the "Move to Project" picker: one group per
@@ -255,7 +257,9 @@ public final class TaskDetailViewModel {
     public struct ProjectGroup: Identifiable, Hashable {
         public let root: Project
         public let children: [Project]
-        public var id: Int { root.id }
+        public var id: Int {
+            root.id
+        }
     }
 
     /// Moves the task to `project` and persists it, mirroring `persist(previous:)`'s
@@ -335,7 +339,7 @@ public final class TaskDetailViewModel {
             commentRepository: commentRepository,
             projectRepository: projectRepository,
             toastPresenter: toastPresenter,
-            quickAddContext: quickAddContext
+            quickAddContext: quickAddContext,
         )
     }
 
@@ -410,7 +414,9 @@ public final class TaskDetailViewModel {
     /// run, any other project on the instance. Returns `nil` if `id` isn't
     /// the current project and hasn't been loaded into `allProjects` yet.
     public func projectTitle(forProjectID id: Int) -> String? {
-        if id == project.id { return project.title }
+        if id == project.id {
+            return project.title
+        }
         return allProjects.first { $0.id == id }?.title
     }
 

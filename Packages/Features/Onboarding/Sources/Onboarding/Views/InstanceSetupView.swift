@@ -84,7 +84,7 @@ public struct InstanceSetupView: View {
                 isSecure: !isTokenVisible,
                 hint: "Generate one on your Vikunja instance: Settings → API Tokens.",
                 trailingSystemImage: isTokenVisible ? "eye.slash" : "eye",
-                trailingAction: { isTokenVisible.toggle() }
+                trailingAction: { isTokenVisible.toggle() },
             )
             .autocapitalized(.never)
             .autocorrectionDisabled()
@@ -149,11 +149,11 @@ public struct InstanceSetupView: View {
     private var statusText: String? {
         switch viewModel.validationState {
         case .idle, .validating:
-            return nil
+            nil
         case .success:
-            return "Connection successful."
+            "Connection successful."
         case let .failure(message):
-            return message
+            message
         }
     }
 }

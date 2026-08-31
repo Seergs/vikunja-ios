@@ -12,7 +12,9 @@ public final class EditProjectViewModel {
     public private(set) var isSaving: Bool = false
     public private(set) var saveErrorMessage: String?
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     public var canSave: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSaving
@@ -35,7 +37,9 @@ public final class EditProjectViewModel {
     public struct ProjectGroup: Identifiable, Hashable {
         public let root: Project
         public let children: [Project]
-        public var id: Int { root.id }
+        public var id: Int {
+            root.id
+        }
     }
 
     private let project: Project
@@ -45,7 +49,7 @@ public final class EditProjectViewModel {
     public init(
         project: Project,
         repository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
     ) {
         self.project = project
         self.repository = repository
@@ -82,8 +86,8 @@ public final class EditProjectViewModel {
                     id: project.id,
                     title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                     parentProjectID: parentProjectID,
-                    hexColor: hexColor
-                )
+                    hexColor: hexColor,
+                ),
             )
             toastPresenter.show("Project updated", style: .success)
             return updated

@@ -16,7 +16,9 @@ public final class ProjectsListViewModel {
     /// until its entry arrives or if the project has no tasks.
     public private(set) var taskSummaries: [Int: ProjectTaskSummary] = [:]
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     private let repository: ProjectRepositoryProtocol
     private let taskRepository: TaskRepositoryProtocol
@@ -25,7 +27,7 @@ public final class ProjectsListViewModel {
     public init(
         repository: ProjectRepositoryProtocol,
         taskRepository: TaskRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
     ) {
         self.repository = repository
         self.taskRepository = taskRepository
@@ -86,7 +88,7 @@ public final class ProjectsListViewModel {
     /// than failing the whole screen — its row just shows no progress bar.
     private static func fetchTaskSummaries(
         for nodes: [ProjectNode],
-        repository: TaskRepositoryProtocol
+        repository: TaskRepositoryProtocol,
     ) async -> [Int: ProjectTaskSummary] {
         let ids = flattenedIDs(of: nodes)
         return await withTaskGroup(of: (Int, ProjectTaskSummary)?.self) { group in

@@ -41,21 +41,28 @@ struct TaskDTO: Codable {
     // from the synthesized memberwise initializer entirely (Swift treats it
     // as already fully initialized), which would make it impossible for
     // `TaskMapper.merge(_:onto:)` to pass one through explicitly.
-    var relatedTasks: [String: [RelatedTaskDTO]]? = nil
-    var doneAt: Date? = nil
-    var startDate: Date? = nil
-    var endDate: Date? = nil
-    var reminders: [JSONValue]? = nil
-    var repeatAfter: Int? = nil
-    var repeatMode: Int? = nil
-    var hexColor: String? = nil
-    var percentDone: Double? = nil
-    var assignees: [JSONValue]? = nil
-    var coverImageAttachmentId: Int? = nil
-    var isFavorite: Bool? = nil
+    var relatedTasks: [String: [RelatedTaskDTO]]?
+    var doneAt: Date?
+    var startDate: Date?
+    var endDate: Date?
+    var reminders: [JSONValue]?
+    var repeatAfter: Int?
+    var repeatMode: Int?
+    var hexColor: String?
+    var percentDone: Double?
+    var assignees: [JSONValue]?
+    var coverImageAttachmentId: Int?
+    var isFavorite: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, description, done, priority, labels, reminders, assignees
+        case id
+        case title
+        case description
+        case done
+        case priority
+        case labels
+        case reminders
+        case assignees
         case dueDate = "due_date"
         case projectId = "project_id"
         case relatedTasks = "related_tasks"

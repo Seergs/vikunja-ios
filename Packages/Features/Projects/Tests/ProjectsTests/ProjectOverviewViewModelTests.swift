@@ -1,18 +1,18 @@
+@testable import Projects
 import Testing
 import VikunjaCore
-@testable import Projects
 
 @MainActor
 struct ProjectOverviewViewModelTests {
     @Test
-    func markVisibleClaimsTheQuickAddContextAndMarkHiddenReleasesIt() {
+    func `mark visible claims the quick add context and mark hidden releases it`() {
         let context = FakeQuickAddContext()
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 7, title: "Work"),
             repository: FakeTaskRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
-            quickAddContext: context
+            quickAddContext: context,
         )
 
         viewModel.markVisible()
@@ -23,7 +23,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func markHiddenLeavesAnOuterProjectScopeSelected() {
+    func `mark hidden leaves an outer project scope selected`() {
         let context = FakeQuickAddContext()
         context.enterProjectScope(99)
         let viewModel = ProjectOverviewViewModel(
@@ -31,7 +31,7 @@ struct ProjectOverviewViewModelTests {
             repository: FakeTaskRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
-            quickAddContext: context
+            quickAddContext: context,
         )
 
         viewModel.markVisible()
@@ -42,7 +42,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func loadFetchesTheProjectsTasks() async {
+    func `load fetches the projects tasks`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [
             VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -53,7 +53,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -63,14 +63,14 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func loadSurfacesAFriendlyMessageOnFailure() async {
+    func `load surfaces A friendly message on failure`() async {
         let repository = FakeTaskRepository()
         repository.fetchError = .network("offline")
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -80,7 +80,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func loadCarriesTheSubprojectsHandedInAtConstruction() async {
+    func `load carries the subprojects handed in at construction`() {
         let repository = FakeTaskRepository()
         let subprojects = [ProjectNode(project: Project(id: 2, title: "Client A", parentProjectID: 1))]
         let viewModel = ProjectOverviewViewModel(
@@ -88,14 +88,14 @@ struct ProjectOverviewViewModelTests {
             subprojects: subprojects,
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         #expect(viewModel.subprojects.map(\.project.id) == [2])
     }
 
     @Test
-    func loadFetchesEachSubprojectsOwnTaskSummary() async {
+    func `load fetches each subprojects own task summary`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [
             VikunjaTask(id: 1, title: "Parent task", projectID: 1),
@@ -112,7 +112,7 @@ struct ProjectOverviewViewModelTests {
             subprojects: subprojects,
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -122,7 +122,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func loadOmitsASubprojectSummaryWhenItsFetchFails() async {
+    func `load omits A subproject summary when its fetch fails`() async {
         let repository = FakeTaskRepository()
         repository.fetchError = .network("offline")
         let subprojects = [ProjectNode(project: Project(id: 2, title: "Client A", parentProjectID: 1))]
@@ -131,7 +131,7 @@ struct ProjectOverviewViewModelTests {
             subprojects: subprojects,
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -144,14 +144,14 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func toggleDonePersistsTheFlippedStateThroughTheRepository() async {
+    func `toggle done persists the flipped state through the repository`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1)]
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.load()
 
@@ -161,14 +161,14 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func toggleDoneRevertsWhenTheServerRejectsTheUpdate() async {
+    func `toggle done reverts when the server rejects the update`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1)]
         let viewModel = ProjectOverviewViewModel(
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.load()
         repository.updateError = .network("offline")
@@ -179,7 +179,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func deleteRemovesTheTaskAndShowsASuccessToast() async {
+    func `delete removes the task and shows A success toast`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [
             VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -190,7 +190,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
         await viewModel.load()
 
@@ -201,7 +201,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func deleteLeavesTheTaskInPlaceAndShowsAnErrorToastOnFailure() async {
+    func `delete leaves the task in place and shows an error toast on failure`() async {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
         repository.tasks = [task]
@@ -211,7 +211,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
         await viewModel.load()
 
@@ -222,7 +222,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func moveUpdatesTheTasksProjectAndRemovesItFromTheLocalList() async {
+    func `move updates the tasks project and removes it from the local list`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [
             VikunjaTask(id: 1, title: "Write report", projectID: 1),
@@ -233,7 +233,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
         await viewModel.load()
         let destination = Project(id: 2, title: "Personal")
@@ -246,7 +246,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func moveLeavesTheTaskInPlaceAndShowsAnErrorToastOnFailure() async {
+    func `move leaves the task in place and shows an error toast on failure`() async {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
         repository.tasks = [task]
@@ -256,7 +256,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: repository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
         await viewModel.load()
 
@@ -267,7 +267,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func moveProjectGroupsExcludesThisScreensOwnProject() async {
+    func `move project groups excludes this screens own project`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work"),
@@ -278,7 +278,7 @@ struct ProjectOverviewViewModelTests {
             project: Project(id: 1, title: "Work"),
             repository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.loadMoveCandidates()

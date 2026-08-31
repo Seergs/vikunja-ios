@@ -10,7 +10,7 @@ enum VikunjaEndpoints {
         try .encoding(
             path: "/api/v1/login",
             method: .post,
-            body: LoginRequestDTO(username: username, password: password)
+            body: LoginRequestDTO(username: username, password: password),
         )
     }
 
@@ -83,7 +83,7 @@ enum VikunjaEndpoints {
         try .encoding(
             path: "/api/v1/tasks/\(taskID)/labels",
             method: .put,
-            body: TaskLabelDTO(labelId: labelID)
+            body: TaskLabelDTO(labelId: labelID),
         )
     }
 
@@ -95,7 +95,7 @@ enum VikunjaEndpoints {
         try .encoding(
             path: "/api/v1/tasks/\(taskID)/relations",
             method: .put,
-            body: CreateTaskRelationDTO(relationKind: kind.rawValue, otherTaskId: otherTaskID)
+            body: CreateTaskRelationDTO(relationKind: kind.rawValue, otherTaskId: otherTaskID),
         )
     }
 
@@ -111,7 +111,7 @@ enum VikunjaEndpoints {
         try .encoding(
             path: "/api/v1/tasks/\(taskID)/comments",
             method: .put,
-            body: CommentRequestDTO(comment: text)
+            body: CommentRequestDTO(comment: text),
         )
     }
 
@@ -119,7 +119,7 @@ enum VikunjaEndpoints {
         try .encoding(
             path: "/api/v1/tasks/\(taskID)/comments/\(commentID)",
             method: .post,
-            body: CommentRequestDTO(comment: text)
+            body: CommentRequestDTO(comment: text),
         )
     }
 

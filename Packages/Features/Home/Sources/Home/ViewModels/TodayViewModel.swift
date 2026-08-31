@@ -19,7 +19,9 @@ public final class TodayViewModel {
     /// `load()`, since most visits to this screen never open that picker.
     public private(set) var allProjects: [Project] = []
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
@@ -28,7 +30,7 @@ public final class TodayViewModel {
     public init(
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
     ) {
         self.taskRepository = taskRepository
         self.projectRepository = projectRepository
@@ -60,12 +62,12 @@ public final class TodayViewModel {
     /// whole screen — mirrors `ProjectOverviewViewModel.fetchSubprojectSummaries`.
     private static func fetchAllTasks(
         projects: [Project],
-        repository: TaskRepositoryProtocol
+        repository: TaskRepositoryProtocol,
     ) async -> [VikunjaTask] {
         await withTaskGroup(of: [VikunjaTask].self) { group in
             for project in projects {
                 group.addTask {
-                    (try? await repository.fetchTasks(projectID: project.id)) ?? []
+                    await (try? repository.fetchTasks(projectID: project.id)) ?? []
                 }
             }
             var allTasks: [VikunjaTask] = []
@@ -110,7 +112,7 @@ public final class TodayViewModel {
     /// Loads every project on the instance, for the "Move to Project"
     /// picker. Failures leave `allProjects` at whatever it already was.
     public func loadMoveCandidates() async {
-        allProjects = (try? await projectRepository.fetchProjects()) ?? allProjects
+        allProjects = await (try? projectRepository.fetchProjects()) ?? allProjects
     }
 
     /// `allProjects` arranged for the "Move to Project" picker: one group per
@@ -127,7 +129,9 @@ public final class TodayViewModel {
     public struct ProjectGroup: Identifiable, Hashable {
         public let root: Project
         public let children: [Project]
-        public var id: Int { root.id }
+        public var id: Int {
+            root.id
+        }
     }
 
     /// Moves `task` to `destination` and drops it from the local list on

@@ -10,7 +10,7 @@ public struct VikunjaServerInfo: Equatable, Sendable {
         caldavEnabled: Bool,
         totpEnabled: Bool,
         registrationEnabled: Bool,
-        maxFileSizeBytes: Int? = nil
+        maxFileSizeBytes: Int? = nil,
     ) {
         self.version = version
         self.caldavEnabled = caldavEnabled

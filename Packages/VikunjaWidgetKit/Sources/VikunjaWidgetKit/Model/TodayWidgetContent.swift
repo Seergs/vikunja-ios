@@ -22,7 +22,7 @@ public struct TodayWidgetTask: Sendable, Hashable, Codable, Identifiable {
         dueDate: Date?,
         bucket: TaskDueBucket,
         projectName: String,
-        projectColorHex: String
+        projectColorHex: String,
     ) {
         self.id = id
         self.title = title
@@ -54,7 +54,7 @@ public struct TodayWidgetContent: Sendable, Hashable, Codable {
         overdueCount: Int,
         todayCount: Int,
         upcomingCount: Int,
-        tasks: [TodayWidgetTask]
+        tasks: [TodayWidgetTask],
     ) {
         self.accountName = accountName
         self.generatedAt = generatedAt
@@ -65,7 +65,9 @@ public struct TodayWidgetContent: Sendable, Hashable, Codable {
         self.tasks = tasks
     }
 
-    public var pendingCount: Int { overdueCount + todayCount }
+    public var pendingCount: Int {
+        overdueCount + todayCount
+    }
 
     public func tasks(in bucket: TaskDueBucket) -> [TodayWidgetTask] {
         tasks.filter { $0.bucket == bucket }
@@ -78,7 +80,7 @@ public struct TodayWidgetContent: Sendable, Hashable, Codable {
         projectsByID: [Int: Project],
         accountName: String,
         now: Date,
-        taskLimit: Int = VikunjaWidgetConfig.taskLimit
+        taskLimit: Int = VikunjaWidgetConfig.taskLimit,
     ) -> TodayWidgetContent {
         func widgetTask(_ task: VikunjaTask, _ bucket: TaskDueBucket) -> TodayWidgetTask {
             let project = projectsByID[task.projectID]
@@ -89,14 +91,14 @@ public struct TodayWidgetContent: Sendable, Hashable, Codable {
                 dueDate: task.dueDate,
                 bucket: bucket,
                 projectName: project?.title ?? "",
-                projectColorHex: project?.hexColor ?? ""
+                projectColorHex: project?.hexColor ?? "",
             )
         }
 
         let ordered =
             digest.overdue.map { widgetTask($0, .overdue) }
-            + digest.today.map { widgetTask($0, .today) }
-            + digest.upcoming.map { widgetTask($0, .upcoming) }
+                + digest.today.map { widgetTask($0, .today) }
+                + digest.upcoming.map { widgetTask($0, .upcoming) }
 
         return TodayWidgetContent(
             accountName: accountName,
@@ -104,7 +106,7 @@ public struct TodayWidgetContent: Sendable, Hashable, Codable {
             overdueCount: digest.overdue.count,
             todayCount: digest.today.count,
             upcomingCount: digest.upcoming.count,
-            tasks: Array(ordered.prefix(taskLimit))
+            tasks: Array(ordered.prefix(taskLimit)),
         )
     }
 }
@@ -135,7 +137,7 @@ public extension TodayWidgetContent {
             TodayWidgetTask(id: 1, title: "Reply to the hosting invoice", isDone: false, dueDate: Date(), bucket: .overdue, projectName: "Admin", projectColorHex: "#E85E00"),
             TodayWidgetTask(id: 2, title: "Draft the release notes", isDone: false, dueDate: Date(), bucket: .today, projectName: "Vikunja iOS", projectColorHex: "#196AFF"),
             TodayWidgetTask(id: 3, title: "Water the plants", isDone: false, dueDate: Date(), bucket: .today, projectName: "Home", projectColorHex: "#1FA669"),
-            TodayWidgetTask(id: 4, title: "Book the dentist", isDone: false, dueDate: Date().addingTimeInterval(86_400), bucket: .upcoming, projectName: "Health", projectColorHex: "#DF202E"),
-        ]
+            TodayWidgetTask(id: 4, title: "Book the dentist", isDone: false, dueDate: Date().addingTimeInterval(86400), bucket: .upcoming, projectName: "Health", projectColorHex: "#DF202E"),
+        ],
     )
 }

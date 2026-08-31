@@ -1,7 +1,7 @@
 import Foundation
+@testable import Settings
 import Testing
 import VikunjaCore
-@testable import Settings
 
 @MainActor
 struct ConnectionFormViewModelTests {
@@ -14,21 +14,21 @@ struct ConnectionFormViewModelTests {
         store: FakeAccountStore = FakeAccountStore(),
         factory: FakeInstanceClientFactory = FakeInstanceClientFactory(),
         toastPresenter: FakeToastPresenter = FakeToastPresenter(),
-        onActiveAccountChanged: @escaping () -> Void = {}
+        onActiveAccountChanged: @escaping () -> Void = {},
     ) -> ConnectionFormViewModel {
         ConnectionFormViewModel(
             mode: mode,
             accountStore: store,
             clientFactory: factory,
             toastPresenter: toastPresenter,
-            onActiveAccountChanged: onActiveAccountChanged
+            onActiveAccountChanged: onActiveAccountChanged,
         )
     }
 
     // MARK: - create mode
 
     @Test
-    func createModeStartsWithBlankFieldsAndCannotSave() {
+    func `create mode starts with blank fields and cannot save`() {
         let viewModel = makeViewModel(mode: .create)
 
         #expect(viewModel.displayName.isEmpty)
@@ -39,7 +39,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func savingInCreateModeProbesAndPersistsANewAccountAndNotifies() async throws {
+    func `saving in create mode probes and persists A new account and notifies`() async throws {
         let store = FakeAccountStore()
         var notifiedCount = 0
         let toastPresenter = FakeToastPresenter()
@@ -59,7 +59,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func savingInCreateModeSurfacesAFriendlyMessageWhenTheProbeFails() async {
+    func `saving in create mode surfaces A friendly message when the probe fails`() async {
         let factory = FakeInstanceClientFactory()
         factory.result = .failure(.network("offline"))
         let viewModel = makeViewModel(mode: .create, factory: factory)
@@ -76,7 +76,7 @@ struct ConnectionFormViewModelTests {
     // MARK: - edit mode
 
     @Test
-    func editModePrefillsNameAndURLFromTheExistingAccount() {
+    func `edit mode prefills name and URL from the existing account`() {
         let account = makeAccount(displayName: "Home", url: "https://tasks.example.com")
         let viewModel = makeViewModel(mode: .edit(account))
 
@@ -86,7 +86,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func loadPrefillsTheExistingTokenInEditMode() async throws {
+    func `load prefills the existing token in edit mode`() async throws {
         let store = FakeAccountStore()
         let account = makeAccount()
         try await store.addAccount(account, token: "existing-token")
@@ -98,7 +98,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func savingInEditModeUpdatesTheAccountWithoutChangingTheActivePointer() async throws {
+    func `saving in edit mode updates the account without changing the active pointer`() async throws {
         let store = FakeAccountStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -122,7 +122,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func savingInEditModeRotatesTheTokenWhenChanged() async throws {
+    func `saving in edit mode rotates the token when changed`() async throws {
         let store = FakeAccountStore()
         let account = makeAccount()
         try await store.addAccount(account, token: "old-token")
@@ -136,7 +136,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func deleteConnectionRemovesTheAccountWhenAnotherOneExists() async throws {
+    func `delete connection removes the account when another one exists`() async throws {
         let store = FakeAccountStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -151,7 +151,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func deleteConnectionRefusesToRemoveTheLastAccount() async throws {
+    func `delete connection refuses to remove the last account`() async throws {
         let store = FakeAccountStore()
         let account = makeAccount()
         try await store.addAccount(account, token: "token")
@@ -166,7 +166,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func deleteConnectionNotifiesOnlyWhenTheDeletedAccountWasActive() async throws {
+    func `delete connection notifies only when the deleted account was active`() async throws {
         let store = FakeAccountStore()
         let first = makeAccount(displayName: "Home")
         let second = makeAccount(displayName: "Work")
@@ -182,7 +182,7 @@ struct ConnectionFormViewModelTests {
     }
 
     @Test
-    func deleteConnectionIsANoOpInCreateMode() async {
+    func `delete connection is A no op in create mode`() async {
         let viewModel = makeViewModel(mode: .create)
 
         let didDelete = await viewModel.deleteConnection()

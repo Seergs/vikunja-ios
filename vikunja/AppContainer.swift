@@ -35,9 +35,9 @@ final class AppContainer {
 
     init(
         accountStore: AccountStoreProtocol = KeychainAccountStore(
-            accessGroup: VikunjaWidgetConfig.keychainAccessGroup
+            accessGroup: VikunjaWidgetConfig.keychainAccessGroup,
         ),
-        clientFactory: InstanceClientFactoryProtocol = VikunjaInstanceClientFactory()
+        clientFactory: InstanceClientFactoryProtocol = VikunjaInstanceClientFactory(),
     ) {
         self.accountStore = accountStore
         self.clientFactory = clientFactory
@@ -62,7 +62,7 @@ final class AppContainer {
         let loader = TodaySnapshotLoader(
             accountStore: accountStore,
             clientFactory: clientFactory,
-            cache: TodaySnapshotCache(appGroupIdentifier: VikunjaWidgetConfig.appGroupIdentifier)
+            cache: TodaySnapshotCache(appGroupIdentifier: VikunjaWidgetConfig.appGroupIdentifier),
         )
         _ = await loader.loadState()
         WidgetCenter.shared.reloadAllTimelines()
@@ -75,7 +75,7 @@ final class AppContainer {
     /// network every time its sheet opens. A failed fetch leaves the previous
     /// cached value untouched.
     func refreshDefaultProject(account: InstanceAccount) async {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let userRepository = clientFactory.makeUserRepository(baseURL: account.baseURL) {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -88,19 +88,19 @@ final class AppContainer {
     }
 
     func makeTodayViewModel(account: InstanceAccount) -> TodayViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
         return TodayViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            toastPresenter: toastCenter
+            toastPresenter: toastCenter,
         )
     }
 
     func makeProjectsListViewModel(account: InstanceAccount) -> ProjectsListViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -110,7 +110,7 @@ final class AppContainer {
     }
 
     func makeCreateProjectViewModel(parentProjectID: Int? = nil, account: InstanceAccount) -> CreateProjectViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL) {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -118,7 +118,7 @@ final class AppContainer {
     }
 
     func makeEditProjectViewModel(project: Project, account: InstanceAccount) -> EditProjectViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL) {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -126,7 +126,7 @@ final class AppContainer {
     }
 
     func makeProjectOverviewViewModel(node: ProjectNode, account: InstanceAccount) -> ProjectOverviewViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -138,7 +138,7 @@ final class AppContainer {
             repository: repository,
             projectRepository: projectRepository,
             toastPresenter: toastCenter,
-            quickAddContext: quickAddContext
+            quickAddContext: quickAddContext,
         )
     }
 
@@ -151,7 +151,7 @@ final class AppContainer {
     }
 
     func makeTaskDetailViewModel(task: VikunjaTask, project: Project, account: InstanceAccount) -> TaskDetailViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -169,7 +169,7 @@ final class AppContainer {
             commentRepository: commentRepository,
             projectRepository: projectRepository,
             toastPresenter: toastCenter,
-            quickAddContext: quickAddContext
+            quickAddContext: quickAddContext,
         )
     }
 
@@ -179,9 +179,9 @@ final class AppContainer {
     ///   SwiftUI view body and an `@Observable` read would rebuild the sheet.
     func makeQuickAddTaskViewModel(
         preselectedProjectID: Int?,
-        account: InstanceAccount
+        account: InstanceAccount,
     ) -> QuickAddTaskViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -190,12 +190,12 @@ final class AppContainer {
             accountDefaultProjectID: defaultProjectStore.projectID(forAccountID: account.id),
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            toastPresenter: toastCenter
+            toastPresenter: toastCenter,
         )
     }
 
     func makeManageLabelsViewModel(account: InstanceAccount) -> ManageLabelsViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let repository = clientFactory.makeLabelRepository(baseURL: account.baseURL) {
             try? await accountStore.token(forAccountID: account.id)
         }
@@ -208,26 +208,26 @@ final class AppContainer {
 
     func makeConnectionFormViewModel(
         mode: ConnectionFormMode,
-        onActiveAccountChanged: @escaping () -> Void
+        onActiveAccountChanged: @escaping () -> Void,
     ) -> ConnectionFormViewModel {
         ConnectionFormViewModel(
             mode: mode,
             accountStore: accountStore,
             clientFactory: clientFactory,
             toastPresenter: toastCenter,
-            onActiveAccountChanged: onActiveAccountChanged
+            onActiveAccountChanged: onActiveAccountChanged,
         )
     }
 
     func makeSearchViewModel(account: InstanceAccount) -> SearchViewModel {
-        let accountStore = self.accountStore
+        let accountStore = accountStore
         let tokenProvider: @Sendable () async -> String? = {
             try? await accountStore.token(forAccountID: account.id)
         }
         return SearchViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            toastPresenter: toastCenter
+            toastPresenter: toastCenter,
         )
     }
 }

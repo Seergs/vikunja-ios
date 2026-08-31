@@ -5,7 +5,7 @@ import VikunjaCore
 
 struct CommentDTOTests {
     @Test
-    func decodesRealisticCommentsPayload() throws {
+    func `decodes realistic comments payload`() throws {
         let dtos = try loadCommentDTOs()
 
         #expect(dtos.count == 2)
@@ -15,7 +15,7 @@ struct CommentDTOTests {
     }
 
     @Test
-    func mapsToDomainViaCommentMapper() throws {
+    func `maps to domain via comment mapper`() throws {
         let dtos = try loadCommentDTOs()
         let comments = dtos.map(CommentMapper.toDomain)
 

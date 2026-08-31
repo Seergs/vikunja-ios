@@ -20,7 +20,7 @@ public actor KeychainAccountStore: AccountStoreProtocol {
 
     public init(
         service: String = "dev.sergiosuarez.vikunja.accounts",
-        accessGroup: String? = nil
+        accessGroup: String? = nil,
     ) {
         self.service = service
         self.accessGroup = accessGroup
@@ -147,7 +147,9 @@ public actor KeychainAccountStore: AccountStoreProtocol {
     /// failing every call — the widget won't see data until provisioning is
     /// fixed, but the app keeps working.
     private func activeAccessGroup() -> String? {
-        if let resolved = resolvedAccessGroup { return resolved }
+        if let resolved = resolvedAccessGroup {
+            return resolved
+        }
 
         guard let requested = accessGroup else {
             resolvedAccessGroup = .some(nil)
@@ -189,7 +191,7 @@ public actor KeychainAccountStore: AccountStoreProtocol {
     }
 
     private func saveIndex(_ accounts: [InstanceAccount]) throws {
-        try save(try encoder.encode(accounts), account: indexAccount)
+        try save(encoder.encode(accounts), account: indexAccount)
     }
 
     private func readActiveAccountID() throws -> UUID? {

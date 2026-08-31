@@ -8,9 +8,9 @@ public protocol ToastPresenting {
     func show(_ message: String, style: ToastStyle)
 }
 
-extension ToastPresenting {
+public extension ToastPresenting {
     /// Convenience for the common case: a neutral, informational toast.
-    public func show(_ message: String) {
+    func show(_ message: String) {
         show(message, style: .info)
     }
 }

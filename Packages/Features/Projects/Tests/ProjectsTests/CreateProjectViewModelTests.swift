@@ -1,14 +1,14 @@
+@testable import Projects
 import Testing
 import VikunjaCore
-@testable import Projects
 
 @MainActor
 struct CreateProjectViewModelTests {
     @Test
-    func startsWithNoTitleAndCannotSave() {
+    func `starts with no title and cannot save`() {
         let viewModel = CreateProjectViewModel(
             repository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         #expect(viewModel.title.isEmpty)
@@ -16,10 +16,10 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func canSaveRequiresANonBlankTitle() {
+    func `can save requires A non blank title`() {
         let viewModel = CreateProjectViewModel(
             repository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         viewModel.title = "   "
@@ -30,11 +30,11 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func saveCreatesATrimmedTopLevelProjectByDefault() async {
+    func `save creates A trimmed top level project by default`() async {
         let repository = FakeProjectRepository()
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         viewModel.title = "  Groceries  "
 
@@ -48,12 +48,12 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func saveCreatesASubprojectWhenAParentIDWasSupplied() async {
+    func `save creates A subproject when A parent ID was supplied`() async {
         let repository = FakeProjectRepository()
         let viewModel = CreateProjectViewModel(
             parentProjectID: 7,
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         viewModel.title = "Invoices"
 
@@ -64,11 +64,11 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func parentProjectIDIsEditableAfterConstruction() async {
+    func `parent project ID is editable after construction`() async {
         let repository = FakeProjectRepository()
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         viewModel.title = "Invoices"
         viewModel.parentProjectID = 3
@@ -79,11 +79,11 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func saveCreatesAProjectWithTheChosenColor() async {
+    func `save creates A project with the chosen color`() async {
         let repository = FakeProjectRepository()
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         viewModel.title = "Groceries"
         viewModel.hexColor = "FF0000"
@@ -94,7 +94,7 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func loadPopulatesNonArchivedProjectsSortedByPosition() async {
+    func `load populates non archived projects sorted by position`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Later", isArchived: false, position: 2),
@@ -103,7 +103,7 @@ struct CreateProjectViewModelTests {
         ]
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -113,7 +113,7 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func projectGroupsArrangesTopLevelProjectsWithTheirDirectChildren() async {
+    func `project groups arranges top level projects with their direct children`() async {
         let repository = FakeProjectRepository()
         repository.projects = [
             Project(id: 1, title: "Work", parentProjectID: nil, position: 0),
@@ -123,7 +123,7 @@ struct CreateProjectViewModelTests {
         ]
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.load()
@@ -134,12 +134,12 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func selectedParentProjectResolvesTheChosenIDAgainstTheLoadedProjects() async {
+    func `selected parent project resolves the chosen ID against the loaded projects`() async {
         let repository = FakeProjectRepository()
         repository.projects = [Project(id: 1, title: "Work")]
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         await viewModel.load()
 
@@ -151,11 +151,11 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func saveShowsASuccessToast() async {
+    func `save shows A success toast`() async {
         let toastPresenter = FakeToastPresenter()
         let viewModel = CreateProjectViewModel(
             repository: FakeProjectRepository(),
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
         )
         viewModel.title = "Groceries"
 
@@ -167,11 +167,11 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func saveDoesNothingWhenTheTitleIsBlank() async {
+    func `save does nothing when the title is blank`() async {
         let repository = FakeProjectRepository()
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         let created = await viewModel.save()
@@ -181,12 +181,12 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func saveSurfacesAFriendlyMessageOnFailure() async {
+    func `save surfaces A friendly message on failure`() async {
         let repository = FakeProjectRepository()
         repository.createError = .network("offline")
         let viewModel = CreateProjectViewModel(
             repository: repository,
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
         viewModel.title = "Groceries"
 

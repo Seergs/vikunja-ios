@@ -46,7 +46,7 @@ enum TaskMapper {
             subtasks: relations(dto, kind: "subtask"),
             dependsOn: relations(dto, kind: "blocked"),
             blocks: relations(dto, kind: "blocking"),
-            otherRelations: otherRelations(dto)
+            otherRelations: otherRelations(dto),
         )
     }
 
@@ -62,7 +62,7 @@ enum TaskMapper {
             dueDate: task.dueDate,
             priority: task.priority.rawValue,
             projectId: task.projectID,
-            labels: nil
+            labels: nil,
         )
     }
 
@@ -93,7 +93,7 @@ enum TaskMapper {
             percentDone: current.percentDone,
             assignees: current.assignees,
             coverImageAttachmentId: current.coverImageAttachmentId,
-            isFavorite: current.isFavorite
+            isFavorite: current.isFavorite,
         )
     }
 }

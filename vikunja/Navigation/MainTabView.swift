@@ -35,7 +35,7 @@ struct MainTabView: View {
             Tab(AppTab.home.title, systemImage: AppTab.home.systemImage, value: .home) {
                 HomeRootView(
                     viewModel: container.makeTodayViewModel(account: account),
-                    taskDetailDestination: taskDetailDestination
+                    taskDetailDestination: taskDetailDestination,
                 )
             }
 
@@ -51,7 +51,7 @@ struct MainTabView: View {
                     makeEditProjectViewModel: { project in
                         container.makeEditProjectViewModel(project: project, account: account)
                     },
-                    taskDetailDestination: taskDetailDestination
+                    taskDetailDestination: taskDetailDestination,
                 )
             }
 
@@ -66,14 +66,14 @@ struct MainTabView: View {
                     },
                     makeManageLabelsViewModel: {
                         container.makeManageLabelsViewModel(account: account)
-                    }
+                    },
                 )
             }
 
             Tab(value: AppTab.search, role: .search) {
                 SearchRootView(
                     viewModel: container.makeSearchViewModel(account: account),
-                    onTaskSelected: taskDetailDestination
+                    onTaskSelected: taskDetailDestination,
                 )
             }
         }
@@ -107,8 +107,8 @@ struct MainTabView: View {
         AnyView(
             TaskDetailView(
                 viewModel: container.makeTaskDetailViewModel(task: task, project: project, account: account),
-                projectDestination: projectDestination
-            )
+                projectDestination: projectDestination,
+            ),
         )
     }
 
@@ -125,8 +125,8 @@ struct MainTabView: View {
                 makeOverviewViewModel: { node in
                     container.makeProjectOverviewViewModel(node: node, account: account)
                 },
-                taskDetailDestination: taskDetailDestination
-            )
+                taskDetailDestination: taskDetailDestination,
+            ),
         )
     }
 }
@@ -157,8 +157,8 @@ private struct QuickAddOverlay: View {
             QuickAddSheetView(
                 viewModel: container.makeQuickAddTaskViewModel(
                     preselectedProjectID: preselectedProjectID,
-                    account: account
-                )
+                    account: account,
+                ),
             )
         }
     }

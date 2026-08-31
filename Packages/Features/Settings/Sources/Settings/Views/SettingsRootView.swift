@@ -23,7 +23,7 @@ public struct SettingsRootView: View {
         account: InstanceAccount,
         makeConnectionsListViewModel: @escaping () -> ConnectionsListViewModel,
         makeConnectionFormViewModel: @escaping (ConnectionFormMode) -> ConnectionFormViewModel,
-        makeManageLabelsViewModel: @escaping () -> ManageLabelsViewModel
+        makeManageLabelsViewModel: @escaping () -> ManageLabelsViewModel,
     ) {
         self.account = account
         self.makeConnectionsListViewModel = makeConnectionsListViewModel

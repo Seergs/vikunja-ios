@@ -21,7 +21,7 @@ public struct TodaySnapshotLoader: Sendable {
         clientFactory: InstanceClientFactoryProtocol,
         cache: TodaySnapshotCache,
         taskLimit: Int = VikunjaWidgetConfig.taskLimit,
-        now: @escaping @Sendable () -> Date = { Date() }
+        now: @escaping @Sendable () -> Date = { Date() },
     ) {
         self.accountStore = accountStore
         self.clientFactory = clientFactory
@@ -43,16 +43,18 @@ public struct TodaySnapshotLoader: Sendable {
             // iOS Simulator). Render whatever the app last wrote to the
             // shared App Group cache; only fall through to a bare state when
             // there's nothing cached at all.
-            if let cached = cachedContentState(forceStale: false) { return cached }
+            if let cached = cachedContentState(forceStale: false) {
+                return cached
+            }
             return account == nil ? .notConnected : .needsAuth
         }
 
         let tokenProvider: @Sendable () async -> String? = { token }
         let projectRepository = clientFactory.makeProjectRepository(
-            baseURL: account.baseURL, tokenProvider: tokenProvider
+            baseURL: account.baseURL, tokenProvider: tokenProvider,
         )
         let taskRepository = clientFactory.makeTaskRepository(
-            baseURL: account.baseURL, tokenProvider: tokenProvider
+            baseURL: account.baseURL, tokenProvider: tokenProvider,
         )
 
         do {
@@ -66,7 +68,7 @@ public struct TodaySnapshotLoader: Sendable {
                 projectsByID: projectsByID,
                 accountName: account.displayName,
                 now: now(),
-                taskLimit: taskLimit
+                taskLimit: taskLimit,
             )
             cache.write(content)
             return .content(content)
@@ -93,12 +95,12 @@ public struct TodaySnapshotLoader: Sendable {
     /// mirrors `TodayViewModel.fetchAllTasks`.
     private static func fetchAllTasks(
         projects: [Project],
-        repository: TaskRepositoryProtocol
+        repository: TaskRepositoryProtocol,
     ) async -> [VikunjaTask] {
         await withTaskGroup(of: [VikunjaTask].self) { group in
             for project in projects {
                 group.addTask {
-                    (try? await repository.fetchTasks(projectID: project.id)) ?? []
+                    await (try? repository.fetchTasks(projectID: project.id)) ?? []
                 }
             }
             var all: [VikunjaTask] = []

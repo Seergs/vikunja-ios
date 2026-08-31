@@ -13,7 +13,9 @@ public final class ConnectionsListViewModel {
     public private(set) var activeAccountID: InstanceAccount.ID?
     public private(set) var loadState: ScreenLoadState = .idle
 
-    public var isLoading: Bool { loadState == .loading }
+    public var isLoading: Bool {
+        loadState == .loading
+    }
 
     private let accountStore: AccountStoreProtocol
     private let toastPresenter: ToastPresenting
@@ -24,7 +26,7 @@ public final class ConnectionsListViewModel {
     public init(
         accountStore: AccountStoreProtocol,
         toastPresenter: ToastPresenting,
-        onActiveAccountChanged: @escaping () -> Void
+        onActiveAccountChanged: @escaping () -> Void,
     ) {
         self.accountStore = accountStore
         self.toastPresenter = toastPresenter
@@ -58,5 +60,4 @@ public final class ConnectionsListViewModel {
             toastPresenter.show(error.localizedDescription, style: .error)
         }
     }
-
 }

@@ -1,6 +1,6 @@
 import Foundation
-import VikunjaCore
 @testable import Tasks
+import VikunjaCore
 
 final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     var tasks: [VikunjaTask] = []
@@ -11,22 +11,30 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     var searchResults: [VikunjaTask] = []
 
     func fetchTasks(projectID: Int) async throws -> [VikunjaTask] {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         return tasks.filter { $0.projectID == projectID }
     }
 
     func fetchTask(id: Int) async throws -> VikunjaTask {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         guard let task = tasks.first(where: { $0.id == id }) else {
             throw VikunjaError.notFound
         }
         return task
     }
 
-    func create(_ task: VikunjaTask) async throws -> VikunjaTask { task }
+    func create(_ task: VikunjaTask) async throws -> VikunjaTask {
+        task
+    }
 
     func update(_ task: VikunjaTask) async throws -> VikunjaTask {
-        if let updateError { throw updateError }
+        if let updateError {
+            throw updateError
+        }
         // Mirrors the real API: an update's response doesn't echo relations
         // back (see `TaskDetailViewModel.toggleDone()`'s doc comment).
         var updated = task
@@ -38,12 +46,16 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     }
 
     func delete(id: Int) async throws {
-        if let deleteError { throw deleteError }
+        if let deleteError {
+            throw deleteError
+        }
         tasks.removeAll { $0.id == id }
     }
 
-    func searchTasks(query: String) async throws -> [VikunjaTask] {
-        if let searchError { throw searchError }
+    func searchTasks(query _: String) async throws -> [VikunjaTask] {
+        if let searchError {
+            throw searchError
+        }
         return searchResults
     }
 }
@@ -53,7 +65,9 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     var fetchError: VikunjaError?
 
     func fetchProjects() async throws -> [Project] {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         return projects
     }
 
@@ -64,9 +78,13 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
         return project
     }
 
-    func create(_ project: Project) async throws -> Project { project }
+    func create(_ project: Project) async throws -> Project {
+        project
+    }
 
-    func update(_ project: Project) async throws -> Project { project }
+    func update(_ project: Project) async throws -> Project {
+        project
+    }
 
     func delete(id: Int) async throws {
         projects.removeAll { $0.id == id }
@@ -76,12 +94,18 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
 @MainActor
 final class FakeQuickAddContext: QuickAddContextTracking {
     private(set) var scopes: [Int] = []
-    var preselectedProjectID: Int? { scopes.last }
+    var preselectedProjectID: Int? {
+        scopes.last
+    }
 
-    func enterProjectScope(_ projectID: Int) { scopes.append(projectID) }
+    func enterProjectScope(_ projectID: Int) {
+        scopes.append(projectID)
+    }
 
     func exitProjectScope(_ projectID: Int) {
-        if let index = scopes.lastIndex(of: projectID) { scopes.remove(at: index) }
+        if let index = scopes.lastIndex(of: projectID) {
+            scopes.remove(at: index)
+        }
     }
 }
 
@@ -96,31 +120,41 @@ final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
     private var nextID = 100
 
     func fetchLabels() async throws -> [Label] {
-        if let fetchError { throw fetchError }
+        if let fetchError {
+            throw fetchError
+        }
         return labels
     }
 
     func create(_ label: Label) async throws -> Label {
-        if let createError { throw createError }
+        if let createError {
+            throw createError
+        }
         let created = Label(id: nextID, title: label.title, hexColor: label.hexColor)
         nextID += 1
         labels.append(created)
         return created
     }
 
-    func update(_ label: Label) async throws -> Label { label }
+    func update(_ label: Label) async throws -> Label {
+        label
+    }
 
     func delete(id: Int) async throws {
         labels.removeAll { $0.id == id }
     }
 
     func addLabel(_ labelID: Int, toTask taskID: Int) async throws {
-        if let addError { throw addError }
+        if let addError {
+            throw addError
+        }
         addedLabelIDs.append((labelID, taskID))
     }
 
     func removeLabel(_ labelID: Int, fromTask taskID: Int) async throws {
-        if let removeError { throw removeError }
+        if let removeError {
+            throw removeError
+        }
         removedLabelIDs.append((labelID, taskID))
     }
 }
@@ -132,12 +166,16 @@ final class FakeTaskRelationRepository: TaskRelationRepositoryProtocol, @uncheck
     var removeError: VikunjaError?
 
     func addRelation(kind: RelationKind, otherTaskID: Int, toTask taskID: Int) async throws {
-        if let addError { throw addError }
+        if let addError {
+            throw addError
+        }
         addedRelations.append((kind, otherTaskID, taskID))
     }
 
     func removeRelation(kind: RelationKind, otherTaskID: Int, fromTask taskID: Int) async throws {
-        if let removeError { throw removeError }
+        if let removeError {
+            throw removeError
+        }
         removedRelations.append((kind, otherTaskID, taskID))
     }
 }
@@ -150,27 +188,33 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
     var deleteError: VikunjaError?
     private var nextID = 100
 
-    func fetchComments(taskID: Int) async throws -> [TaskComment] {
-        if let fetchError { throw fetchError }
+    func fetchComments(taskID _: Int) async throws -> [TaskComment] {
+        if let fetchError {
+            throw fetchError
+        }
         return comments
     }
 
-    func addComment(_ text: String, toTask taskID: Int) async throws -> TaskComment {
-        if let addError { throw addError }
+    func addComment(_ text: String, toTask _: Int) async throws -> TaskComment {
+        if let addError {
+            throw addError
+        }
         let created = TaskComment(
             id: nextID,
             comment: text,
             author: User(id: 1, username: "me"),
             created: Date(),
-            updated: Date()
+            updated: Date(),
         )
         nextID += 1
         comments.append(created)
         return created
     }
 
-    func updateComment(_ commentID: Int, text: String, onTask taskID: Int) async throws -> TaskComment {
-        if let updateError { throw updateError }
+    func updateComment(_ commentID: Int, text: String, onTask _: Int) async throws -> TaskComment {
+        if let updateError {
+            throw updateError
+        }
         guard let index = comments.firstIndex(where: { $0.id == commentID }) else {
             throw VikunjaError.notFound
         }
@@ -179,8 +223,10 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
         return comments[index]
     }
 
-    func deleteComment(_ commentID: Int, fromTask taskID: Int) async throws {
-        if let deleteError { throw deleteError }
+    func deleteComment(_ commentID: Int, fromTask _: Int) async throws {
+        if let deleteError {
+            throw deleteError
+        }
         comments.removeAll { $0.id == commentID }
     }
 }

@@ -22,7 +22,7 @@ public struct CreateProjectSheetView: View {
     private var detent: Binding<PresentationDetent> {
         Binding(
             get: { .height(viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight) },
-            set: { _ in }
+            set: { _ in },
         )
     }
 
@@ -184,7 +184,9 @@ private struct SaveErrorBanner: View {
 private struct FieldLabel: View {
     let title: String
 
-    init(_ title: String) { self.title = title }
+    init(_ title: String) {
+        self.title = title
+    }
 
     var body: some View {
         Text(title)
@@ -270,14 +272,14 @@ private struct ParentProjectPickerView: View {
                                 project: group.root,
                                 isBold: true,
                                 isSelected: selectedProjectID == group.root.id,
-                                action: { select(group.root) }
+                                action: { select(group.root) },
                             )
                             ForEach(group.children) { child in
                                 ParentProjectPickerRow(
                                     project: child,
                                     isBold: false,
                                     isSelected: selectedProjectID == child.id,
-                                    action: { select(child) }
+                                    action: { select(child) },
                                 )
                                 .padding(.leading, VikunjaSpacing.lg)
                             }
@@ -332,7 +334,7 @@ private struct NoneProjectRow: View {
             .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
             .background(
                 isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous)
+                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
             )
         }
         .buttonStyle(.plain)
@@ -366,7 +368,7 @@ private struct ParentProjectPickerRow: View {
             .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
             .background(
                 isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous)
+                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
             )
         }
         .buttonStyle(.plain)

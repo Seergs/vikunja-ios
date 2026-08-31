@@ -18,13 +18,13 @@ private struct ToastHostModifier: ViewModifier {
     }
 }
 
-extension View {
+public extension View {
     /// Attaches the single toast host for the whole app. Call this once, as
     /// high in the hierarchy as possible, so a toast floats above every
     /// screen, sheet, and the tab bar — not once per feature. Everything
     /// downstream shows a toast by taking a `ToastPresenting` dependency and
     /// calling `show(_:style:)`; it never needs to know this modifier exists.
-    public func toastHost(_ center: ToastCenter) -> some View {
+    func toastHost(_ center: ToastCenter) -> some View {
         modifier(ToastHostModifier(center: center))
     }
 }
