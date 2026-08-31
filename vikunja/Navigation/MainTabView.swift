@@ -161,5 +161,23 @@ private struct QuickAddOverlay: View {
                 ),
             )
         }
+        // A `vikunja://quick-add` deep link opens the same sheet. Handled
+        // here, not in `MainTabView`, so reading the router doesn't rebuild
+        // every tab's `NavigationStack`. `.onChange` covers a link that
+        // arrives while the shell is up; `.task` covers one already parked
+        // on the router when this overlay mounts (cold launch).
+        .onChange(of: container.deepLinkRouter.pending) { _, link in
+            handleDeepLink(link)
+        }
+        .task {
+            handleDeepLink(container.deepLinkRouter.pending)
+        }
+    }
+
+    private func handleDeepLink(_ link: DeepLink?) {
+        guard case let .quickAdd(projectID) = link else { return }
+        preselectedProjectID = projectID ?? container.quickAddContext.preselectedProjectID
+        isShowingSheet = true
+        container.deepLinkRouter.clear()
     }
 }

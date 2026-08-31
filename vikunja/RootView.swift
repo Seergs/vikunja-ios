@@ -55,6 +55,13 @@ struct RootView: View {
                 Task { await container.refreshTodayWidgetSnapshot() }
             }
         }
+        .onOpenURL { url in
+            // Parked on the router until the screen that acts on it is
+            // mounted — on a cold launch this fires before the tab shell
+            // exists. See `DeepLinkRouter`.
+            guard let link = DeepLink(url: url) else { return }
+            container.deepLinkRouter.open(link)
+        }
         .toastHost(container.toastCenter)
     }
 
