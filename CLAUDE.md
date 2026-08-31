@@ -388,13 +388,16 @@ by the compiler, not just convention:
     snapshot taken outside `body` on purpose — the FAB/sheet `@State` and any
     `@Observable` context read must not re-evaluate `MainTabView`'s body,
     which would rebuild every tab's `NavigationStack` and view models and
-    blank whatever screen is behind the sheet), else the account's default
-    project resolved in `load()` via
-    `UserRepositoryProtocol.fetchCurrentUser().defaultProjectID` (only used
-    if that project is one of the loaded, non-archived projects). Takes a
-    `UserRepositoryProtocol` alongside `TaskRepositoryProtocol`/
-    `ProjectRepositoryProtocol`. Creates via `TaskRepositoryProtocol.create`
-    and shows a success toast.
+    blank whatever screen is behind the sheet), else `accountDefaultProjectID`
+    — the account's Vikunja default project (`settings.default_project_id`
+    from `GET /api/v1/user`), which `AppContainer.refreshDefaultProject` caches
+    on device in `DefaultProjectStore` (`UserDefaults`, keyed by account id)
+    once per launch and on account switch, and passes in synchronously via
+    `makeQuickAddTaskViewModel` — so opening the sheet never hits the network
+    for it. `load()` uses the fallback only if that project is one of the
+    loaded, non-archived projects. `UserRepositoryProtocol` is now used by
+    `AppContainer` (the launch refresh), not by this view model. Creates via
+    `TaskRepositoryProtocol.create` and shows a success toast.
 
 Features should only ever import `VikunjaCore`/`VikunjaNavigation`/
 `VikunjaDesignSystem` and depend on `VikunjaCore`'s protocols — never import

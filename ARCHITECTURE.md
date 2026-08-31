@@ -299,9 +299,14 @@ re-evaluates `MainTabView`'s body (which would rebuild every tab's
 snapshots that id in the tap handler (not in `body`, so the `@Observable`
 read doesn't rebuild the sheet's view model when a scope enters/leaves the
 stack) and hands it to `makeQuickAddTaskViewModel`; when it's
-`nil`, `QuickAddTaskViewModel.load()` falls back to the account's default
-project (`UserRepositoryProtocol.fetchCurrentUser().defaultProjectID`, read
-from `settings.default_project_id` on `GET /api/v1/user`).
+`nil`, the quick-add sheet falls back to the account's Vikunja default project
+(`settings.default_project_id` from `GET /api/v1/user`, via
+`UserRepositoryProtocol`). That request is **not** made when the sheet opens —
+`AppContainer.refreshDefaultProject` fetches it once per launch (and on
+account switch, from `RootView`) and caches it on device in
+`DefaultProjectStore` (`UserDefaults`, keyed by account id);
+`makeQuickAddTaskViewModel` reads that cache synchronously and passes it as
+`accountDefaultProjectID`.
 
 `AppTab`, `MainTabView`, `QuickAddOverlay`, and `QuickAddButton` live in the app target, not a
 package, because `Tab(role:)` and `.tabBarMinimizeBehavior` are iOS-26-only
