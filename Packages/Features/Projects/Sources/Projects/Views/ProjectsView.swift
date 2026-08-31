@@ -208,9 +208,31 @@ private struct ProjectRow: View {
                     .fontWeight(.semibold)
                     .lineLimit(1)
 
-                if let taskSummary, taskSummary.total > 0 {
-                    ProjectProgressCount(summary: taskSummary, color: swatchColor)
+                // The second line always occupies the same height, whether or
+                // not this project's task summary has arrived yet — its own
+                // request lands after the tree renders, and letting the row
+                // grow when it does shifts every row below it. Until then a
+                // redacted skeleton holds the space; a project that turns out
+                // to have no tasks keeps the line as "No tasks" rather than
+                // collapsing it (which would shift the row a second time).
+                Group {
+                    if let taskSummary {
+                        if taskSummary.total > 0 {
+                            ProjectProgressCount(summary: taskSummary, color: swatchColor)
+                        } else {
+                            Text("No tasks")
+                                .font(VikunjaFont.caption)
+                                .foregroundStyle(VikunjaColor.textTertiary)
+                        }
+                    } else {
+                        ProjectProgressCount(
+                            summary: ProjectTaskSummary(done: 0, total: 1),
+                            color: swatchColor
+                        )
+                        .redacted(reason: .placeholder)
+                    }
                 }
+                .animation(.easeInOut(duration: 0.2), value: taskSummary)
             }
 
             Spacer(minLength: VikunjaSpacing.sm)
