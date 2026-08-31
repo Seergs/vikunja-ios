@@ -55,6 +55,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "vikunja" folder in "vikunja" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = EC3BB465303D1EF6002753FC /* vikunja */;
+		};
 		1D5CA3FE38DF6E41C00D7DB1 /* Exceptions for "vikunja-widgets" folder in "vikunja-widgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -77,6 +84,9 @@
 		};
 		EC3BB468303D1EF6002753FC /* vikunja */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "vikunja" folder in "vikunja" target */,
+			);
 			path = vikunja;
 			sourceTree = "<group>";
 		};
@@ -506,6 +516,7 @@
 				DEVELOPMENT_TEAM = 5CM24MBKSG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "vikunja/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -539,6 +550,7 @@
 				DEVELOPMENT_TEAM = 5CM24MBKSG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "vikunja/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
