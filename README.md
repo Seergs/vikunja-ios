@@ -44,7 +44,9 @@ You can find this app in the App Store
 - Comments
     - Add comment to task
     - Update comment 
-    - Delete comment 
+    - Delete comment
+- Attachments
+    - Add attachments to tasks 
 - Task Relations
     - Add relations between tasks
     - Remove relations between tasks
