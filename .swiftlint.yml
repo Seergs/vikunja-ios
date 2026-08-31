@@ -1,0 +1,85 @@
+# SwiftLint - https://realm.github.io/SwiftLint/rule-directory.html
+# Run:  swiftlint lint            (or `mise run lint`)
+# Fix:  swiftlint lint --fix      (autocorrects a subset)
+
+included:
+  - Packages
+  - vikunja
+  - vikunja-widgets
+
+excluded:
+  - "**/.build"
+  - "**/Package.swift"
+  - "**/*.generated.swift"
+
+# --- rules SwiftFormat already owns (don't let the two tools fight) --------
+disabled_rules:
+  - trailing_comma
+  - opening_brace
+  - vertical_parameter_alignment_on_call
+  - todo                    # `// TODO:` / `// FIXME:` shouldn't fail a build - very commonly off
+
+# --- opt-in rules almost every serious project turns on -------------------
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - empty_collection_literal
+  - first_where
+  - last_where
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - sorted_first_last
+  - flatmap_over_map_reduce
+  - reduce_into
+  - toggle_bool
+  - redundant_nil_coalescing
+  - unneeded_parentheses_in_closure_argument
+  - closure_spacing
+  - collection_alignment
+  - literal_expression_end_indentation
+  - operator_usage_whitespace
+  - modifier_order
+  - prefer_self_type_over_type_of_self
+  - redundant_type_annotation
+  - fatal_error_message
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - overridden_super_call
+  - prohibited_super_call
+  - private_action
+  - private_outlet
+  - yoda_condition
+  - joined_default_parameter
+  - fallthrough
+  - legacy_multiple
+
+# --- threshold tweaks (defaults are stricter than most people want) ------
+line_length:
+  warning: 120
+  error: 200
+  ignores_urls: true
+  ignores_comments: true
+  ignores_function_declarations: true
+  ignores_interpolated_strings: true
+
+identifier_name:
+  min_length: 2
+  excluded: [id, x, y, z, i, j, dx, dy, to, ok, vm]
+
+type_name:
+  max_length:
+    warning: 45
+    error: 60
+
+function_body_length:
+  warning: 60
+  error: 120
+
+file_length:
+  warning: 500
+  error: 1000
+  ignore_comment_only_lines: true
+
+cyclomatic_complexity:
+  ignores_case_statements: true

@@ -1,0 +1,31 @@
+# SwiftFormat: https://github.com/nicklockwood/SwiftFormat
+# Rule reference: https://github.com/nicklockwood/SwiftFormat/blob/main/Rules.md
+#
+# This is close to SwiftFormat's defaults. Only the widely-adopted community
+# conventions are spelled out; everything else is left at its default.
+
+--swiftversion 6.2
+
+# --- what to skip ------------------------------------------------------------
+--exclude .build,**/.build,**/*.generated.swift,**/*.pb.swift
+
+# --- style options (the common conventions) ---------------------------------
+--self               init-only     # keep `self.x = x` in initializers, drop it elsewhere
+--stripunusedargs    closure-only  # keep named args in func signatures (docs); blank out unused closure args
+--ifdef              no-indent     # don't add a level of indent inside `#if` blocks
+--importgrouping     alpha         # sort imports alphabetically
+
+# multi-line wrapping: everything on its own line, closing paren balanced
+--wraparguments      before-first
+--wrapparameters     before-first
+--wrapcollections    before-first
+--wrapconditions     after-first
+--closingparen       balanced
+
+# --- rules that are off by default but almost everyone turns on ------------
+--enable blankLinesBetweenImports
+--enable wrapEnumCases
+--enable isEmpty                   # `foo.count == 0` -> `foo.isEmpty`
+
+# --- default rules people commonly turn off -------------------------------
+--disable wrapMultilineStatementBraces  # allow `{` to stay on the condition's last line

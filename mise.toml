@@ -1,0 +1,26 @@
+
+[tools]
+swiftlint   = "0.65.1"
+swiftformat = "0.63.0"
+
+[tasks.format]
+description = "Autoformat and autofix in place"
+run = [
+    "swiftformat .",
+    "swiftlint lint --fix --quiet",
+]
+
+[tasks.lint]
+description = "Check only, no writes"
+run = [
+    "swiftformat --lint .",
+    "swiftlint lint --quiet",
+]
+
+# Use once `mise run lint` is clean, so new warnings fail the build.
+[tasks.lint-strict]
+description = "Lint, warnings fail too"
+run = [
+    "swiftformat --lint .",
+    "swiftlint lint --strict --quiet",
+]
