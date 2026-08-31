@@ -9,7 +9,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: FakeProjectRepository(),
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -28,7 +27,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -45,7 +43,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -59,7 +56,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: FakeProjectRepository(),
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -81,7 +77,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: taskRepository,
             projectRepository: FakeProjectRepository(),
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         viewModel.title = "  Buy milk  "
@@ -104,7 +99,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: taskRepository,
             projectRepository: FakeProjectRepository(),
-            userRepository: FakeUserRepository(),
             toastPresenter: toastPresenter
         )
         viewModel.title = "Buy milk"
@@ -123,7 +117,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: taskRepository,
             projectRepository: FakeProjectRepository(),
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         viewModel.title = "Buy milk"
@@ -145,7 +138,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -163,7 +155,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         await viewModel.load()
@@ -180,7 +171,6 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FailingTaskRepository(),
             projectRepository: FakeProjectRepository(),
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         viewModel.title = "Buy milk"
@@ -198,7 +188,6 @@ struct QuickAddTaskViewModelTests {
             preselectedProjectID: 5,
             taskRepository: FakeTaskRepository(),
             projectRepository: FakeProjectRepository(),
-            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -209,12 +198,10 @@ struct QuickAddTaskViewModelTests {
     func loadFallsBackToTheAccountDefaultProjectWhenNothingWasPreselected() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 1, title: "Work"), Project(id: 3, title: "Inbox")]
-        let userRepository = FakeUserRepository()
-        userRepository.user = User(id: 1, username: "qa", defaultProjectID: 3)
         let viewModel = QuickAddTaskViewModel(
+            accountDefaultProjectID: 3,
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            userRepository: userRepository,
             toastPresenter: FakeToastPresenter()
         )
 
@@ -227,12 +214,10 @@ struct QuickAddTaskViewModelTests {
     func loadIgnoresADefaultProjectThatIsNotAmongTheLoadedProjects() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 1, title: "Work")]
-        let userRepository = FakeUserRepository()
-        userRepository.user = User(id: 1, username: "qa", defaultProjectID: 99)
         let viewModel = QuickAddTaskViewModel(
+            accountDefaultProjectID: 99,
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            userRepository: userRepository,
             toastPresenter: FakeToastPresenter()
         )
 
@@ -245,13 +230,11 @@ struct QuickAddTaskViewModelTests {
     func loadKeepsAnExplicitPreselectionOverTheAccountDefault() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [Project(id: 5, title: "Work"), Project(id: 3, title: "Inbox")]
-        let userRepository = FakeUserRepository()
-        userRepository.user = User(id: 1, username: "qa", defaultProjectID: 3)
         let viewModel = QuickAddTaskViewModel(
             preselectedProjectID: 5,
+            accountDefaultProjectID: 3,
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
-            userRepository: userRepository,
             toastPresenter: FakeToastPresenter()
         )
 

@@ -6,15 +6,17 @@ import VikunjaCore
 /// is presented globally from the tab bar's floating action button, so it
 /// picks its starting project from context: `preselectedProjectID` when the
 /// visible screen is a specific project (see `QuickAddContextTracking`),
-/// otherwise the user's account default project resolved in `load()`
-/// (`User.defaultProjectID`). `canSave` stays false until a project is
-/// resolved or the user picks one.
+/// otherwise `accountDefaultProjectID` — the user's Vikunja default project,
+/// cached on device by `AppContainer` and refreshed once per app launch, so
+/// opening this sheet never hits the network for it. `canSave` stays false
+/// until a project is resolved or the user picks one.
 @MainActor
 @Observable
 public final class QuickAddTaskViewModel {
     public var title: String = ""
     public var selectedProjectID: Int?
     private let preselectedProjectID: Int?
+    private let accountDefaultProjectID: Int?
     public var priority: VikunjaTask.Priority = .unset
     public private(set) var projects: [Project] = []
     public private(set) var loadState: ScreenLoadState = .idle
@@ -53,24 +55,26 @@ public final class QuickAddTaskViewModel {
 
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
-    private let userRepository: UserRepositoryProtocol
     private let toastPresenter: ToastPresenting
 
-    /// - Parameter preselectedProjectID: the project to start on when the
-    ///   sheet was opened from a screen scoped to one project; `nil` lets
-    ///   `load()` fall back to the account's default project.
+    /// - Parameters:
+    ///   - preselectedProjectID: the project to start on when the sheet was
+    ///     opened from a screen scoped to one project.
+    ///   - accountDefaultProjectID: the account's cached Vikunja default
+    ///     project, used when `preselectedProjectID` is `nil`. Both `nil`
+    ///     leaves the sheet with no project until the user picks one.
     public init(
         preselectedProjectID: Int? = nil,
+        accountDefaultProjectID: Int? = nil,
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
-        userRepository: UserRepositoryProtocol,
         toastPresenter: ToastPresenting
     ) {
         self.preselectedProjectID = preselectedProjectID
+        self.accountDefaultProjectID = accountDefaultProjectID
         self.selectedProjectID = preselectedProjectID
         self.taskRepository = taskRepository
         self.projectRepository = projectRepository
-        self.userRepository = userRepository
         self.toastPresenter = toastPresenter
     }
 
@@ -82,8 +86,14 @@ public final class QuickAddTaskViewModel {
             projects = try await projectRepository.fetchProjects()
                 .filter { !$0.isArchived }
                 .sorted { $0.position < $1.position }
-            if preselectedProjectID == nil {
-                await resolveDefaultProject()
+            // Fall back to the account default only if nothing was
+            // preselected and that default is one of the projects just
+            // loaded — a stale/inaccessible cached id is ignored rather than
+            // left showing as a broken selection.
+            if preselectedProjectID == nil,
+               let accountDefaultProjectID,
+               projects.contains(where: { $0.id == accountDefaultProjectID }) {
+                selectedProjectID = accountDefaultProjectID
             }
             loadState = .loaded
         } catch let error as VikunjaError {
@@ -91,19 +101,6 @@ public final class QuickAddTaskViewModel {
         } catch {
             loadState = .failure(error.localizedDescription)
         }
-    }
-
-    /// Preselects the user's account default project (`User.defaultProjectID`),
-    /// but only if it's one of the projects just loaded — a stale or
-    /// inaccessible default is ignored rather than left showing as a broken
-    /// selection. A failed lookup is swallowed: the sheet just opens with no
-    /// project chosen.
-    private func resolveDefaultProject() async {
-        guard
-            let defaultID = try? await userRepository.fetchCurrentUser().defaultProjectID,
-            projects.contains(where: { $0.id == defaultID })
-        else { return }
-        selectedProjectID = defaultID
     }
 
     /// Creates the task from the current form state. Leaves `title`/

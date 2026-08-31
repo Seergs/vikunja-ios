@@ -73,16 +73,6 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     }
 }
 
-final class FakeUserRepository: UserRepositoryProtocol, @unchecked Sendable {
-    var user = User(id: 1, username: "qa")
-    var fetchError: VikunjaError?
-
-    func fetchCurrentUser() async throws -> User {
-        if let fetchError { throw fetchError }
-        return user
-    }
-}
-
 @MainActor
 final class FakeQuickAddContext: QuickAddContextTracking {
     private(set) var scopes: [Int] = []

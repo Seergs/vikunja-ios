@@ -28,6 +28,10 @@ final class AppContainer {
     /// Tracks which project (if any) the visible screen represents, so the
     /// tab-bar quick-add sheet defaults to it — see `QuickAddContext`.
     let quickAddContext = QuickAddContext()
+    /// On-device cache of each account's Vikunja default project, refreshed
+    /// once per launch by `refreshDefaultProject(account:)` and read
+    /// synchronously by `makeQuickAddTaskViewModel`.
+    let defaultProjectStore = DefaultProjectStore()
 
     init(
         accountStore: AccountStoreProtocol = KeychainAccountStore(
@@ -62,6 +66,21 @@ final class AppContainer {
         )
         _ = await loader.loadState()
         WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    /// Refreshes the cached Vikunja default project for `account` from
+    /// `GET /api/v1/user` and writes it to `defaultProjectStore`. Called on
+    /// launch and on account switch (see `RootView`) — the only place that
+    /// request is made, so quick-add reads the cache instead of hitting the
+    /// network every time its sheet opens. A failed fetch leaves the previous
+    /// cached value untouched.
+    func refreshDefaultProject(account: InstanceAccount) async {
+        let accountStore = self.accountStore
+        let userRepository = clientFactory.makeUserRepository(baseURL: account.baseURL) {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        guard let user = try? await userRepository.fetchCurrentUser() else { return }
+        defaultProjectStore.setProjectID(user.defaultProjectID, forAccountID: account.id)
     }
 
     func makeInstanceSetupViewModel() -> InstanceSetupViewModel {
@@ -168,9 +187,9 @@ final class AppContainer {
         }
         return QuickAddTaskViewModel(
             preselectedProjectID: preselectedProjectID,
+            accountDefaultProjectID: defaultProjectStore.projectID(forAccountID: account.id),
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            userRepository: clientFactory.makeUserRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             toastPresenter: toastCenter
         )
     }

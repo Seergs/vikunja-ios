@@ -31,6 +31,7 @@ struct RootView: View {
                         viewModel: container.makeInstanceSetupViewModel(),
                         onConnectionSaved: { account in
                             connectedAccount = account
+                            Task { await container.refreshDefaultProject(account: account) }
                         }
                     )
                 }
@@ -64,5 +65,10 @@ struct RootView: View {
     /// `MainTabView.onAccountsChanged` wraps this in its own `Task`.
     private func refreshActiveAccount() async {
         connectedAccount = try? await container.accountStore.activeAccount()
+        // Refresh the cached default project once per launch and on every
+        // account switch — quick-add reads the cache, never the network.
+        if let connectedAccount {
+            Task { await container.refreshDefaultProject(account: connectedAccount) }
+        }
     }
 }
