@@ -376,9 +376,24 @@ by the compiler, not just convention:
     `ProjectRepositoryProtocol`) + a `ToastPresenting`, all via constructor
     injection.
   - **Quick-add** (`QuickAddTaskViewModel`): title + project + priority only
-    (matching the mockup's `AddTaskSheet`). Opened from the tab bar FAB with
-    no project context, so `selectedProjectID` starts `nil` and `canSave`
-    stays false until one is picked. Creates via `TaskRepositoryProtocol.create`
+    (matching the mockup's `AddTaskSheet`). Presented globally from the tab
+    bar FAB, so it picks its starting project from context: a
+    `preselectedProjectID` (`MainTabView`'s `QuickAddOverlay` snapshots
+    `QuickAddContext.preselectedProjectID` in the FAB tap handler — a stack of
+    the project ids of the project-scoped screens currently visible; a project
+    overview (`ProjectOverviewViewModel`) or a task detail
+    (`TaskDetailViewModel`) pushes its project id while on screen via
+    `markVisible()`/`markHidden()`, see `QuickAddContextTracking` in
+    `VikunjaCore`. `QuickAddOverlay` is split out of `MainTabView` and the
+    snapshot taken outside `body` on purpose — the FAB/sheet `@State` and any
+    `@Observable` context read must not re-evaluate `MainTabView`'s body,
+    which would rebuild every tab's `NavigationStack` and view models and
+    blank whatever screen is behind the sheet), else the account's default
+    project resolved in `load()` via
+    `UserRepositoryProtocol.fetchCurrentUser().defaultProjectID` (only used
+    if that project is one of the loaded, non-archived projects). Takes a
+    `UserRepositoryProtocol` alongside `TaskRepositoryProtocol`/
+    `ProjectRepositoryProtocol`. Creates via `TaskRepositoryProtocol.create`
     and shows a success toast.
 
 Features should only ever import `VikunjaCore`/`VikunjaNavigation`/
@@ -464,12 +479,22 @@ the re-read comes back `nil` and `RootView` falls back to onboarding.
 the default look for `TabView` on iOS 26+ — with one `Tab` per `AppTab` case
 (`.home`, `.projects`, `.settings`, plus `.search` using iOS 26's dedicated
 `.search` tab role, which renders as a separated glass pill) and a
-`QuickAddButton` — a bare circular FAB matching the design mockup — placed via
+`QuickAddOverlay` (owning a `QuickAddButton` — a bare circular FAB matching the
+design mockup — and its `.sheet`) placed via
 a plain `.overlay(alignment: .bottomTrailing)`, not `.tabViewBottomAccessory`:
 that API always paints a system glass background behind its content and
 centers it over the tab bar, which can't be suppressed or anchored to a
-corner. The FAB presents `Tasks`' `QuickAddSheetView` as a `.sheet`
-(`container.makeQuickAddTaskViewModel(account:)`). `AppTab` and `MainTabView`
+corner. `QuickAddOverlay` is a child view specifically so the FAB/sheet
+`@State` never re-evaluates `MainTabView`'s body — doing so rebuilds every
+tab's `NavigationStack` + view models and blanks the screen behind the sheet.
+The FAB presents `Tasks`' `QuickAddSheetView` as a `.sheet`
+(`container.makeQuickAddTaskViewModel(preselectedProjectID:account:)`); it
+stays global rather than moving per-screen — the sheet defaults its project
+from
+`AppContainer.quickAddContext` (a `QuickAddContext`, conforming to
+`VikunjaCore`'s `QuickAddContextTracking`): a visible project-scoped screen (a
+project overview or a task detail) claims it, everything else leaves it `nil`
+so the sheet falls back to the account's default project. `AppTab` and `MainTabView`
 live in the app target, not a package,
 because the `Tab(role:)` / `tabBarMinimizeBehavior` APIs require the iOS 26
 SDK, while packages floor at `.iOS(.v17)`.

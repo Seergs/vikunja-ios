@@ -273,10 +273,7 @@ TabView(selection: $selection) {
 }
 .tabBarMinimizeBehavior(.onScrollDown)
 .overlay(alignment: .bottomTrailing) {           // bare circular FAB, not a system accessory
-    QuickAddButton { isShowingQuickAdd = true }
-}
-.sheet(isPresented: $isShowingQuickAdd) {
-    QuickAddSheetView(viewModel: container.makeQuickAddTaskViewModel(account: account))
+    QuickAddOverlay(container: container, account: account)   // owns the FAB + its sheet's @State
 }
 ```
 
@@ -286,7 +283,27 @@ the tab bar — neither suppressible nor corner-anchorable — so it can't match
 the mockup's bare floating button. It presents `Features/Tasks`'
 `QuickAddSheetView`.
 
-`AppTab`, `MainTabView`, and `QuickAddButton` live in the app target, not a
+The FAB stays global (one instance on the tab shell) but the sheet defaults
+its project from context. `AppContainer` owns a `QuickAddContext` (an
+`@Observable` conforming to `VikunjaCore`'s `QuickAddContextTracking`, injected
+the same way `ToastCenter`/`ToastPresenting` is): a visible project-scoped
+screen — a `ProjectOverview` or a `TaskDetail` — pushes its own project id
+there via `markVisible()`/`markHidden()` (`onAppear`/`onDisappear`), and every
+other screen leaves it untouched. It's a stack, not one value, so a task
+detail pushed onto its project's overview (two active scopes for the same
+project, enter/exit events in either order) stays correct;
+`preselectedProjectID` is the innermost still-active scope. `MainTabView`'s
+`QuickAddOverlay` — a child view split out so the FAB/sheet `@State` never
+re-evaluates `MainTabView`'s body (which would rebuild every tab's
+`NavigationStack` and view models and blank the screen behind the sheet) —
+snapshots that id in the tap handler (not in `body`, so the `@Observable`
+read doesn't rebuild the sheet's view model when a scope enters/leaves the
+stack) and hands it to `makeQuickAddTaskViewModel`; when it's
+`nil`, `QuickAddTaskViewModel.load()` falls back to the account's default
+project (`UserRepositoryProtocol.fetchCurrentUser().defaultProjectID`, read
+from `settings.default_project_id` on `GET /api/v1/user`).
+
+`AppTab`, `MainTabView`, `QuickAddOverlay`, and `QuickAddButton` live in the app target, not a
 package, because `Tab(role:)` and `.tabBarMinimizeBehavior` are iOS-26-only
 APIs, while every package floors at `.iOS(.v17)` for portability (see
 `CLAUDE.md` § Conventions). `AppTab` is also the one enum allowed to know about
