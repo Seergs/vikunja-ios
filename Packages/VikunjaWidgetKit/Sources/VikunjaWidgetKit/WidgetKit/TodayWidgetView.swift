@@ -207,6 +207,7 @@ private struct TodayWidgetRow: View {
 // MARK: - Shared pieces
 
 private struct TodayWidgetHeader: View {
+    @Environment(\.widgetFamily) private var family
     let content: TodayWidgetContent
 
     var body: some View {
@@ -224,7 +225,22 @@ private struct TodayWidgetHeader: View {
                     .foregroundStyle(VikunjaColor.textTertiary)
                     .accessibilityLabel("Showing saved data")
             }
+            // `Link` is inert in `.systemSmall` (the whole widget is one tap
+            // target there, handled by `.widgetURL`), so only offer the
+            // add button where it actually works.
+            if family != .systemSmall, let url = quickAddURL {
+                Link(destination: url) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(VikunjaColor.brandPrimary)
+                }
+                .accessibilityLabel("Add task")
+            }
         }
+    }
+
+    private var quickAddURL: URL? {
+        URL(string: "\(VikunjaWidgetConfig.urlScheme)://quick-add")
     }
 }
 
