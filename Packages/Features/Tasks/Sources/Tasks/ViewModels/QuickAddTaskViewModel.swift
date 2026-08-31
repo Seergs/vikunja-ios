@@ -2,15 +2,19 @@ import Observation
 import VikunjaCore
 
 /// Drives the quick-add sheet: title + project + priority only, matching the
-/// design mockup's `AddTaskSheet` (no due date/labels/assignee yet). Opened
-/// from the tab bar's floating action button rather than from within a
-/// project, so there's no project to default to — `selectedProjectID` starts
-/// `nil` and `canSave` stays false until the user picks one explicitly.
+/// design mockup's `AddTaskSheet` (no due date/labels/assignee yet). The sheet
+/// is presented globally from the tab bar's floating action button, so it
+/// picks its starting project from context: `preselectedProjectID` when the
+/// visible screen is a specific project (see `QuickAddContextTracking`),
+/// otherwise the user's account default project resolved in `load()`
+/// (`User.defaultProjectID`). `canSave` stays false until a project is
+/// resolved or the user picks one.
 @MainActor
 @Observable
 public final class QuickAddTaskViewModel {
     public var title: String = ""
     public var selectedProjectID: Int?
+    private let preselectedProjectID: Int?
     public var priority: VikunjaTask.Priority = .unset
     public private(set) var projects: [Project] = []
     public private(set) var loadState: ScreenLoadState = .idle
@@ -49,15 +53,24 @@ public final class QuickAddTaskViewModel {
 
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
+    private let userRepository: UserRepositoryProtocol
     private let toastPresenter: ToastPresenting
 
+    /// - Parameter preselectedProjectID: the project to start on when the
+    ///   sheet was opened from a screen scoped to one project; `nil` lets
+    ///   `load()` fall back to the account's default project.
     public init(
+        preselectedProjectID: Int? = nil,
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
+        userRepository: UserRepositoryProtocol,
         toastPresenter: ToastPresenting
     ) {
+        self.preselectedProjectID = preselectedProjectID
+        self.selectedProjectID = preselectedProjectID
         self.taskRepository = taskRepository
         self.projectRepository = projectRepository
+        self.userRepository = userRepository
         self.toastPresenter = toastPresenter
     }
 
@@ -69,12 +82,28 @@ public final class QuickAddTaskViewModel {
             projects = try await projectRepository.fetchProjects()
                 .filter { !$0.isArchived }
                 .sorted { $0.position < $1.position }
+            if preselectedProjectID == nil {
+                await resolveDefaultProject()
+            }
             loadState = .loaded
         } catch let error as VikunjaError {
             loadState = .failure(error.displayMessage)
         } catch {
             loadState = .failure(error.localizedDescription)
         }
+    }
+
+    /// Preselects the user's account default project (`User.defaultProjectID`),
+    /// but only if it's one of the projects just loaded — a stale or
+    /// inaccessible default is ignored rather than left showing as a broken
+    /// selection. A failed lookup is swallowed: the sheet just opens with no
+    /// project chosen.
+    private func resolveDefaultProject() async {
+        guard
+            let defaultID = try? await userRepository.fetchCurrentUser().defaultProjectID,
+            projects.contains(where: { $0.id == defaultID })
+        else { return }
+        selectedProjectID = defaultID
     }
 
     /// Creates the task from the current form state. Leaves `title`/

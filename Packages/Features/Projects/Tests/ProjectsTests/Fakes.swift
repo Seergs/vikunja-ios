@@ -83,3 +83,15 @@ final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
         shownMessages.append((message, style))
     }
 }
+
+@MainActor
+final class FakeQuickAddContext: QuickAddContextTracking {
+    private(set) var scopes: [Int] = []
+    var preselectedProjectID: Int? { scopes.last }
+
+    func enterProjectScope(_ projectID: Int) { scopes.append(projectID) }
+
+    func exitProjectScope(_ projectID: Int) {
+        if let index = scopes.lastIndex(of: projectID) { scopes.remove(at: index) }
+    }
+}

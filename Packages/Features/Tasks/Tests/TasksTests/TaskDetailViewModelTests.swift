@@ -16,6 +16,28 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func markVisibleSelectsTheTasksProjectForQuickAddAndMarkHiddenReleasesIt() {
+        let context = FakeQuickAddContext()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 4),
+            project: Project(id: 4, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+            quickAddContext: context
+        )
+
+        viewModel.markVisible()
+        #expect(context.preselectedProjectID == 4)
+
+        viewModel.markHidden()
+        #expect(context.preselectedProjectID == nil)
+    }
+
+    @Test
     func loadReplacesTheTaskWithTheRepositorysFresherCopy() async {
         let repository = FakeTaskRepository()
         repository.tasks = [

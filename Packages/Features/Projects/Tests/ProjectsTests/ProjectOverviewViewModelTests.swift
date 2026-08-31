@@ -5,6 +5,43 @@ import VikunjaCore
 @MainActor
 struct ProjectOverviewViewModelTests {
     @Test
+    func markVisibleClaimsTheQuickAddContextAndMarkHiddenReleasesIt() {
+        let context = FakeQuickAddContext()
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 7, title: "Work"),
+            repository: FakeTaskRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+            quickAddContext: context
+        )
+
+        viewModel.markVisible()
+        #expect(context.preselectedProjectID == 7)
+
+        viewModel.markHidden()
+        #expect(context.preselectedProjectID == nil)
+    }
+
+    @Test
+    func markHiddenLeavesAnOuterProjectScopeSelected() {
+        let context = FakeQuickAddContext()
+        context.enterProjectScope(99)
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 7, title: "Work"),
+            repository: FakeTaskRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+            quickAddContext: context
+        )
+
+        viewModel.markVisible()
+        #expect(context.preselectedProjectID == 7)
+
+        viewModel.markHidden()
+        #expect(context.preselectedProjectID == 99)
+    }
+
+    @Test
     func loadFetchesTheProjectsTasks() async {
         let repository = FakeTaskRepository()
         repository.tasks = [

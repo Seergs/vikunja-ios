@@ -73,6 +73,28 @@ final class FakeProjectRepository: ProjectRepositoryProtocol, @unchecked Sendabl
     }
 }
 
+final class FakeUserRepository: UserRepositoryProtocol, @unchecked Sendable {
+    var user = User(id: 1, username: "qa")
+    var fetchError: VikunjaError?
+
+    func fetchCurrentUser() async throws -> User {
+        if let fetchError { throw fetchError }
+        return user
+    }
+}
+
+@MainActor
+final class FakeQuickAddContext: QuickAddContextTracking {
+    private(set) var scopes: [Int] = []
+    var preselectedProjectID: Int? { scopes.last }
+
+    func enterProjectScope(_ projectID: Int) { scopes.append(projectID) }
+
+    func exitProjectScope(_ projectID: Int) {
+        if let index = scopes.lastIndex(of: projectID) { scopes.remove(at: index) }
+    }
+}
+
 final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
     var labels: [Label] = []
     var addedLabelIDs: [(labelID: Int, taskID: Int)] = []

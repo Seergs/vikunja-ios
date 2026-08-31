@@ -38,6 +38,8 @@ struct ProjectOverviewView: View {
                 }
             }
             .task { await viewModel.load() }
+            .onAppear { viewModel.markVisible() }
+            .onDisappear { viewModel.markHidden() }
             .confirmationDialog(
                 "This permanently deletes the task.",
                 isPresented: Binding(

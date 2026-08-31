@@ -9,6 +9,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: FakeProjectRepository(),
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -27,6 +28,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -43,6 +45,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -56,6 +59,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: FakeProjectRepository(),
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -77,6 +81,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: taskRepository,
             projectRepository: FakeProjectRepository(),
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         viewModel.title = "  Buy milk  "
@@ -99,6 +104,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: taskRepository,
             projectRepository: FakeProjectRepository(),
+            userRepository: FakeUserRepository(),
             toastPresenter: toastPresenter
         )
         viewModel.title = "Buy milk"
@@ -117,6 +123,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: taskRepository,
             projectRepository: FakeProjectRepository(),
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         viewModel.title = "Buy milk"
@@ -138,6 +145,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
 
@@ -155,6 +163,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FakeTaskRepository(),
             projectRepository: projectRepository,
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         await viewModel.load()
@@ -171,6 +180,7 @@ struct QuickAddTaskViewModelTests {
         let viewModel = QuickAddTaskViewModel(
             taskRepository: FailingTaskRepository(),
             projectRepository: FakeProjectRepository(),
+            userRepository: FakeUserRepository(),
             toastPresenter: FakeToastPresenter()
         )
         viewModel.title = "Buy milk"
@@ -180,6 +190,74 @@ struct QuickAddTaskViewModelTests {
 
         #expect(created == nil)
         #expect(viewModel.saveErrorMessage == "Couldn't reach that server. Check the address and your connection.")
+    }
+
+    @Test
+    func startsOnThePreselectedProjectWhenOpenedFromAProjectScreen() {
+        let viewModel = QuickAddTaskViewModel(
+            preselectedProjectID: 5,
+            taskRepository: FakeTaskRepository(),
+            projectRepository: FakeProjectRepository(),
+            userRepository: FakeUserRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        #expect(viewModel.selectedProjectID == 5)
+    }
+
+    @Test
+    func loadFallsBackToTheAccountDefaultProjectWhenNothingWasPreselected() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [Project(id: 1, title: "Work"), Project(id: 3, title: "Inbox")]
+        let userRepository = FakeUserRepository()
+        userRepository.user = User(id: 1, username: "qa", defaultProjectID: 3)
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            userRepository: userRepository,
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.load()
+
+        #expect(viewModel.selectedProjectID == 3)
+    }
+
+    @Test
+    func loadIgnoresADefaultProjectThatIsNotAmongTheLoadedProjects() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [Project(id: 1, title: "Work")]
+        let userRepository = FakeUserRepository()
+        userRepository.user = User(id: 1, username: "qa", defaultProjectID: 99)
+        let viewModel = QuickAddTaskViewModel(
+            taskRepository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            userRepository: userRepository,
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.load()
+
+        #expect(viewModel.selectedProjectID == nil)
+    }
+
+    @Test
+    func loadKeepsAnExplicitPreselectionOverTheAccountDefault() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [Project(id: 5, title: "Work"), Project(id: 3, title: "Inbox")]
+        let userRepository = FakeUserRepository()
+        userRepository.user = User(id: 1, username: "qa", defaultProjectID: 3)
+        let viewModel = QuickAddTaskViewModel(
+            preselectedProjectID: 5,
+            taskRepository: FakeTaskRepository(),
+            projectRepository: projectRepository,
+            userRepository: userRepository,
+            toastPresenter: FakeToastPresenter()
+        )
+
+        await viewModel.load()
+
+        #expect(viewModel.selectedProjectID == 5)
     }
 }
 

@@ -29,19 +29,36 @@ public final class ProjectOverviewViewModel {
     private let repository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
+    /// Set by `AppContainer` so this screen can tell the globally-presented
+    /// quick-add sheet which project to default to while it's on screen.
+    /// Optional so tests and any caller that doesn't care can skip it.
+    private let quickAddContext: QuickAddContextTracking?
 
     public init(
         project: Project,
         subprojects: [ProjectNode] = [],
         repository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
+        quickAddContext: QuickAddContextTracking? = nil
     ) {
         self.project = project
         self.subprojects = subprojects
         self.repository = repository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
+        self.quickAddContext = quickAddContext
+    }
+
+    /// Call from the view's `onAppear`/`onDisappear`: while this project's
+    /// overview is the visible screen, a quick-add from the tab-bar FAB
+    /// defaults to this project instead of the account default.
+    public func markVisible() {
+        quickAddContext?.enterProjectScope(project.id)
+    }
+
+    public func markHidden() {
+        quickAddContext?.exitProjectScope(project.id)
     }
 
     /// Kept as a nested name for call sites that already spell it

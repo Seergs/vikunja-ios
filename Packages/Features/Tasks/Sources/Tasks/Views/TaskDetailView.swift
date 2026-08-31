@@ -102,6 +102,8 @@ public struct TaskDetailView: View {
         #endif
         .task { await viewModel.load() }
         .task { await viewModel.loadComments() }
+        .onAppear { viewModel.markVisible() }
+        .onDisappear { viewModel.markHidden() }
         .refreshable {
             await viewModel.load()
             await viewModel.loadComments()

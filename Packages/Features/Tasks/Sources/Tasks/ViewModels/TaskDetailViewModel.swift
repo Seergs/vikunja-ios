@@ -38,6 +38,10 @@ public final class TaskDetailViewModel {
     private let commentRepository: TaskCommentRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
+    /// Set by `AppContainer` so a quick-add opened while this task is on
+    /// screen defaults to the task's project. Optional so tests and any
+    /// caller that doesn't care can skip it.
+    private let quickAddContext: QuickAddContextTracking?
 
     public init(
         task: VikunjaTask,
@@ -47,7 +51,8 @@ public final class TaskDetailViewModel {
         relationRepository: TaskRelationRepositoryProtocol,
         commentRepository: TaskCommentRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
+        quickAddContext: QuickAddContextTracking? = nil
     ) {
         self.task = task
         self.project = project
@@ -57,6 +62,18 @@ public final class TaskDetailViewModel {
         self.commentRepository = commentRepository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
+        self.quickAddContext = quickAddContext
+    }
+
+    /// Call from the view's `onAppear`/`onDisappear`: while this task is the
+    /// visible screen, a quick-add from the tab-bar FAB defaults to the
+    /// task's project instead of the account default.
+    public func markVisible() {
+        quickAddContext?.enterProjectScope(project.id)
+    }
+
+    public func markHidden() {
+        quickAddContext?.exitProjectScope(project.id)
     }
 
     public func load() async {
@@ -317,7 +334,8 @@ public final class TaskDetailViewModel {
             relationRepository: relationRepository,
             commentRepository: commentRepository,
             projectRepository: projectRepository,
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
+            quickAddContext: quickAddContext
         )
     }
 
