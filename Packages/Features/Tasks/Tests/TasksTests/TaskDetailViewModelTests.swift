@@ -9,7 +9,16 @@ struct TaskDetailViewModelTests {
     func `starts with the task passed in at construction`() {
         let repository = FakeTaskRepository()
         let task = VikunjaTask(id: 1, title: "Write report", projectID: 1)
-        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), commentRepository: FakeTaskCommentRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = TaskDetailViewModel(
+            task: task,
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
 
         #expect(viewModel.task == task)
         #expect(viewModel.loadState == .idle)
@@ -112,7 +121,16 @@ struct TaskDetailViewModelTests {
             blocks: [TaskRelation(id: 4, title: "Publish", isDone: false, projectID: 1)],
             otherRelations: [.related: [TaskRelation(id: 5, title: "Related memo", isDone: false, projectID: 1)]],
         )
-        let viewModel = TaskDetailViewModel(task: task, project: Project(id: 1, title: "Work"), repository: repository, labelRepository: FakeLabelRepository(), relationRepository: FakeTaskRelationRepository(), commentRepository: FakeTaskCommentRepository(), projectRepository: FakeProjectRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = TaskDetailViewModel(
+            task: task,
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
 
         await viewModel.toggleDone()
 
