@@ -210,6 +210,24 @@ struct URLSessionAPIClientTests {
     }
 
     @Test
+    func fetchCurrentUserGETsTheUserAndReadsTheNestedDefaultProject() async throws {
+        let body = #"""
+        {"id": 3, "username": "qa-user", "name": "QA User",
+         "settings": {"default_project_id": 6, "week_start": 0}}
+        """#
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: body)
+        let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)
+        let repository = VikunjaUserRepository(client: client)
+
+        let user = try await repository.fetchCurrentUser()
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "GET")
+        #expect(request.url?.path == "/api/v1/user")
+        #expect(user.defaultProjectID == 6)
+    }
+
+    @Test
     func deleteProjectDELETEsTheProjectByID() async throws {
         let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
         let client = URLSessionAPIClient(baseURL: URL(string: "https://vikunja.example.com")!, session: session)

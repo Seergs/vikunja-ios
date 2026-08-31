@@ -126,4 +126,8 @@ enum VikunjaEndpoints {
     static func deleteComment(taskID: Int, commentID: Int) -> Endpoint {
         Endpoint(path: "/api/v1/tasks/\(taskID)/comments/\(commentID)", method: .delete)
     }
+
+    static func currentUser() -> Endpoint {
+        Endpoint(path: "/api/v1/user")
+    }
 }

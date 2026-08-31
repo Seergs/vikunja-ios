@@ -56,4 +56,13 @@ public struct VikunjaInstanceClientFactory: InstanceClientFactoryProtocol {
             client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
         )
     }
+
+    public func makeUserRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?
+    ) -> UserRepositoryProtocol {
+        VikunjaUserRepository(
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider)
+        )
+    }
 }

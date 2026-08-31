@@ -123,6 +123,10 @@ struct FakeClientFactory: InstanceClientFactoryProtocol {
     func makeTaskCommentRepository(
         baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
     ) -> TaskCommentRepositoryProtocol { fatalError("unused") }
+
+    func makeUserRepository(
+        baseURL: URL, tokenProvider: @escaping @Sendable () async -> String?
+    ) -> UserRepositoryProtocol { fatalError("unused") }
 }
 
 enum TestSupport {
