@@ -26,6 +26,7 @@ You can find this app in the App Store
 - Siri Shortcuts
 - Daily Briefing*
 - AI Suggestions and Analysis (Opt-In, **NOT FORCED!!**)*
+- Offline (Planned)
 
 *Features marked with \* require the [Companion Service](#companion-service)*
 
