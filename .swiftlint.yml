@@ -19,6 +19,8 @@ disabled_rules:
   - vertical_parameter_alignment_on_call
   - todo                    # `// TODO:` / `// FIXME:` shouldn't fail a build - very commonly off
   - modifier_order          # SwiftFormat's modifierOrder owns this and handles `nonisolated(unsafe)`
+  - file_length             # SwiftUI view files and swift-testing suites run long by nature
+  - type_body_length        # same; function_body_length below still catches the real smell
 
 # --- opt-in rules almost every serious project turns on -------------------
 opt_in_rules:
@@ -75,11 +77,6 @@ type_name:
 function_body_length:
   warning: 60
   error: 120
-
-file_length:
-  warning: 500
-  error: 1000
-  ignore_comment_only_lines: true
 
 cyclomatic_complexity:
   ignores_case_statements: true
