@@ -18,6 +18,7 @@ disabled_rules:
   - opening_brace
   - vertical_parameter_alignment_on_call
   - todo                    # `// TODO:` / `// FIXME:` shouldn't fail a build - very commonly off
+  - modifier_order          # SwiftFormat's modifierOrder owns this and handles `nonisolated(unsafe)`
 
 # --- opt-in rules almost every serious project turns on -------------------
 opt_in_rules:
@@ -39,7 +40,6 @@ opt_in_rules:
   - collection_alignment
   - literal_expression_end_indentation
   - operator_usage_whitespace
-  - modifier_order
   - prefer_self_type_over_type_of_self
   - redundant_type_annotation
   - fatal_error_message
