@@ -1061,4 +1061,92 @@ struct TaskDetailViewModelTests {
         #expect(succeeded == false)
         #expect(toastPresenter.shownMessages.last?.style == .error)
     }
+
+    @Test
+    func isAssistantAvailableIsFalseWithoutAnAssistant() {
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter()
+        )
+
+        #expect(viewModel.isAssistantAvailable == false)
+    }
+
+    @Test
+    func reviewWithAssistantStoresTheReviewForTheCurrentTask() async {
+        let assistant = FakeTaskAssistant()
+        assistant.result = "Add a due date and name the deliverable."
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+            assistant: assistant
+        )
+
+        await viewModel.reviewWithAssistant()
+
+        #expect(viewModel.assistantReview == "Add a due date and name the deliverable.")
+        #expect(viewModel.isReviewing == false)
+        #expect(assistant.reviewedTitles == ["Write report"])
+    }
+
+    @Test
+    func unavailableAssistantExposesAReasonAndCannotRun() async {
+        let assistant = FakeTaskAssistant()
+        assistant.availability = .unavailable(reason: "Turn on Apple Intelligence in Settings to use this.")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+            assistant: assistant
+        )
+
+        #expect(viewModel.hasAssistant == true)
+        #expect(viewModel.isAssistantAvailable == false)
+        #expect(viewModel.assistantUnavailableReason == "Turn on Apple Intelligence in Settings to use this.")
+
+        await viewModel.reviewWithAssistant()
+
+        #expect(viewModel.assistantReview == nil)
+        #expect(assistant.reviewedTitles.isEmpty)
+    }
+
+    @Test
+    func reviewWithAssistantShowsAnErrorToastOnFailure() async {
+        let assistant = FakeTaskAssistant()
+        assistant.error = TaskAssistantError.unavailable
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter,
+            assistant: assistant
+        )
+
+        await viewModel.reviewWithAssistant()
+
+        #expect(viewModel.assistantReview == nil)
+        #expect(toastPresenter.shownMessages.last?.style == .error)
+    }
 }

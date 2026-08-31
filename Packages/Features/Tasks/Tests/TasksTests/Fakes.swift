@@ -173,6 +173,19 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
     }
 }
 
+final class FakeTaskAssistant: TaskAssistantProtocol, @unchecked Sendable {
+    var availability: TaskAssistantAvailability = .available
+    var result = "Looks actionable. Consider adding a due date."
+    var error: (any Error)?
+    private(set) var reviewedTitles: [String] = []
+
+    func reviewTask(title: String, description: String) async throws -> String {
+        reviewedTitles.append(title)
+        if let error { throw error }
+        return result
+    }
+}
+
 final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
     private(set) var shownMessages: [(message: String, style: ToastStyle)] = []
 

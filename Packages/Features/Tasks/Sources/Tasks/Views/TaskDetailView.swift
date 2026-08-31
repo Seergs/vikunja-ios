@@ -379,6 +379,18 @@ public struct TaskDetailView: View {
             }
         }
 
+        if viewModel.hasAssistant {
+            SectionBlock(title: "Assistant") {
+                AssistantReviewCard(
+                    isReviewing: viewModel.isReviewing,
+                    review: viewModel.assistantReview,
+                    unavailableReason: viewModel.assistantUnavailableReason
+                ) {
+                    Task { await viewModel.reviewWithAssistant() }
+                }
+            }
+        }
+
         SectionBlock(title: "Comments", count: viewModel.comments.isEmpty ? nil : "\(viewModel.comments.count)") {
             CommentsSection(
                 comments: viewModel.comments,
@@ -871,6 +883,67 @@ private struct AddRelationButton: View {
         }
         .buttonStyle(.plain)
         .textCase(nil)
+    }
+}
+
+/// The on-device assistant's review of the task: a "Review this task" button
+/// that, once tapped, is replaced by the model's plain-text critique with a
+/// small "Review again" affordance. Everything is generated on device.
+private struct AssistantReviewCard: View {
+    let isReviewing: Bool
+    let review: String?
+    var unavailableReason: String?
+    let onReview: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
+            if let unavailableReason {
+                HStack(spacing: VikunjaSpacing.sm) {
+                    Image(systemName: "sparkles")
+                        .foregroundStyle(VikunjaColor.textTertiary)
+                    Text(unavailableReason)
+                        .font(VikunjaFont.subheadline)
+                        .foregroundStyle(VikunjaColor.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else if let review, !isReviewing {
+                Text(review)
+                    .font(VikunjaFont.subheadline)
+                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button(action: onReview) {
+                    Label("Review again", systemImage: "sparkles")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(VikunjaColor.brandPrimary)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Button(action: onReview) {
+                    HStack(spacing: VikunjaSpacing.sm) {
+                        if isReviewing {
+                            ProgressView()
+                            Text("Reviewing…")
+                        } else {
+                            Image(systemName: "sparkles")
+                            Text("Review this task")
+                        }
+                    }
+                    .font(.system(size: 14.5, weight: .bold))
+                    .foregroundStyle(isReviewing ? VikunjaColor.textTertiary : .white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, VikunjaSpacing.sm)
+                    .background(
+                        (isReviewing ? VikunjaColor.Surface.field : VikunjaColor.brandPrimary),
+                        in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous)
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(isReviewing)
+            }
+        }
+        .padding(VikunjaSpacing.md - VikunjaSpacing.xxs)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
     }
 }
 

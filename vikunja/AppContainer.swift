@@ -145,7 +145,8 @@ final class AppContainer {
             relationRepository: relationRepository,
             commentRepository: commentRepository,
             projectRepository: projectRepository,
-            toastPresenter: toastCenter
+            toastPresenter: toastCenter,
+            assistant: FoundationModelsTaskAssistant()
         )
     }
 

@@ -30,7 +30,25 @@ public final class TaskDetailViewModel {
     public private(set) var comments: [TaskComment] = []
     public private(set) var commentsLoadState: ScreenLoadState = .idle
 
+    /// The on-device assistant's most recent review of this task, or `nil`
+    /// before it has been asked. Cleared each time a new review starts.
+    public private(set) var assistantReview: String?
+    public private(set) var isReviewing = false
+
     public var isLoading: Bool { loadState == .loading }
+
+    /// Whether an assistant was injected at all — the "Assistant" section is
+    /// hidden entirely when this is `false` (e.g. in tests, or a build
+    /// without one wired up).
+    public var hasAssistant: Bool { assistant != nil }
+
+    /// Whether on-device generation can actually run right now.
+    public var isAssistantAvailable: Bool { assistant?.availability.isAvailable ?? false }
+
+    /// A short sentence explaining why the assistant can't run, shown in place
+    /// of the "Review" button when it's unavailable. `nil` when it's available
+    /// or absent.
+    public var assistantUnavailableReason: String? { assistant?.availability.unavailableReason }
 
     private let repository: TaskRepositoryProtocol
     private let labelRepository: LabelRepositoryProtocol
@@ -38,6 +56,10 @@ public final class TaskDetailViewModel {
     private let commentRepository: TaskCommentRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
+    /// Optional: a screen built without one simply hides the assistant UI.
+    /// The concrete implementation is wired in by `AppContainer` (it needs
+    /// `FoundationModels`, which Features can't import).
+    private let assistant: TaskAssistantProtocol?
 
     public init(
         task: VikunjaTask,
@@ -47,7 +69,8 @@ public final class TaskDetailViewModel {
         relationRepository: TaskRelationRepositoryProtocol,
         commentRepository: TaskCommentRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
-        toastPresenter: ToastPresenting
+        toastPresenter: ToastPresenting,
+        assistant: TaskAssistantProtocol? = nil
     ) {
         self.task = task
         self.project = project
@@ -57,6 +80,28 @@ public final class TaskDetailViewModel {
         self.commentRepository = commentRepository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
+        self.assistant = assistant
+    }
+
+    /// Asks the on-device assistant to review the current task and stores the
+    /// result in `assistantReview`. No-ops when no assistant is available;
+    /// surfaces a toast (not an inline error) if generation fails, matching
+    /// how the comments composer handles a failed post.
+    public func reviewWithAssistant() async {
+        guard let assistant, assistant.availability.isAvailable else { return }
+        isReviewing = true
+        assistantReview = nil
+        defer { isReviewing = false }
+        do {
+            assistantReview = try await assistant.reviewTask(
+                title: task.title,
+                description: task.description ?? ""
+            )
+        } catch let error as TaskAssistantError {
+            toastPresenter.show(error.message, style: .error)
+        } catch {
+            toastPresenter.show("Couldn't review this task", style: .error)
+        }
     }
 
     public func load() async {
@@ -317,7 +362,8 @@ public final class TaskDetailViewModel {
             relationRepository: relationRepository,
             commentRepository: commentRepository,
             projectRepository: projectRepository,
-            toastPresenter: toastPresenter
+            toastPresenter: toastPresenter,
+            assistant: assistant
         )
     }
 
