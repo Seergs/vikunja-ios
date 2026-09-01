@@ -267,7 +267,7 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
-    func `move project groups excludes this screens own project`() async {
+    func `loadMoveCandidates populates the move-picker projects`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work"),
@@ -283,7 +283,6 @@ struct ProjectOverviewViewModelTests {
 
         await viewModel.loadMoveCandidates()
 
-        #expect(viewModel.moveProjectGroups.map(\.root.id) == [2])
-        #expect(viewModel.moveProjectGroups.first?.children.map(\.id) == [3])
+        #expect(viewModel.allProjects.map(\.id) == [1, 2, 3])
     }
 }

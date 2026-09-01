@@ -25,22 +25,10 @@ public final class EditProjectViewModel {
         return projects.first { $0.id == parentProjectID }
     }
 
-    public var projectGroups: [ProjectGroup] {
-        let childrenByParentID = Dictionary(grouping: projects.filter { $0.id != project.id }, by: \.parentProjectID)
-        return (childrenByParentID[nil] ?? [])
-            .sorted { $0.position < $1.position }
-            .map { root in
-                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
-            }
-    }
-
-    public struct ProjectGroup: Identifiable, Hashable {
-        public let root: Project
-        public let children: [Project]
-        public var id: Int {
-            root.id
-        }
-    }
+    /// The project being edited — excluded (with its whole subtree) from the
+    /// parent-project picker, since a project can't be reparented under
+    /// itself or one of its descendants.
+    public var editingProjectID: Int { project.id }
 
     private let project: Project
     private let repository: ProjectRepositoryProtocol

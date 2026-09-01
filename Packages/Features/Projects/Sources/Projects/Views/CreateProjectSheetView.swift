@@ -53,7 +53,14 @@ public struct CreateProjectSheetView: View {
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
         .sheet(isPresented: $isShowingParentPicker) {
-            ParentProjectPickerView(groups: viewModel.projectGroups, selectedProjectID: $viewModel.parentProjectID)
+            ProjectPickerSheet(
+                title: "Parent Project",
+                projects: viewModel.projects,
+                selectedProjectID: viewModel.parentProjectID,
+                showsNoneOption: true,
+            ) { project in
+                viewModel.parentProjectID = project?.id
+            }
         }
         .task {
             if viewModel.hexColor.isEmpty {
@@ -208,9 +215,7 @@ private struct ParentProjectField: View {
         Button(action: action) {
             HStack(spacing: VikunjaSpacing.sm) {
                 if let project {
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
-                        .frame(width: 8, height: 8)
+                    ProjectPickerIcon(hexColor: project.hexColor)
                     Text(project.title)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(Color.primary)
@@ -231,147 +236,5 @@ private struct ParentProjectField: View {
             .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// The "Choose Parent Project" sheet: a leading "None" row (root level, the
-/// default) above every non-archived project grouped under its top-level
-/// project (see `CreateProjectViewModel.ProjectGroup`), filterable by
-/// `.searchable` — the same layout as `QuickAddSheetView`'s
-/// `ProjectPickerView`, plus the "None" option that picker doesn't need.
-private struct ParentProjectPickerView: View {
-    let groups: [CreateProjectViewModel.ProjectGroup]
-    @Binding var selectedProjectID: Int?
-    @Environment(\.dismiss) private var dismiss
-    @State private var query = ""
-
-    private var filteredGroups: [CreateProjectViewModel.ProjectGroup] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return groups }
-        return groups.compactMap { group in
-            let rootMatches = group.root.title.localizedCaseInsensitiveContains(trimmed)
-            let matchingChildren = group.children.filter { $0.title.localizedCaseInsensitiveContains(trimmed) }
-            guard rootMatches || !matchingChildren.isEmpty else { return nil }
-            return CreateProjectViewModel.ProjectGroup(root: group.root, children: rootMatches ? group.children : matchingChildren)
-        }
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.lg) {
-                    if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        NoneProjectRow(isSelected: selectedProjectID == nil) {
-                            selectedProjectID = nil
-                            dismiss()
-                        }
-                    }
-                    ForEach(filteredGroups) { group in
-                        VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                            ParentProjectPickerRow(
-                                project: group.root,
-                                isBold: true,
-                                isSelected: selectedProjectID == group.root.id,
-                                action: { select(group.root) },
-                            )
-                            ForEach(group.children) { child in
-                                ParentProjectPickerRow(
-                                    project: child,
-                                    isBold: false,
-                                    isSelected: selectedProjectID == child.id,
-                                    action: { select(child) },
-                                )
-                                .padding(.leading, VikunjaSpacing.lg)
-                            }
-                        }
-                    }
-                }
-                .padding(.vertical, VikunjaSpacing.sm)
-            }
-            .searchable(text: $query, prompt: "Search projects...")
-            .navigationTitle("Parent Project")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                        .fontWeight(.semibold)
-                }
-            }
-        }
-        .presentationDetents([.fraction(0.75), .large])
-        .presentationDragIndicator(.visible)
-    }
-
-    private func select(_ project: Project) {
-        selectedProjectID = project.id
-        dismiss()
-    }
-}
-
-private struct NoneProjectRow: View {
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
-                Circle()
-                    .strokeBorder(VikunjaColor.textTertiary, lineWidth: 1.5)
-                    .frame(width: 8, height: 8)
-                Text("None")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.primary)
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(VikunjaColor.brandPrimary)
-                }
-            }
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .background(
-                isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
-            )
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, VikunjaSpacing.sm)
-    }
-}
-
-private struct ParentProjectPickerRow: View {
-    let project: Project
-    let isBold: Bool
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
-                    .frame(width: 8, height: 8)
-                Text(project.title)
-                    .font(.system(size: 15, weight: isBold ? .semibold : .regular))
-                    .foregroundStyle(Color.primary)
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(VikunjaColor.brandPrimary)
-                }
-            }
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .background(
-                isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
-            )
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, VikunjaSpacing.sm)
     }
 }

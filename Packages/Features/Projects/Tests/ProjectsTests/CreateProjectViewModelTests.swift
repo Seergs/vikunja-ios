@@ -113,27 +113,6 @@ struct CreateProjectViewModelTests {
     }
 
     @Test
-    func `project groups arranges top level projects with their direct children`() async {
-        let repository = FakeProjectRepository()
-        repository.projects = [
-            Project(id: 1, title: "Work", parentProjectID: nil, position: 0),
-            Project(id: 2, title: "Redesign", parentProjectID: 1, position: 1),
-            Project(id: 3, title: "Personal", parentProjectID: nil, position: 1),
-            Project(id: 4, title: "Launch", parentProjectID: 1, position: 0),
-        ]
-        let viewModel = CreateProjectViewModel(
-            repository: repository,
-            toastPresenter: FakeToastPresenter(),
-        )
-
-        await viewModel.load()
-
-        #expect(viewModel.projectGroups.map(\.root.id) == [1, 3])
-        #expect(viewModel.projectGroups[0].children.map(\.id) == [4, 2])
-        #expect(viewModel.projectGroups[1].children.isEmpty)
-    }
-
-    @Test
     func `selected parent project resolves the chosen ID against the loaded projects`() async {
         let repository = FakeProjectRepository()
         repository.projects = [Project(id: 1, title: "Work")]

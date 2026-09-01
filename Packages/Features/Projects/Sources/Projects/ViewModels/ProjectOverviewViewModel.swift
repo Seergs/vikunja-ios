@@ -151,29 +151,6 @@ public final class ProjectOverviewViewModel {
         allProjects = await (try? projectRepository.fetchProjects()) ?? allProjects
     }
 
-    /// `allProjects` arranged for the "Move to Project" picker: one group per
-    /// top-level project, each carrying its direct children (mirrors
-    /// `QuickAddTaskViewModel.projectGroups` — only one level deep, not a
-    /// full recursive tree), with this screen's own project excluded since
-    /// moving a task there would be a no-op.
-    public var moveProjectGroups: [ProjectGroup] {
-        let candidates = allProjects.filter { $0.id != project.id }
-        let childrenByParentID = Dictionary(grouping: candidates, by: \.parentProjectID)
-        return (childrenByParentID[nil] ?? [])
-            .sorted { $0.position < $1.position }
-            .map { root in
-                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
-            }
-    }
-
-    public struct ProjectGroup: Identifiable, Hashable {
-        public let root: Project
-        public let children: [Project]
-        public var id: Int {
-            root.id
-        }
-    }
-
     /// Moves `task` to `destination` and drops it from the local list on
     /// success — it no longer belongs to this project's screen, mirroring
     /// `delete(_:)`.
