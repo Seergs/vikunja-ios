@@ -1,16 +1,12 @@
 import Foundation
-import Observation
+import VikunjaNavigation
 import VikunjaWidgetKit
 
-/// A URL the app was opened with, parsed into an in-app destination. Today the
-/// only case is quick-add — opened from the Today widget's "add" button, from
-/// Shortcuts, or any other `vikunja://quick-add` caller. `today`/`task` links
-/// will be added here once their in-app routing exists.
-enum DeepLink: Equatable {
-    /// `vikunja://quick-add` (optionally `?project=<id>`) — present the
-    /// tab-bar quick-add sheet, defaulting to the given project when supplied.
-    case quickAdd(projectID: Int?)
-
+extension DeepLink {
+    /// Parses a `vikunja://` URL the app was opened with. `nil` for anything
+    /// that isn't a recognized route. `DeepLink` itself lives in
+    /// `VikunjaNavigation` (so `VikunjaWidgetKit`'s App Intents can build one);
+    /// only this URL bridge needs the `vikunja` scheme string.
     init?(url: URL) {
         guard url.scheme?.lowercased() == VikunjaWidgetConfig.urlScheme else { return nil }
         // A custom-scheme URL puts its first segment in `host`
@@ -23,26 +19,5 @@ enum DeepLink: Equatable {
         default:
             return nil
         }
-    }
-}
-
-/// Holds the deep link the app was last opened with until a screen is mounted
-/// and ready to act on it: set from `RootView`'s `.onOpenURL`, consumed by
-/// `QuickAddOverlay`. Lives on `AppContainer` rather than in view `@State` so a
-/// link that arrives during a cold launch — before the tab shell exists —
-/// survives until the shell is up. Injected the same way `QuickAddContext` is.
-@MainActor
-@Observable
-final class DeepLinkRouter {
-    private(set) var pending: DeepLink?
-
-    func open(_ link: DeepLink) {
-        pending = link
-    }
-
-    /// Clears `pending` once a screen has acted on it, so it doesn't re-fire
-    /// the next time that screen appears.
-    func clear() {
-        pending = nil
     }
 }
