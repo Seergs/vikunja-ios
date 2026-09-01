@@ -102,11 +102,13 @@ public struct TaskDetailView: View {
         #endif
         .task { await viewModel.load() }
         .task { await viewModel.loadComments() }
+        .task { await viewModel.loadAttachments() }
         .onAppear { viewModel.markVisible() }
         .onDisappear { viewModel.markHidden() }
         .refreshable {
             await viewModel.load()
             await viewModel.loadComments()
+            await viewModel.loadAttachments()
         }
         .sheet(isPresented: $isShowingDueDatePicker) {
             DueDatePickerSheet(initialDate: viewModel.task.dueDate) { newDate in
@@ -394,6 +396,16 @@ public struct TaskDetailView: View {
                     }
                 }
             }
+        }
+
+        SectionBlock(
+            title: "Attachments",
+            count: viewModel.attachments.isEmpty ? nil : "\(viewModel.attachments.count)",
+        ) {
+            AttachmentsSection(
+                attachments: viewModel.attachments,
+                loadState: viewModel.attachmentsLoadState,
+            )
         }
 
         SectionBlock(title: "Comments", count: viewModel.comments.isEmpty ? nil : "\(viewModel.comments.count)") {
@@ -1326,6 +1338,100 @@ private struct CreateLabelCard: View {
 /// loading comments only replaces the "no comments yet" placeholder — the
 /// composer stays available either way, matching the design mockup, which
 /// never blocks posting on the thread having loaded successfully.
+private struct AttachmentsSection: View {
+    let attachments: [TaskAttachment]
+    let loadState: ScreenLoadState
+
+    private var emptyStateMessage: String {
+        if case let .failure(message) = loadState {
+            return message
+        }
+        return "No attachments yet."
+    }
+
+    var body: some View {
+        if attachments.isEmpty {
+            Text(emptyStateMessage)
+                .font(VikunjaFont.subheadline)
+                .foregroundStyle(VikunjaColor.textTertiary)
+        } else {
+            VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+                ForEach(attachments) { attachment in
+                    AttachmentRow(attachment: attachment)
+                }
+            }
+        }
+    }
+}
+
+private struct AttachmentRow: View {
+    let attachment: TaskAttachment
+
+    private var subtitle: String {
+        let size = AttachmentSizeFormatter.string(for: attachment.sizeBytes)
+        let date = CommentTimeFormatter.string(for: attachment.created)
+        return "\(size) · \(date)"
+    }
+
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.sm) {
+            Image(systemName: AttachmentIcon.systemName(forMimeType: attachment.mimeType))
+                .font(.system(size: 17))
+                .foregroundStyle(VikunjaColor.brandPrimary)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                Text(attachment.fileName)
+                    .font(.system(size: 14.5, weight: .medium))
+                    .foregroundStyle(Color.primary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Text(subtitle)
+                    .font(.system(size: 12))
+                    .foregroundStyle(VikunjaColor.textTertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+        .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+    }
+}
+
+/// Maps a file's MIME type to an SF Symbol for its attachment row. Kept local
+/// (like `priorityDisplay`) — it's a view concern, not a design token.
+private enum AttachmentIcon {
+    static func systemName(forMimeType mime: String) -> String {
+        let mime = mime.lowercased()
+        if mime.hasPrefix("image/") {
+            return "photo"
+        }
+        if mime.hasPrefix("video/") {
+            return "film"
+        }
+        if mime.hasPrefix("audio/") {
+            return "music.note"
+        }
+        if mime == "application/pdf" {
+            return "doc.richtext"
+        }
+        if mime.hasPrefix("text/") {
+            return "doc.text"
+        }
+        if mime.contains("zip") || mime.contains("compressed") || mime.contains("tar") {
+            return "doc.zipper"
+        }
+        return "doc"
+    }
+}
+
+private enum AttachmentSizeFormatter {
+    static func string(for bytes: Int) -> String {
+        Int64(bytes).formatted(.byteCount(style: .file))
+    }
+}
+
 private struct CommentsSection: View {
     let comments: [TaskComment]
     let loadState: ScreenLoadState

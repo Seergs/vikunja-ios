@@ -834,6 +834,59 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func `load attachments populates from the repository`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        attachmentRepository.attachments = [
+            TaskAttachment(
+                id: 1,
+                taskID: 1,
+                fileName: "spec.pdf",
+                mimeType: "application/pdf",
+                sizeBytes: 2048,
+                created: Date(),
+                createdBy: User(id: 2, username: "sam"),
+            ),
+        ]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
+
+        await viewModel.loadAttachments()
+
+        #expect(viewModel.attachments == attachmentRepository.attachments)
+        #expect(viewModel.attachmentsLoadState == .loaded)
+    }
+
+    @Test
+    func `load attachments surfaces A friendly message on failure`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        attachmentRepository.fetchError = .network("offline")
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
+
+        await viewModel.loadAttachments()
+
+        #expect(viewModel.attachmentsLoadState == .failure("Couldn't reach that server. Check the address and your connection."))
+    }
+
+    @Test
     func `add comment appends the created comment`() async {
         let commentRepository = FakeTaskCommentRepository()
         let viewModel = TaskDetailViewModel(

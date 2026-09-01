@@ -29,6 +29,11 @@ public final class TaskDetailViewModel {
     /// failure doesn't block the rest of the screen from showing.
     public private(set) var comments: [TaskComment] = []
     public private(set) var commentsLoadState: ScreenLoadState = .idle
+    /// This task's file attachments, in Vikunja's order (oldest first).
+    /// Loaded via `loadAttachments()` on its own load state — same reasoning
+    /// as `comments`: a failure here shouldn't blank the rest of the screen.
+    public private(set) var attachments: [TaskAttachment] = []
+    public private(set) var attachmentsLoadState: ScreenLoadState = .idle
 
     public var isLoading: Bool {
         loadState == .loading
@@ -339,6 +344,22 @@ public final class TaskDetailViewModel {
             commentsLoadState = .failure(error.displayMessage)
         } catch {
             commentsLoadState = .failure(error.localizedDescription)
+        }
+    }
+
+    /// Loads this task's attachments. Failures surface into
+    /// `attachmentsLoadState`, the same as `loadComments()`.
+    public func loadAttachments() async {
+        if attachmentsLoadState != .loaded {
+            attachmentsLoadState = .loading
+        }
+        do {
+            attachments = try await attachmentRepository.fetchAttachments(taskID: task.id)
+            attachmentsLoadState = .loaded
+        } catch let error as VikunjaError {
+            attachmentsLoadState = .failure(error.displayMessage)
+        } catch {
+            attachmentsLoadState = .failure(error.localizedDescription)
         }
     }
 
