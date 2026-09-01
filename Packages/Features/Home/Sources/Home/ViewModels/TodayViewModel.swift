@@ -115,25 +115,6 @@ public final class TodayViewModel {
         allProjects = await (try? projectRepository.fetchProjects()) ?? allProjects
     }
 
-    /// `allProjects` arranged for the "Move to Project" picker: one group per
-    /// top-level project, each carrying its direct children.
-    public var moveProjectGroups: [ProjectGroup] {
-        let childrenByParentID = Dictionary(grouping: allProjects, by: \.parentProjectID)
-        return (childrenByParentID[nil] ?? [])
-            .sorted { $0.position < $1.position }
-            .map { root in
-                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
-            }
-    }
-
-    public struct ProjectGroup: Identifiable, Hashable {
-        public let root: Project
-        public let children: [Project]
-        public var id: Int {
-            root.id
-        }
-    }
-
     /// Moves `task` to `destination` and drops it from the local list on
     /// success — it no longer belongs to the Today view after the move.
     public func move(_ task: VikunjaTask, to destination: Project) async {
