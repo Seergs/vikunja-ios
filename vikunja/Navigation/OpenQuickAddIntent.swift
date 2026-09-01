@@ -17,8 +17,6 @@ struct OpenQuickAddIntent: AppIntent {
     static let description = IntentDescription("Opens Vikunja's quick-add sheet to jot down a new task.")
     static let openAppWhenRun = true
 
-    init() {}
-
     @MainActor
     func perform() async throws -> some IntentResult {
         DeepLinkRouter.shared.open(.quickAdd(projectID: nil))

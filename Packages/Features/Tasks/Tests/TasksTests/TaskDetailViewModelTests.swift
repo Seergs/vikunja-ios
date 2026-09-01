@@ -17,7 +17,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         #expect(viewModel.task == task)
@@ -129,7 +129,7 @@ struct TaskDetailViewModelTests {
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter()
+            toastPresenter: FakeToastPresenter(),
         )
 
         await viewModel.toggleDone()
