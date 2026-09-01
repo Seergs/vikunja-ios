@@ -7,16 +7,16 @@ import SwiftUI
 import WidgetKit
 
 /// A Control Center / Lock Screen / Action Button control that opens the app's
-/// quick-add task sheet, via `OpenQuickAddIntent`. Add `QuickAddControl()` to
-/// the widget extension's `WidgetBundle` (behind an iOS 18 availability check,
-/// since the package floor is iOS 17).
+/// quick-add task sheet, via `QuickAddControlIntent`. Add `QuickAddControl()`
+/// to the widget extension's `WidgetBundle` (behind an iOS 18 availability
+/// check, since the package floor is iOS 17).
 @available(iOS 18.0, *)
 public struct QuickAddControl: ControlWidget {
     public init() {}
 
     public var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: VikunjaWidgetConfig.quickAddControlKind) {
-            ControlWidgetButton(action: OpenQuickAddIntent()) {
+            ControlWidgetButton(action: QuickAddControlIntent()) {
                 Label("Add Task", systemImage: "plus.circle.fill")
             }
         }
