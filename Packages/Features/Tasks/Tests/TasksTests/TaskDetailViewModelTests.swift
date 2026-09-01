@@ -887,6 +887,55 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func `upload attachment appends the created attachment and toasts success`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 7, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter,
+        )
+
+        await viewModel.uploadAttachment(data: Data("hello".utf8), fileName: "notes.txt", mimeType: "text/plain")
+
+        #expect(viewModel.attachments.map(\.fileName) == ["notes.txt"])
+        #expect(attachmentRepository.uploaded.map(\.taskID) == [7])
+        #expect(attachmentRepository.uploaded.first?.size == 5)
+        #expect(viewModel.isUploadingAttachment == false)
+        #expect(toastPresenter.shownMessages.contains { $0.style == .success })
+    }
+
+    @Test
+    func `upload attachment surfaces an error toast on failure`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        attachmentRepository.uploadError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 7, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter,
+        )
+
+        await viewModel.uploadAttachment(data: Data(), fileName: "x.bin", mimeType: "application/octet-stream")
+
+        #expect(viewModel.attachments.isEmpty)
+        #expect(viewModel.isUploadingAttachment == false)
+        #expect(toastPresenter.shownMessages.contains { $0.style == .error })
+    }
+
+    @Test
     func `add comment appends the created comment`() async {
         let commentRepository = FakeTaskCommentRepository()
         let viewModel = TaskDetailViewModel(

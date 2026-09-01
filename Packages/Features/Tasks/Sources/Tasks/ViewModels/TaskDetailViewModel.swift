@@ -34,6 +34,9 @@ public final class TaskDetailViewModel {
     /// as `comments`: a failure here shouldn't blank the rest of the screen.
     public private(set) var attachments: [TaskAttachment] = []
     public private(set) var attachmentsLoadState: ScreenLoadState = .idle
+    /// `true` while an upload request is in flight — the view disables the
+    /// add affordance and shows a progress row.
+    public private(set) var isUploadingAttachment = false
 
     public var isLoading: Bool {
         loadState == .loading
@@ -361,6 +364,36 @@ public final class TaskDetailViewModel {
         } catch {
             attachmentsLoadState = .failure(error.localizedDescription)
         }
+    }
+
+    /// Uploads one file and appends the server's created attachment(s) to
+    /// `attachments` (their real id/size/uploader only exist once stored, so
+    /// there's no optimistic placeholder — same reasoning as `addComment(_:)`).
+    /// Surfaces a toast either way.
+    public func uploadAttachment(data: Data, fileName: String, mimeType: String) async {
+        isUploadingAttachment = true
+        defer { isUploadingAttachment = false }
+        do {
+            let created = try await attachmentRepository.uploadAttachment(
+                data: data,
+                fileName: fileName,
+                mimeType: mimeType,
+                toTask: task.id,
+            )
+            attachments.append(contentsOf: created)
+            toastPresenter.show("Attachment added", style: .success)
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
+        }
+    }
+
+    /// Surfaces a toast when the file the user picked can't be read off disk
+    /// (a security-scoped resource that won't open, an unreadable path) —
+    /// the upload never starts in that case.
+    public func reportAttachmentReadFailure() {
+        toastPresenter.show("Couldn't read that file", style: .error)
     }
 
     /// Posts a new comment and appends the server's response (its real id,

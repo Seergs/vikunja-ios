@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import VikunjaCore
 import VikunjaDesignSystem
 
@@ -21,6 +22,7 @@ public struct TaskDetailView: View {
     @State private var commentPendingDeletion: TaskComment?
     @State private var commentPendingEdit: TaskComment?
     @State private var relationSheetStep: RelationSheetStep?
+    @State private var isShowingFileImporter = false
     @State private var relatedTaskDestination: RelatedTaskDestination?
     @State private var projectDestinationBox: ProjectDestinationBox?
     @State private var isEditingTitle = false
@@ -169,6 +171,24 @@ public struct TaskDetailView: View {
         .sheet(item: $commentPendingEdit) { comment in
             EditCommentSheet(initialText: CommentTextFormatter.plainText(from: comment.comment)) { newText in
                 Task { await viewModel.editComment(comment, newText: newText) }
+            }
+        }
+        .fileImporter(
+            isPresented: $isShowingFileImporter,
+            allowedContentTypes: [.item],
+            allowsMultipleSelection: false,
+        ) { result in
+            guard case let .success(urls) = result, let url = urls.first else { return }
+            guard let picked = PickedFile(url: url) else {
+                viewModel.reportAttachmentReadFailure()
+                return
+            }
+            Task {
+                await viewModel.uploadAttachment(
+                    data: picked.data,
+                    fileName: picked.fileName,
+                    mimeType: picked.mimeType,
+                )
             }
         }
         .sheet(item: $relationSheetStep) { step in
@@ -401,10 +421,15 @@ public struct TaskDetailView: View {
         SectionBlock(
             title: "Attachments",
             count: viewModel.attachments.isEmpty ? nil : "\(viewModel.attachments.count)",
+            trailing: AnyView(
+                AddAttachmentButton { isShowingFileImporter = true }
+                    .disabled(viewModel.isUploadingAttachment),
+            ),
         ) {
             AttachmentsSection(
                 attachments: viewModel.attachments,
                 loadState: viewModel.attachmentsLoadState,
+                isUploading: viewModel.isUploadingAttachment,
             )
         }
 
@@ -909,6 +934,49 @@ private struct AddRelationButton: View {
     }
 }
 
+/// The "+ Add" affordance next to the Attachments section header.
+private struct AddAttachmentButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: VikunjaSpacing.xxs) {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("Add")
+            }
+            .foregroundStyle(VikunjaColor.brandPrimary)
+        }
+        .buttonStyle(.plain)
+        .textCase(nil)
+    }
+}
+
+/// One file the user picked through `.fileImporter`, read into memory with
+/// its name and MIME type resolved — `nil` if the bytes can't be read (a
+/// security-scoped URL that won't open).
+private struct PickedFile {
+    let data: Data
+    let fileName: String
+    let mimeType: String
+
+    init?(url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer {
+            if scoped {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        self.data = data
+        self.fileName = url.lastPathComponent
+        let resolved = (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType
+            ?? UTType(filenameExtension: url.pathExtension)
+        self.mimeType = resolved?.preferredMIMEType ?? "application/octet-stream"
+    }
+}
+
 /// The two steps of adding a relation, matching the design mockup: first
 /// pick a relation kind, then pick the other task. Modeled as one
 /// `Identifiable` enum (rather than two independent `Bool`s) so exactly one
@@ -1341,6 +1409,7 @@ private struct CreateLabelCard: View {
 private struct AttachmentsSection: View {
     let attachments: [TaskAttachment]
     let loadState: ScreenLoadState
+    var isUploading = false
 
     private var emptyStateMessage: String {
         if case let .failure(message) = loadState {
@@ -1350,17 +1419,38 @@ private struct AttachmentsSection: View {
     }
 
     var body: some View {
-        if attachments.isEmpty {
-            Text(emptyStateMessage)
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textTertiary)
-        } else {
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+            if attachments.isEmpty, !isUploading {
+                Text(emptyStateMessage)
+                    .font(VikunjaFont.subheadline)
+                    .foregroundStyle(VikunjaColor.textTertiary)
+            } else {
                 ForEach(attachments) { attachment in
                     AttachmentRow(attachment: attachment)
                 }
             }
+
+            if isUploading {
+                AttachmentUploadingRow()
+            }
         }
+    }
+}
+
+private struct AttachmentUploadingRow: View {
+    var body: some View {
+        HStack(spacing: VikunjaSpacing.sm) {
+            ProgressView()
+                .frame(width: 28)
+            Text("Uploading…")
+                .font(.system(size: 14.5, weight: .medium))
+                .foregroundStyle(VikunjaColor.textSecondary)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+        .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
     }
 }
 
