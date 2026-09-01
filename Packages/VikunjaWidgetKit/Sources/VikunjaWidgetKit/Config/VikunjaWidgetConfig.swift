@@ -24,6 +24,9 @@ public enum VikunjaWidgetConfig {
     /// `kind` string tying `TodayWidget` to `WidgetCenter.reloadTimelines(ofKind:)`.
     public static let todayWidgetKind = "TodayWidget"
 
+    /// `kind` string for the Control Center quick-add control (`QuickAddControl`).
+    public static let quickAddControlKind = "QuickAddControl"
+
     /// URL scheme the widget deep-links back into the app with
     /// (`vikunja://today`, `vikunja://task/<id>`). Register it under the app
     /// target's URL Types.
