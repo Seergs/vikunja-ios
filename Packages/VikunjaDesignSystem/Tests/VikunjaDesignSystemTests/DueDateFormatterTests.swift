@@ -1,0 +1,59 @@
+import Foundation
+import Testing
+@testable import VikunjaDesignSystem
+
+struct DueDateFormatterTests {
+    private let calendar = Calendar.current
+    /// A fixed reference so the "same year" branch is deterministic.
+    private let reference = { () -> Date in
+        var components = DateComponents()
+        components.year = 2026
+        components.month = 6
+        components.day = 15
+        components.hour = 9
+        return Calendar.current.date(from: components)!
+    }()
+
+    @Test
+    func `today tomorrow and yesterday use relative names`() {
+        #expect(DueDateFormatter.compact(reference, relativeTo: reference) == "Today")
+        #expect(
+            DueDateFormatter.compact(
+                calendar.date(byAdding: .day, value: 1, to: reference)!,
+                relativeTo: reference,
+            ) == "Tomorrow",
+        )
+        #expect(
+            DueDateFormatter.compact(
+                calendar.date(byAdding: .day, value: -1, to: reference)!,
+                relativeTo: reference,
+            ) == "Yesterday",
+        )
+    }
+
+    @Test
+    func `within a week uses an abbreviated weekday`() {
+        let inThreeDays = calendar.date(byAdding: .day, value: 3, to: reference)!
+        let expected = inThreeDays.formatted(.dateTime.weekday(.abbreviated))
+
+        #expect(DueDateFormatter.compact(inThreeDays, relativeTo: reference) == expected)
+    }
+
+    @Test
+    func `further out in the same year drops the year`() {
+        let inTwoMonths = calendar.date(byAdding: .day, value: 60, to: reference)!
+        let expected = inTwoMonths.formatted(.dateTime.month(.abbreviated).day())
+
+        let result = DueDateFormatter.compact(inTwoMonths, relativeTo: reference)
+        #expect(result == expected)
+        #expect(!result.contains("2026"))
+    }
+
+    @Test
+    func `a different year keeps the year`() {
+        let nextYear = calendar.date(byAdding: .day, value: 300, to: reference)!
+        let expected = nextYear.formatted(.dateTime.year().month(.abbreviated).day())
+
+        #expect(DueDateFormatter.compact(nextYear, relativeTo: reference) == expected)
+    }
+}
