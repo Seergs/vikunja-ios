@@ -34,7 +34,8 @@ tally, project creation (title + color + parent), a project overview
 deletion. It pushes into `Features/Tasks`'s task detail screen — inline
 title/description editing, completion, due date, priority, label editing
 (add/remove/create), relation editing (`dependsOn`/`blocks` + other kinds, via
-a kind-then-task picker), a comment thread (read + post), and tap-through to a
+a kind-then-task picker), a comment thread (read + post), file attachments
+(upload via file importer, QuickLook preview, delete), and tap-through to a
 related task's own detail screen — built as a leaf screen with no navigation
 stack of its own. `Features/Tasks` also owns the quick-add task sheet reachable
 from the tab bar's FAB. `Features/Home` is a "Today" screen built end to end:
@@ -527,7 +528,8 @@ public struct InstanceAccount: Identifiable, Codable {
   `GET /api/v1/info` to confirm an address is a real Vikunja instance before
   the connection is saved), and each repository (`makeTaskRepository`,
   `makeProjectRepository`, `makeLabelRepository`,
-  `makeTaskRelationRepository`, `makeTaskCommentRepository`) for an
+  `makeTaskRelationRepository`, `makeTaskCommentRepository`,
+  `makeTaskAttachmentRepository`) for an
   already-connected account, taking a `tokenProvider` closure that resolves
   the bearer token per request. This is the seam `AppContainer` wires screen
   dependencies through.
@@ -597,9 +599,10 @@ end to end on top of `VikunjaCore`/`VikunjaNetworking`: `Home` (every project's
 tasks merged and grouped by due date), `Projects` (list → tree → overview,
 plus project creation and task deletion), `Tasks` (a detail screen with
 editable title/description/completion/due date/priority/labels/relations plus
-a comment thread, and a tab-bar quick-add sheet), and `Settings` (full
-multi-account management). Task and project create/update/delete, label CRUD
-+ association, relation add/remove, and task comment fetch/add all go through
+a comment thread and file attachments, and a tab-bar quick-add sheet), and
+`Settings` (full multi-account management). Task and project
+create/update/delete, label CRUD + association, relation add/remove, task
+comment fetch/add, and task attachment upload/download/delete all go through
 the networking layer.
 
 Open threads:

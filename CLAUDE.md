@@ -79,11 +79,17 @@ by the compiler, not just convention:
     `VikunjaTask.otherRelations` (`[RelationKind: [TaskRelation]]`).
     `TaskComment` is id/comment/author/created/updated — a task's comment
     thread, kept separate from `VikunjaTask` itself since it's loaded and
-    posted through its own endpoint.
+    posted through its own endpoint. `TaskAttachment` is
+    id/taskID/fileName/mimeType/sizeBytes/created/createdBy — one uploaded
+    file's metadata (the bytes come from a separate download endpoint), kept
+    separate from `VikunjaTask` for the same reason as `TaskComment`;
+    `AttachmentPreviewSize` (`sm`/`md`/`lg`/`xl`) is the optional
+    image-thumbnail rendition the download can ask for.
   - `Protocols/` — the contracts Features are meant to depend on
     (`TaskRepositoryProtocol`, `ProjectRepositoryProtocol`,
     `LabelRepositoryProtocol`, `TaskRelationRepositoryProtocol`,
-    `TaskCommentRepositoryProtocol`, `AuthServiceProtocol`,
+    `TaskCommentRepositoryProtocol`, `TaskAttachmentRepositoryProtocol`,
+    `AuthServiceProtocol`,
     `AccountStoreProtocol`, `InstanceClientFactoryProtocol`,
     `ToastPresenting`). `TaskRepositoryProtocol` and `ProjectRepositoryProtocol`
     now cover full CRUD; `TaskRepositoryProtocol` also has
@@ -92,7 +98,9 @@ by the compiler, not just convention:
     against a task; `TaskRelationRepositoryProtocol` is just add/remove a
     relation of a given `RelationKind`; `TaskCommentRepositoryProtocol` is
     fetch/add/update/delete for one task's comments (only fetch and add are
-    wired into `Features/Tasks` today — see below). `AccountStoreProtocol` is
+    wired into `Features/Tasks` today — see below).
+    `TaskAttachmentRepositoryProtocol` is fetch/upload/download/delete for one
+    task's file attachments. `AccountStoreProtocol` is
     full multi-account CRUD (`fetchAccounts`/`addAccount`/`updateAccount`/
     `removeAccount`/`setActiveAccount`/`token(forAccountID:)`), not just a
     single saved connection.
@@ -104,14 +112,21 @@ by the compiler, not just convention:
   Depends on `VikunjaCore`.
   - `Client/` — generic transport: `APIClient` protocol, `Endpoint` struct
     (with an `Endpoint.encoding(path:method:body:)` helper that JSON-encodes a
-    body), and the concrete `URLSessionAPIClient` actor (maps HTTP status codes
-    to `VikunjaError`).
+    body, and `Endpoint.multipart(path:method:form:)` for a file upload —
+    `Endpoint.contentType` overrides the default `application/json` so
+    `MultipartFormData` can carry its boundary), and the concrete
+    `URLSessionAPIClient` actor (maps HTTP status codes to `VikunjaError`).
+    `APIClient.data(_:)` returns the response body untouched, for the one
+    endpoint that serves raw bytes rather than JSON (an attachment download).
   - `Endpoints/VikunjaEndpoints.swift` — the single file that knows Vikunja's actual
     REST routes (`/api/v1/...`). This is where a real API change gets fixed.
     Covers `/info`, login, full task + project CRUD (**create is `PUT`**, update
     is `POST` — Vikunja's convention, not a typo), label CRUD plus task/label
     association (`/tasks/{id}/labels`), task relation add/remove
-    (`/tasks/{id}/relations`), task comment CRUD (`/tasks/{id}/comments`), and
+    (`/tasks/{id}/relations`), task comment CRUD (`/tasks/{id}/comments`),
+    task attachment list/upload/download/delete (`/tasks/{id}/attachments` —
+    **upload is `PUT`** with a `multipart/form-data` body, field name `files`;
+    download is a raw-bytes `GET` with an optional `?preview_size=`), and
     account-wide task search (`GET /api/v1/tasks?s=`
     — note `/tasks`, **not** the older `/tasks/all`; see the doc comment on
     `searchTasks` for the version nuance).
@@ -123,7 +138,9 @@ by the compiler, not just convention:
     (`"subtask"`, `"blocked"`, `"blocking"`, ...). `LabelDTO`, `TaskLabelDTO`
     (attach-label body), `CreateTaskRelationDTO` (add-relation body),
     `CommentDTO` (a task comment; the body arrives as the rich-text editor's
-    HTML — see `Mappers/` below). `JSONValue`
+    HTML — see `Mappers/` below). `TaskAttachmentDTO` (with a nested `FileDTO`
+    for name/mime/size) and `AttachmentUploadResultDTO` (the `success`/`errors`
+    partial-success envelope the upload returns). `JSONValue`
     is a shape-agnostic JSON box used only for `TaskDTO` fields whose real
     structure isn't verified (`reminders`, `assignees`) — see the next bullet.
     `TaskDTO` carries a large tail of fields it **never** populates from the
@@ -134,7 +151,10 @@ by the compiler, not just convention:
     `RelatedTaskDTO` to a `TaskRelation`; `TaskMapper` reads `subtasks`/
     `dependsOn`/`blocks`/`otherRelations` out of `TaskDTO.relatedTasks` by kind
     (unrecognized kind strings are dropped, not fatal). `LabelMapper` for
-    `Label`; `CommentMapper` for `TaskComment`. Two things about updates:
+    `Label`; `CommentMapper` for `TaskComment`; `AttachmentMapper` for
+    `TaskAttachment`; `MaxFileSizeParser` turns `/info`'s `max_file_size`
+    string (`"20MB"`, `"20 MiB"`, a plain byte count, ...) into
+    `VikunjaServerInfo.maxFileSizeBytes`. Two things about updates:
     - Vikunja manages relations and labels through their own endpoints rather
       than the task update body, so `TaskMapper`'s update-response mapping
       doesn't carry them back — see `TaskDetailViewModel.persist(previous:)` in
@@ -149,7 +169,8 @@ by the compiler, not just convention:
   - `Repositories/` — concrete implementations of `VikunjaCore`'s protocols
     (`VikunjaTaskRepository`, `VikunjaProjectRepository`, `VikunjaLabelRepository`,
     `VikunjaTaskRelationRepository`, `VikunjaTaskCommentRepository`,
-    `VikunjaCapabilityProvider`, `VikunjaAuthService`,
+    `VikunjaTaskAttachmentRepository`, `VikunjaCapabilityProvider`,
+    `VikunjaAuthService`,
     `VikunjaInstanceClientFactory`). These are what eventually get injected
     into Features. `VikunjaInstanceClientFactory` builds one of these per
     screen call — see `InstanceClientFactoryProtocol` — from a `baseURL` plus
@@ -391,11 +412,23 @@ by the compiler, not just convention:
     and swaps in the server's response; no optimistic placeholder, same as
     `addComment`) and "Delete Comment" (`deleteComment(_:)`, optimistic removal
     with rollback behind a confirmation dialog).
-  - `TaskDetailViewModel` takes `task` + `project` + **five** repository
+  - **Attachments**: `loadAttachments()` runs alongside `load()` on its own
+    `attachmentsLoadState`, same as comments. An "Add" button opens a
+    `.fileImporter`; the picked file is read into memory (`PickedFile`) and
+    sent via `TaskAttachmentRepositoryProtocol.uploadAttachment`, appending
+    the server's created attachment (no optimistic placeholder — id/size/
+    uploader only exist once stored) with `isUploadingAttachment` driving a
+    progress row. Tapping a row downloads the bytes (`attachmentData(for:)`),
+    writes them to a temp file (`AttachmentPreviewFile` — the download is
+    bearer-authed, so QuickLook can't be handed the remote URL) and previews
+    with `.quickLookPreview`. A row's context menu offers "Delete Attachment"
+    (`deleteAttachment(_:)`, optimistic removal with rollback behind a
+    confirmation dialog). No rich-text/thumbnail handling yet.
+  - `TaskDetailViewModel` takes `task` + `project` + **six** repository
     protocols (`TaskRepositoryProtocol`, `LabelRepositoryProtocol`,
     `TaskRelationRepositoryProtocol`, `TaskCommentRepositoryProtocol`,
-    `ProjectRepositoryProtocol`) + a `ToastPresenting`, all via constructor
-    injection.
+    `TaskAttachmentRepositoryProtocol`, `ProjectRepositoryProtocol`) + a
+    `ToastPresenting`, all via constructor injection.
   - **Quick-add** (`QuickAddTaskViewModel`): title + project + priority only
     (matching the mockup's `AddTaskSheet`). Presented globally from the tab
     bar FAB, so it picks its starting project from context: a
@@ -552,7 +585,7 @@ behind each one.
 - **ViewModels take their dependency as a protocol via constructor injection**
   (e.g. `init(repository: TaskRepositoryProtocol)`), never a concrete networking
   class. A screen that needs several takes one protocol parameter each (e.g.
-  `TaskDetailViewModel`'s five repositories), plus `ToastPresenting` for
+  `TaskDetailViewModel`'s six repositories), plus `ToastPresenting` for
   user-facing feedback. Views contain no business logic and no networking
   knowledge.
 - **Each `Features/<Name>` module follows the same internal shape**:
