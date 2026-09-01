@@ -235,6 +235,7 @@ private struct SearchTaskRow: View {
                         Text(project.title)
                             .font(.system(size: 12.5, weight: .regular))
                             .foregroundStyle(VikunjaColor.textSecondary)
+                            .truncationMode(.tail)
                     }
 
                     if task.dueDate != nil {
@@ -243,22 +244,28 @@ private struct SearchTaskRow: View {
                             .foregroundStyle(VikunjaColor.textSecondary)
                     }
 
-                    if isOverdue {
-                        Text("Overdue")
-                            .font(.system(size: 12.5, weight: .semibold))
-                            .foregroundStyle(VikunjaColor.Semantic.dangerText)
-                    } else if let dueDate = task.dueDate {
-                        Text(dueDate, style: .date)
-                            .font(.system(size: 12.5, weight: .regular))
-                            .foregroundStyle(VikunjaColor.textSecondary)
-                    }
+                    // Kept at natural width so a long project name truncates
+                    // first and the row stays on one line.
+                    Group {
+                        if isOverdue {
+                            Text("Overdue")
+                                .font(.system(size: 12.5, weight: .semibold))
+                                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                        } else if let dueDate = task.dueDate {
+                            Text(DueDateFormatter.compact(dueDate))
+                                .font(.system(size: 12.5, weight: .regular))
+                                .foregroundStyle(VikunjaColor.textSecondary)
+                        }
 
-                    if task.hasRelations {
-                        Image(systemName: "link")
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(VikunjaColor.textTertiary)
+                        if task.hasRelations {
+                            Image(systemName: "link")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(VikunjaColor.textTertiary)
+                        }
                     }
+                    .fixedSize(horizontal: true, vertical: false)
                 }
+                .lineLimit(1)
 
                 if !task.labels.isEmpty {
                     HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
