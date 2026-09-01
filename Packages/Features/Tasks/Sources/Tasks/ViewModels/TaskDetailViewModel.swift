@@ -415,6 +415,7 @@ public final class TaskDetailViewModel {
         attachments.removeAll { $0.id == attachment.id }
         do {
             try await attachmentRepository.deleteAttachment(attachment.id, fromTask: task.id)
+            toastPresenter.show("Attachment deleted", style: .success)
         } catch {
             attachments = previous
             toastPresenter.show("Couldn't delete attachment", style: .error)

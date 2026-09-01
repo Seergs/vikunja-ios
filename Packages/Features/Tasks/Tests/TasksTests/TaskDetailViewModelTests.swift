@@ -1004,6 +1004,7 @@ struct TaskDetailViewModelTests {
         let first = TaskAttachment(id: 1, taskID: 1, fileName: "a.pdf", mimeType: "application/pdf", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
         let second = TaskAttachment(id: 2, taskID: 1, fileName: "b.png", mimeType: "image/png", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
         attachmentRepository.attachments = [first, second]
+        let toastPresenter = FakeToastPresenter()
         let viewModel = TaskDetailViewModel(
             task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
             project: Project(id: 1, title: "Work"),
@@ -1013,13 +1014,14 @@ struct TaskDetailViewModelTests {
             commentRepository: FakeTaskCommentRepository(),
             attachmentRepository: attachmentRepository,
             projectRepository: FakeProjectRepository(),
-            toastPresenter: FakeToastPresenter(),
+            toastPresenter: toastPresenter,
         )
         await viewModel.loadAttachments()
 
         await viewModel.deleteAttachment(first)
 
         #expect(viewModel.attachments.map(\.id) == [2])
+        #expect(toastPresenter.shownMessages.contains { $0.style == .success })
     }
 
     @Test
