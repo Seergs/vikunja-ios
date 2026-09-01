@@ -5,32 +5,29 @@ import VikunjaDesignSystem
 /// The quick-add sheet opened from the tab bar's floating action button:
 /// title + project + priority only, matching the design mockup's
 /// `AddTaskSheet` (no due date/labels/assignee yet — see
-/// `QuickAddTaskViewModel`'s doc comment). A compact bottom sheet rather than
-/// a full-height one — no `NavigationStack`/toolbar, since those force the
-/// system to take over the whole screen; it switches between two fixed
-/// `presentationDetents` heights (see `compactHeight`/`expandedHeight`) so it
-/// only grows when the error banner needs the extra room. Presented as a
-/// plain `.sheet` by
-/// whichever screen owns the FAB — this package owns no `NavigationStack`/
-/// `Router` of its own, the same exception `TaskDetailView` makes for a leaf
-/// screen with no push navigation of its own.
+/// `QuickAddTaskViewModel`'s doc comment). A compact bottom sheet: a
+/// `NavigationStack` with an inline title and `Cancel`/`Save` in the toolbar
+/// (the system pins that bar to the top of the sheet, so it can't drift when
+/// the keyboard opens and nudges the sheet to its taller detent), switching
+/// between two fixed `presentationDetents` heights (see `compactHeight`/
+/// `expandedHeight`) so it only grows when the error banner needs the room.
+/// Content is anchored to the top rather than centered, so the extra space at
+/// the taller detent pools below the fields instead of above the title.
+/// Presented as a plain `.sheet` by whichever screen owns the FAB.
 public struct QuickAddSheetView: View {
     @Bindable var viewModel: QuickAddTaskViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var isShowingProjectPicker = false
+    @FocusState private var isTitleFocused: Bool
 
-    /// Derived straight from `viewModel.saveErrorMessage` rather than mirrored
-    /// into its own `@State` updated separately (via `onChange`): that split
-    /// used to produce two independent animation transactions — one for the
-    /// banner's own `.transition`, one for the detent switch — that raced
-    /// each other and looked like a position "reset" before the real grow
-    /// animation kicked in. Reading both off the same value under one
-    /// `.animation(_:value:)` keeps them in the same transaction.
-    private var detent: Binding<PresentationDetent> {
-        Binding(
-            get: { .height(viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight) },
-            set: { _ in },
-        )
+    /// A single detent sized to the current content, not a two-detent set:
+    /// when a sheet offers more than one detent and the keyboard appears,
+    /// iOS jumps it to the *largest* one — which left a big gap between the
+    /// priority chips and the keyboard. One height, grown only when the
+    /// error banner needs the room, keeps the sheet exactly as tall as its
+    /// content.
+    private var detentHeight: CGFloat {
+        viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight
     }
 
     public init(viewModel: QuickAddTaskViewModel) {
@@ -38,38 +35,62 @@ public struct QuickAddSheetView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
-            header
+        NavigationStack {
+            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+                TextField("Task title", text: $viewModel.title)
+                    .font(VikunjaFont.body)
+                    .focused($isTitleFocused)
+                    .submitLabel(.done)
+                    .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
+                    .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+                    .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
 
-            TextField("Task title", text: $viewModel.title)
-                .font(VikunjaFont.body)
-                .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-                .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-                .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+                projectSection
 
-            projectSection
+                prioritySection
 
-            prioritySection
-
-            if let message = viewModel.saveErrorMessage {
-                SaveErrorBanner(message: message)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                if let message = viewModel.saveErrorMessage {
+                    SaveErrorBanner(message: message)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.top, VikunjaSpacing.md)
+            // Anchored to the top: when the keyboard nudges the sheet up to
+            // its taller detent, the slack falls below the priority chips
+            // instead of being split above and below a vertically-centered
+            // block (which pushed the title away from the toolbar).
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            // A spring rather than `.easeInOut`: closer to the curve the
+            // system itself uses to animate a sheet's own detent resize, so
+            // our content's own transition doesn't visibly race against it.
+            .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
+            .navigationTitle("New Task")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if viewModel.isSaving {
+                        ProgressView()
+                    } else {
+                        Button("Save") {
+                            Task {
+                                if await viewModel.save() != nil {
+                                    dismiss()
+                                }
+                            }
+                        }
+                        .fontWeight(.bold)
+                        .disabled(!viewModel.canSave)
+                    }
+                }
             }
         }
-        .padding(.horizontal, VikunjaSpacing.md)
-        .padding(.top, VikunjaSpacing.sm)
-        .padding(.bottom, VikunjaSpacing.lg)
-        // A spring rather than `.easeInOut`: closer to the curve the system
-        // itself uses to animate a sheet's own detent resize, so our
-        // content's own transition doesn't visibly race against it.
-        .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
-        // Both heights declared upfront, not just the current one: SwiftUI
-        // only animates a detent transition when `selection` switches
-        // between options already present in the set — redefining the set's
-        // sole member each time is treated as a structural change and just
-        // snaps instead of animating.
-        .presentationDetents([.height(Self.compactHeight), .height(Self.expandedHeight)], selection: detent)
-        .presentationDragIndicator(.visible)
+        .presentationDetents([.height(detentHeight)])
         .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
         .sheet(isPresented: $isShowingProjectPicker) {
             ProjectPickerSheet(
@@ -80,36 +101,9 @@ public struct QuickAddSheetView: View {
                 viewModel.selectedProjectID = project?.id
             }
         }
-        .task { await viewModel.load() }
-    }
-
-    private var header: some View {
-        ZStack {
-            Text("New Task")
-                .font(VikunjaFont.subheadline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.primary)
-
-            HStack {
-                Button("Cancel") { dismiss() }
-                    .foregroundStyle(VikunjaColor.textSecondary)
-
-                Spacer()
-
-                if viewModel.isSaving {
-                    ProgressView()
-                } else {
-                    Button("Save") {
-                        Task {
-                            if await viewModel.save() != nil {
-                                dismiss()
-                            }
-                        }
-                    }
-                    .fontWeight(.bold)
-                    .disabled(!viewModel.canSave)
-                }
-            }
+        .task {
+            isTitleFocused = true
+            await viewModel.load()
         }
     }
 
@@ -148,18 +142,15 @@ public struct QuickAddSheetView: View {
         }
     }
 
-    /// Two fixed, hand-measured heights rather than a live content
-    /// measurement: a `.sheet` proposes its *current* detent's height back
-    /// to its own content as a ceiling, so anything that tries to measure
-    /// "how tall do I actually want to be" (`GeometryReader`,
-    /// `onGeometryChange`, `.fixedSize`) just reports that already-capped
-    /// size back — a feedback loop that can never grow past whatever height
-    /// the sheet started at (confirmed the hard way: the banner's text kept
-    /// truncating instead of driving a resize). Two known-good constants,
-    /// switched by `viewModel.saveErrorMessage`'s presence, sidestep that
-    /// entirely.
-    private static let compactHeight: CGFloat = 320
-    private static let expandedHeight: CGFloat = 400
+    /// Fixed, hand-measured heights rather than a live content measurement:
+    /// a `.sheet` proposes its current detent's height back to its own
+    /// content as a ceiling, so `GeometryReader`/`onGeometryChange`/
+    /// `.fixedSize` just report that already-capped size back — a feedback
+    /// loop that can never settle. `compactHeight` fits the title/project/
+    /// priority rows above the keyboard with no slack; `expandedHeight` adds
+    /// room for the error banner.
+    private static let compactHeight: CGFloat = 300
+    private static let expandedHeight: CGFloat = 366
 
     private static let priorityOptions: [PriorityOption] = [
         PriorityOption(priority: .low, label: "Low", color: VikunjaColor.Priority.low),
