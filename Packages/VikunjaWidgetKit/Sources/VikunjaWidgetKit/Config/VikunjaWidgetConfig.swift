@@ -27,6 +27,9 @@ public enum VikunjaWidgetConfig {
     /// `kind` string for the Control Center quick-add control (`QuickAddControl`).
     public static let quickAddControlKind = "QuickAddControl"
 
+    /// `kind` string for the Lock Screen quick-add accessory widget (`QuickAddWidget`).
+    public static let quickAddWidgetKind = "QuickAddWidget"
+
     /// URL scheme the widget deep-links back into the app with
     /// (`vikunja://today`, `vikunja://task/<id>`). Register it under the app
     /// target's URL Types.

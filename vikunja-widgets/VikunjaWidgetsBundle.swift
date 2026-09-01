@@ -14,6 +14,7 @@ import WidgetKit
 struct VikunjaWidgetsBundle: WidgetBundle {
     var body: some Widget {
         TodayWidget()
+        QuickAddWidget()
         if #available(iOS 18.0, *) {
             QuickAddControl()
         }
