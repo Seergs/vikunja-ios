@@ -5,6 +5,7 @@
 //  Created by Sergio Suárez álvarez on 24/08/26.
 //
 
+import AppIntents
 import SwiftUI
 
 @main
@@ -12,6 +13,15 @@ struct vikunjaApp: App {
     private let container = AppContainer()
 
     @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        // Let `OpenQuickAddIntent` (Siri, Control Center, Shortcuts) reach the
+        // app's live `DeepLinkRouter`: the intent sets `openAppWhenRun`, so its
+        // `perform()` runs here and hands off through the same route a
+        // `vikunja://quick-add` URL takes.
+        let deepLinkRouter = container.deepLinkRouter
+        AppDependencyManager.shared.add(dependency: deepLinkRouter)
+    }
 
     var body: some Scene {
         WindowGroup {
