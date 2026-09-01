@@ -1,5 +1,4 @@
 import AppIntents
-import VikunjaWidgetKit
 
 /// Siri / Spotlight / Action Button phrases for the app's App Intents. The
 /// system discovers these from the app bundle at install time, so an
@@ -9,8 +8,13 @@ struct VikunjaShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: OpenQuickAddIntent(),
             phrases: [
+                // Every phrase must contain \(.applicationName). Spanish
+                // translations live in AppShortcuts.xcstrings — Siri matches
+                // phrases in its own language, not by the words spoken.
                 "Add a task in \(.applicationName)",
-                "New \(.applicationName) task",
+                "Add a task to \(.applicationName)",
+                "New task in \(.applicationName)",
+                "Create a task in \(.applicationName)",
                 "Quick add in \(.applicationName)",
             ],
             shortTitle: "Add Task",

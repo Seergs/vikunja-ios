@@ -1,0 +1,27 @@
+import AppIntents
+import VikunjaNavigation
+
+/// Opens the quick-add task sheet. Backs the Siri shortcut (`VikunjaShortcuts`)
+/// and shows up in the Shortcuts app and Spotlight on its own.
+///
+/// Lives in the app target, not `VikunjaWidgetKit`: an App Intent type that
+/// ends up registered in both the app and the widget extension breaks Siri's
+/// App Shortcut dispatch ("something went wrong"). The Control Center control
+/// uses its own `QuickAddControlIntent` in the extension instead.
+///
+/// `openAppWhenRun` is true, so `perform()` runs in the app's process and hands
+/// off through `DeepLinkRouter.shared` — the same route a `vikunja://quick-add`
+/// URL takes.
+struct OpenQuickAddIntent: AppIntent {
+    static let title: LocalizedStringResource = "Add Task"
+    static let description = IntentDescription("Opens Vikunja's quick-add sheet to jot down a new task.")
+    static let openAppWhenRun = true
+
+    init() {}
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        DeepLinkRouter.shared.open(.quickAdd(projectID: nil))
+        return .result()
+    }
+}
