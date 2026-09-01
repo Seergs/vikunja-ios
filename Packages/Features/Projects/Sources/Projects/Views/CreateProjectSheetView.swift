@@ -3,27 +3,23 @@ import VikunjaCore
 import VikunjaDesignSystem
 
 /// The "new project" sheet: title, color, and parent project — matching what
-/// `CreateProjectViewModel` needs to create a project. A compact bottom sheet
-/// rather than a full-height one — no `NavigationStack`/toolbar, since those
-/// force the system to take over the whole screen — following the same shape
-/// as `Tasks`' `QuickAddSheetView`. Presented as a plain `.sheet` by
-/// whichever screen owns the trigger (`ProjectsView`'s toolbar button,
-/// today).
+/// `CreateProjectViewModel` needs to create a project. Same shape as `Tasks`'
+/// `QuickAddSheetView`: a compact bottom sheet whose `NavigationStack` carries
+/// an inline title and `Cancel`/`Save` in the toolbar, on a single detent
+/// sized to its content so the keyboard doesn't stretch it. Presented as a
+/// plain `.sheet` by whichever screen owns the trigger (`ProjectsView`'s
+/// toolbar button, today).
 public struct CreateProjectSheetView: View {
     @Bindable var viewModel: CreateProjectViewModel
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTitleFocused: Bool
     @State private var isShowingParentPicker = false
 
-    /// Same reasoning as `QuickAddSheetView.detent`: derived straight off
-    /// `saveErrorMessage` under one `.animation(_:value:)` so the banner's
-    /// transition and the detent resize animate as a single transaction
-    /// instead of two racing ones.
-    private var detent: Binding<PresentationDetent> {
-        Binding(
-            get: { .height(viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight) },
-            set: { _ in },
-        )
+    /// A single detent sized to the current content — see
+    /// `QuickAddSheetView.detentHeight` for why a two-detent set stretches
+    /// under the keyboard.
+    private var detentHeight: CGFloat {
+        viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight
     }
 
     public init(viewModel: CreateProjectViewModel) {
@@ -31,26 +27,43 @@ public struct CreateProjectSheetView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
-            header
+        NavigationStack {
+            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+                nameField
 
-            nameField
+                colorSection
 
-            colorSection
+                parentProjectSection
 
-            parentProjectSection
-
-            if let message = viewModel.saveErrorMessage {
-                SaveErrorBanner(message: message)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                if let message = viewModel.saveErrorMessage {
+                    SaveErrorBanner(message: message)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.top, VikunjaSpacing.md)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
+            .navigationTitle("New Project")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if viewModel.isSaving {
+                        ProgressView()
+                    } else {
+                        Button("Save", action: save)
+                            .fontWeight(.bold)
+                            .disabled(!viewModel.canSave)
+                    }
+                }
             }
         }
-        .padding(.horizontal, VikunjaSpacing.md)
-        .padding(.top, VikunjaSpacing.sm)
-        .padding(.bottom, VikunjaSpacing.lg)
-        .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
-        .presentationDetents([.height(Self.compactHeight), .height(Self.expandedHeight)], selection: detent)
-        .presentationDragIndicator(.visible)
+        .presentationDetents([.height(detentHeight)])
         .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
         .sheet(isPresented: $isShowingParentPicker) {
             ProjectPickerSheet(
@@ -68,30 +81,6 @@ public struct CreateProjectSheetView: View {
             }
             await viewModel.load()
             isTitleFocused = true
-        }
-    }
-
-    private var header: some View {
-        ZStack {
-            Text("New Project")
-                .font(VikunjaFont.subheadline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.primary)
-
-            HStack {
-                Button("Cancel") { dismiss() }
-                    .foregroundStyle(VikunjaColor.textSecondary)
-
-                Spacer()
-
-                if viewModel.isSaving {
-                    ProgressView()
-                } else {
-                    Button("Save", action: save)
-                        .fontWeight(.bold)
-                        .disabled(!viewModel.canSave)
-                }
-            }
         }
     }
 
@@ -159,8 +148,8 @@ public struct CreateProjectSheetView: View {
         }
     }
 
-    private static let compactHeight: CGFloat = 320
-    private static let expandedHeight: CGFloat = 400
+    private static let compactHeight: CGFloat = 300
+    private static let expandedHeight: CGFloat = 366
     private static let colorSwatches = VikunjaColor.SwatchPalette.swatches
 }
 

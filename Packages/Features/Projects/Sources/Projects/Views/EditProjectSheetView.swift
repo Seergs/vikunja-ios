@@ -2,17 +2,17 @@ import SwiftUI
 import VikunjaCore
 import VikunjaDesignSystem
 
+/// Edit an existing project's title, color, and parent — the same shape as
+/// `CreateProjectSheetView` (`NavigationStack` + inline title + toolbar
+/// `Cancel`/`Save`, single content-sized detent).
 public struct EditProjectSheetView: View {
     @Bindable var viewModel: EditProjectViewModel
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTitleFocused: Bool
     @State private var isShowingParentPicker = false
 
-    private var detent: Binding<PresentationDetent> {
-        Binding(
-            get: { .height(viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight) },
-            set: { _ in },
-        )
+    private var detentHeight: CGFloat {
+        viewModel.saveErrorMessage != nil ? Self.expandedHeight : Self.compactHeight
     }
 
     public init(viewModel: EditProjectViewModel) {
@@ -20,26 +20,43 @@ public struct EditProjectSheetView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
-            header
+        NavigationStack {
+            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+                nameField
 
-            nameField
+                colorSection
 
-            colorSection
+                parentProjectSection
 
-            parentProjectSection
-
-            if let message = viewModel.saveErrorMessage {
-                SaveErrorBanner(message: message)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                if let message = viewModel.saveErrorMessage {
+                    SaveErrorBanner(message: message)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.top, VikunjaSpacing.md)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
+            .navigationTitle("Edit Project")
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if viewModel.isSaving {
+                        ProgressView()
+                    } else {
+                        Button("Save", action: save)
+                            .fontWeight(.bold)
+                            .disabled(!viewModel.canSave)
+                    }
+                }
             }
         }
-        .padding(.horizontal, VikunjaSpacing.md)
-        .padding(.top, VikunjaSpacing.sm)
-        .padding(.bottom, VikunjaSpacing.lg)
-        .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
-        .presentationDetents([.height(Self.compactHeight), .height(Self.expandedHeight)], selection: detent)
-        .presentationDragIndicator(.visible)
+        .presentationDetents([.height(detentHeight)])
         .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
         .sheet(isPresented: $isShowingParentPicker) {
             ProjectPickerSheet(
@@ -55,30 +72,6 @@ public struct EditProjectSheetView: View {
         .task {
             isTitleFocused = true
             await viewModel.load()
-        }
-    }
-
-    private var header: some View {
-        ZStack {
-            Text("Edit Project")
-                .font(VikunjaFont.subheadline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.primary)
-
-            HStack {
-                Button("Cancel") { dismiss() }
-                    .foregroundStyle(VikunjaColor.textSecondary)
-
-                Spacer()
-
-                if viewModel.isSaving {
-                    ProgressView()
-                } else {
-                    Button("Save", action: save)
-                        .fontWeight(.bold)
-                        .disabled(!viewModel.canSave)
-                }
-            }
         }
     }
 
@@ -139,8 +132,8 @@ public struct EditProjectSheetView: View {
         }
     }
 
-    private static let compactHeight: CGFloat = 340
-    private static let expandedHeight: CGFloat = 420
+    private static let compactHeight: CGFloat = 300
+    private static let expandedHeight: CGFloat = 366
     private static let colorSwatches = VikunjaColor.SwatchPalette.swatches
 }
 
