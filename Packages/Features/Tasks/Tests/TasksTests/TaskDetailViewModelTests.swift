@@ -936,6 +936,119 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func `attachment data returns the repository bytes`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        attachmentRepository.downloadData = [5: Data("PDFBYTES".utf8)]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
+        let attachment = TaskAttachment(
+            id: 5,
+            taskID: 1,
+            fileName: "spec.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 8,
+            created: Date(),
+            createdBy: User(id: 2, username: "sam"),
+        )
+
+        let data = await viewModel.attachmentData(for: attachment)
+
+        #expect(data == Data("PDFBYTES".utf8))
+        #expect(attachmentRepository.downloadedPreviewSizes == [nil])
+    }
+
+    @Test
+    func `attachment data toasts and returns nil on failure`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        attachmentRepository.downloadError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter,
+        )
+        let attachment = TaskAttachment(
+            id: 5,
+            taskID: 1,
+            fileName: "spec.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 8,
+            created: Date(),
+            createdBy: User(id: 2, username: "sam"),
+        )
+
+        let data = await viewModel.attachmentData(for: attachment)
+
+        #expect(data == nil)
+        #expect(toastPresenter.shownMessages.contains { $0.style == .error })
+    }
+
+    @Test
+    func `delete attachment removes it optimistically`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        let first = TaskAttachment(id: 1, taskID: 1, fileName: "a.pdf", mimeType: "application/pdf", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
+        let second = TaskAttachment(id: 2, taskID: 1, fileName: "b.png", mimeType: "image/png", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
+        attachmentRepository.attachments = [first, second]
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
+        await viewModel.loadAttachments()
+
+        await viewModel.deleteAttachment(first)
+
+        #expect(viewModel.attachments.map(\.id) == [2])
+    }
+
+    @Test
+    func `delete attachment rolls back and toasts on failure`() async {
+        let attachmentRepository = FakeTaskAttachmentRepository()
+        let attachment = TaskAttachment(id: 1, taskID: 1, fileName: "a.pdf", mimeType: "application/pdf", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
+        attachmentRepository.attachments = [attachment]
+        attachmentRepository.deleteError = .network("offline")
+        let toastPresenter = FakeToastPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: attachmentRepository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: toastPresenter,
+        )
+        await viewModel.loadAttachments()
+
+        await viewModel.deleteAttachment(attachment)
+
+        #expect(viewModel.attachments.map(\.id) == [1])
+        #expect(toastPresenter.shownMessages.contains { $0.style == .error })
+    }
+
+    @Test
     func `add comment appends the created comment`() async {
         let commentRepository = FakeTaskCommentRepository()
         let viewModel = TaskDetailViewModel(

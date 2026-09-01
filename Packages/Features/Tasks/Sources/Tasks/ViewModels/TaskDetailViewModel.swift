@@ -389,6 +389,38 @@ public final class TaskDetailViewModel {
         }
     }
 
+    /// Downloads an attachment's bytes for preview or sharing. Returns `nil`
+    /// and surfaces a toast on failure — the caller shows nothing rather than
+    /// a broken preview.
+    public func attachmentData(for attachment: TaskAttachment) async -> Data? {
+        do {
+            return try await attachmentRepository.downloadAttachment(
+                attachment.id,
+                fromTask: task.id,
+                previewSize: nil,
+            )
+        } catch let error as VikunjaError {
+            toastPresenter.show(error.displayMessage, style: .error)
+            return nil
+        } catch {
+            toastPresenter.show(error.localizedDescription, style: .error)
+            return nil
+        }
+    }
+
+    /// Deletes `attachment`, optimistically removing it and restoring the
+    /// whole list if the server rejects it — mirrors `deleteComment(_:)`.
+    public func deleteAttachment(_ attachment: TaskAttachment) async {
+        let previous = attachments
+        attachments.removeAll { $0.id == attachment.id }
+        do {
+            try await attachmentRepository.deleteAttachment(attachment.id, fromTask: task.id)
+        } catch {
+            attachments = previous
+            toastPresenter.show("Couldn't delete attachment", style: .error)
+        }
+    }
+
     /// Surfaces a toast when the file the user picked can't be read off disk
     /// (a security-scoped resource that won't open, an unreadable path) —
     /// the upload never starts in that case.

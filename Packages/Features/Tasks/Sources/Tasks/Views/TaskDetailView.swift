@@ -1,3 +1,4 @@
+import QuickLook
 import SwiftUI
 import UniformTypeIdentifiers
 import VikunjaCore
@@ -23,6 +24,8 @@ public struct TaskDetailView: View {
     @State private var commentPendingEdit: TaskComment?
     @State private var relationSheetStep: RelationSheetStep?
     @State private var isShowingFileImporter = false
+    @State private var attachmentPendingDeletion: TaskAttachment?
+    @State private var attachmentPreviewURL: URL?
     @State private var relatedTaskDestination: RelatedTaskDestination?
     @State private var projectDestinationBox: ProjectDestinationBox?
     @State private var isEditingTitle = false
@@ -173,24 +176,14 @@ public struct TaskDetailView: View {
                 Task { await viewModel.editComment(comment, newText: newText) }
             }
         }
-        .fileImporter(
-            isPresented: $isShowingFileImporter,
-            allowedContentTypes: [.item],
-            allowsMultipleSelection: false,
-        ) { result in
-            guard case let .success(urls) = result, let url = urls.first else { return }
-            guard let picked = PickedFile(url: url) else {
-                viewModel.reportAttachmentReadFailure()
-                return
-            }
-            Task {
-                await viewModel.uploadAttachment(
-                    data: picked.data,
-                    fileName: picked.fileName,
-                    mimeType: picked.mimeType,
-                )
-            }
-        }
+        .modifier(
+            AttachmentActionsModifier(
+                viewModel: viewModel,
+                isShowingFileImporter: $isShowingFileImporter,
+                pendingDeletion: $attachmentPendingDeletion,
+                previewURL: $attachmentPreviewURL,
+            ),
+        )
         .sheet(item: $relationSheetStep) { step in
             switch step {
             case .pickKind:
@@ -260,6 +253,13 @@ public struct TaskDetailView: View {
             if let (task, project) = await viewModel.loadRelatedTask(relation) {
                 relatedTaskDestination = RelatedTaskDestination(task: task, project: project)
             }
+        }
+    }
+
+    private func openAttachment(_ attachment: TaskAttachment) {
+        Task {
+            guard let data = await viewModel.attachmentData(for: attachment) else { return }
+            attachmentPreviewURL = AttachmentPreviewFile.write(data, named: attachment.fileName)
         }
     }
 
@@ -430,6 +430,8 @@ public struct TaskDetailView: View {
                 attachments: viewModel.attachments,
                 loadState: viewModel.attachmentsLoadState,
                 isUploading: viewModel.isUploadingAttachment,
+                onOpen: openAttachment,
+                onDelete: { attachment in attachmentPendingDeletion = attachment },
             )
         }
 
@@ -934,6 +936,57 @@ private struct AddRelationButton: View {
     }
 }
 
+/// The attachment file-importer, QuickLook preview, and delete confirmation,
+/// grouped off `TaskDetailView.body` — its modifier chain is long enough that
+/// folding these in inline pushes the type-checker past its time budget.
+private struct AttachmentActionsModifier: ViewModifier {
+    @Bindable var viewModel: TaskDetailViewModel
+    @Binding var isShowingFileImporter: Bool
+    @Binding var pendingDeletion: TaskAttachment?
+    @Binding var previewURL: URL?
+
+    func body(content: Content) -> some View {
+        content
+            .fileImporter(
+                isPresented: $isShowingFileImporter,
+                allowedContentTypes: [.item],
+                allowsMultipleSelection: false,
+            ) { result in
+                guard case let .success(urls) = result, let url = urls.first else { return }
+                guard let picked = PickedFile(url: url) else {
+                    viewModel.reportAttachmentReadFailure()
+                    return
+                }
+                Task {
+                    await viewModel.uploadAttachment(
+                        data: picked.data,
+                        fileName: picked.fileName,
+                        mimeType: picked.mimeType,
+                    )
+                }
+            }
+            .quickLookPreview($previewURL)
+            .confirmationDialog(
+                "This permanently deletes the attachment.",
+                isPresented: Binding(
+                    get: { pendingDeletion != nil },
+                    set: {
+                        if !$0 {
+                            pendingDeletion = nil
+                        }
+                    },
+                ),
+                titleVisibility: .visible,
+                presenting: pendingDeletion,
+            ) { attachment in
+                Button("Delete Attachment", role: .destructive) {
+                    Task { await viewModel.deleteAttachment(attachment) }
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+    }
+}
+
 /// The "+ Add" affordance next to the Attachments section header.
 private struct AddAttachmentButton: View {
     let action: () -> Void
@@ -1410,6 +1463,8 @@ private struct AttachmentsSection: View {
     let attachments: [TaskAttachment]
     let loadState: ScreenLoadState
     var isUploading = false
+    let onOpen: (TaskAttachment) -> Void
+    let onDelete: (TaskAttachment) -> Void
 
     private var emptyStateMessage: String {
         if case let .failure(message) = loadState {
@@ -1426,7 +1481,11 @@ private struct AttachmentsSection: View {
                     .foregroundStyle(VikunjaColor.textTertiary)
             } else {
                 ForEach(attachments) { attachment in
-                    AttachmentRow(attachment: attachment)
+                    AttachmentRow(
+                        attachment: attachment,
+                        onOpen: { onOpen(attachment) },
+                        onDelete: { onDelete(attachment) },
+                    )
                 }
             }
 
@@ -1456,6 +1515,8 @@ private struct AttachmentUploadingRow: View {
 
 private struct AttachmentRow: View {
     let attachment: TaskAttachment
+    let onOpen: () -> Void
+    let onDelete: () -> Void
 
     private var subtitle: String {
         let size = AttachmentSizeFormatter.string(for: attachment.sizeBytes)
@@ -1464,28 +1525,42 @@ private struct AttachmentRow: View {
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm) {
-            Image(systemName: AttachmentIcon.systemName(forMimeType: attachment.mimeType))
-                .font(.system(size: 17))
-                .foregroundStyle(VikunjaColor.brandPrimary)
-                .frame(width: 28)
+        Button(action: onOpen) {
+            HStack(spacing: VikunjaSpacing.sm) {
+                Image(systemName: AttachmentIcon.systemName(forMimeType: attachment.mimeType))
+                    .font(.system(size: 17))
+                    .foregroundStyle(VikunjaColor.brandPrimary)
+                    .frame(width: 28)
 
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                Text(attachment.fileName)
-                    .font(.system(size: 14.5, weight: .medium))
-                    .foregroundStyle(Color.primary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                Text(subtitle)
-                    .font(.system(size: 12))
+                VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                    Text(attachment.fileName)
+                        .font(.system(size: 14.5, weight: .medium))
+                        .foregroundStyle(Color.primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundStyle(VikunjaColor.textTertiary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "arrow.down.circle")
+                    .font(.system(size: 15))
                     .foregroundStyle(VikunjaColor.textTertiary)
             }
+            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
+            .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
         }
-        .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+        .buttonStyle(.plain)
+        .contextMenu {
+            // `role: .destructive` alone renders blue here — the tab bar's
+            // `.tint(VikunjaColor.brandPrimary)` leaks in, same as
+            // `CommentRow`'s context menu.
+            Button("Delete Attachment", systemImage: "trash", role: .destructive, action: onDelete)
+                .tint(VikunjaColor.Semantic.danger)
+        }
     }
 }
 
@@ -1519,6 +1594,26 @@ private enum AttachmentIcon {
 private enum AttachmentSizeFormatter {
     static func string(for bytes: Int) -> String {
         Int64(bytes).formatted(.byteCount(style: .file))
+    }
+}
+
+/// Writes downloaded attachment bytes to a temp file so QuickLook can preview
+/// it — the download is bearer-authed, so its remote URL can't be handed to
+/// QuickLook directly. Files land in a dedicated subfolder that's cleared on
+/// each write to keep only the most recent preview around.
+private enum AttachmentPreviewFile {
+    static func write(_ data: Data, named fileName: String) -> URL? {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("attachment-previews", isDirectory: true)
+        try? FileManager.default.removeItem(at: directory)
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let sanitized = fileName.replacingOccurrences(of: "/", with: "_")
+            let url = directory.appendingPathComponent(sanitized.isEmpty ? "attachment" : sanitized)
+            try data.write(to: url, options: .atomic)
+            return url
+        } catch {
+            return nil
+        }
     }
 }
 
