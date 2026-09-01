@@ -46,6 +46,10 @@ public actor URLSessionAPIClient: APIClient {
         _ = try await sendRaw(endpoint)
     }
 
+    public func data(_ endpoint: Endpoint) async throws -> Data {
+        try await sendRaw(endpoint)
+    }
+
     private func sendRaw(_ endpoint: Endpoint) async throws -> Data {
         guard let url = makeURL(for: endpoint) else {
             throw VikunjaError.invalidInstanceURL
@@ -55,7 +59,7 @@ public actor URLSessionAPIClient: APIClient {
         request.httpMethod = endpoint.method.rawValue
         request.httpBody = endpoint.body
         if endpoint.body != nil {
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(endpoint.contentType ?? "application/json", forHTTPHeaderField: "Content-Type")
         }
         if let token = await authTokenProvider() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

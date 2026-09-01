@@ -239,4 +239,42 @@ struct URLSessionAPIClientTests {
         #expect(request.httpMethod == "DELETE")
         #expect(request.url?.path == "/api/v1/projects/7")
     }
+
+    @Test
+    func `data returns the response body untouched`() async throws {
+        // A body that is not JSON — `data(_:)` must hand it back as-is
+        // rather than trying to decode it.
+        let raw = "%PDF-1.4 not json at all"
+        let (session, _) = MockURLProtocol.makeSession(statusCode: 200, body: raw)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
+
+        let received = try await client.data(Endpoint(path: "/api/v1/tasks/1/attachments/2"))
+
+        #expect(received == Data(raw.utf8))
+    }
+
+    @Test
+    func `data maps unauthorized status to domain error`() async throws {
+        let (session, _) = MockURLProtocol.makeSession(statusCode: 401, body: "")
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
+
+        await #expect(throws: VikunjaError.unauthorized) {
+            _ = try await client.data(Endpoint(path: "/api/v1/tasks/1/attachments/2"))
+        }
+    }
+
+    @Test
+    func `sends the endpoints content type for A multipart body`() async throws {
+        var form = MultipartFormData(boundary: "TESTBOUNDARY")
+        form.addFile(name: "files", fileName: "a.txt", mimeType: "text/plain", data: Data("hi".utf8))
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "{}")
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
+
+        try await client.send(Endpoint.multipart(path: "/api/v1/tasks/1/attachments", method: .put, form: form))
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == "multipart/form-data; boundary=TESTBOUNDARY")
+        let sentBody = try #require(request.httpBody)
+        #expect(String(data: sentBody, encoding: .utf8)?.contains(#"name="files"; filename="a.txt""#) == true)
+    }
 }
