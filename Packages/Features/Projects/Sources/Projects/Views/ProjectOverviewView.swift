@@ -501,7 +501,7 @@ private struct ProjectTaskRow: View {
 
                 HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
                     if let dueDate = task.dueDate {
-                        Text(dueDate, style: .date)
+                        Text(DueDateFormatter.compact(dueDate))
                             .font(.system(size: 12.5, weight: .regular))
                             .foregroundStyle(isOverdue ? VikunjaColor.Semantic.dangerText : VikunjaColor.textSecondary)
                     }
@@ -522,6 +522,7 @@ private struct ProjectTaskRow: View {
                         }
                     }
                 }
+                .lineLimit(1)
 
                 if !task.labels.isEmpty {
                     HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
