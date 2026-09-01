@@ -199,7 +199,7 @@ private struct TodayWidgetRow: View {
         case .overdue: return "Overdue"
         case .today: return "Today"
         case .upcoming:
-            return dueDate.formatted(.dateTime.month(.abbreviated).day())
+            return DueDateFormatter.compact(dueDate)
         }
     }
 }
