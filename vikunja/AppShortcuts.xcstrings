@@ -1,0 +1,34 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add a task in ${applicationName}" : {
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Add a task in ${applicationName}",
+              "Add a task to ${applicationName}",
+              "New task in ${applicationName}",
+              "Create a task in ${applicationName}",
+              "Quick add in ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Añade una tarea en ${applicationName}",
+              "Agrega una tarea a ${applicationName}",
+              "Crea una tarea en ${applicationName}",
+              "Nueva tarea en ${applicationName}",
+              "Añadir rápido en ${applicationName}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
