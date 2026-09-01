@@ -127,12 +127,12 @@ struct QuickAddTaskViewModelTests {
     }
 
     @Test
-    func `project groups arranges top level projects with their direct children`() async {
+    func `load exposes the non-archived projects ordered by position`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work", parentProjectID: nil, position: 0),
             Project(id: 2, title: "Redesign", parentProjectID: 1, position: 1),
-            Project(id: 3, title: "Personal", parentProjectID: nil, position: 1),
+            Project(id: 3, title: "Archived", isArchived: true, parentProjectID: nil, position: 2),
             Project(id: 4, title: "Launch", parentProjectID: 1, position: 0),
         ]
         let viewModel = QuickAddTaskViewModel(
@@ -143,9 +143,7 @@ struct QuickAddTaskViewModelTests {
 
         await viewModel.load()
 
-        #expect(viewModel.projectGroups.map(\.root.id) == [1, 3])
-        #expect(viewModel.projectGroups[0].children.map(\.id) == [4, 2])
-        #expect(viewModel.projectGroups[1].children.isEmpty)
+        #expect(viewModel.projects.map(\.id) == [1, 4, 2])
     }
 
     @Test

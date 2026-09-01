@@ -117,13 +117,20 @@ public struct TaskDetailView: View {
             LabelPickerSheet(viewModel: viewModel)
         }
         .sheet(isPresented: $isShowingMovePicker) {
-            MoveProjectPickerSheet(viewModel: viewModel) { project in
+            ProjectPickerSheet(
+                title: "Move to Project",
+                projects: viewModel.allProjects,
+                selectedProjectID: nil,
+                excludingSubtreeOf: viewModel.task.projectID,
+            ) { project in
+                guard let project else { return }
                 Task {
                     if await viewModel.move(to: project) {
                         dismiss()
                     }
                 }
             }
+            .task { await viewModel.loadAllProjects() }
         }
         .confirmationDialog(
             "This permanently deletes the task.",
@@ -1139,95 +1146,9 @@ private struct DueDatePickerSheet: View {
 
 /// Add/remove labels on the task, and create a new one on the fly — matches
 /// the design mockup's label sheet. A `.searchable` list rather than a
-/// custom text field, the same pattern `QuickAddSheetView`'s
-/// `ProjectPickerView` uses; unlike that picker, tapping a row here toggles
+/// custom text field; unlike the project picker, tapping a row here toggles
 /// membership instead of dismissing, since a task can carry more than one
 /// label.
-/// The "Move to Project" sheet: every other project on the instance, grouped
-/// under its top-level project (mirrors `QuickAddSheetView`'s "Choose
-/// Project" picker), filterable by `.searchable`. Unlike that picker, tapping
-/// a row acts immediately — there's no separate "Save" step for a move — via
-/// `onSelect`, which the caller uses to persist the change and pop the
-/// screen.
-private struct MoveProjectPickerSheet: View {
-    @Bindable var viewModel: TaskDetailViewModel
-    let onSelect: (Project) -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var query = ""
-
-    private var filteredGroups: [TaskDetailViewModel.ProjectGroup] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return viewModel.moveProjectGroups }
-        return viewModel.moveProjectGroups.compactMap { group in
-            let rootMatches = group.root.title.localizedCaseInsensitiveContains(trimmed)
-            let matchingChildren = group.children.filter { $0.title.localizedCaseInsensitiveContains(trimmed) }
-            guard rootMatches || !matchingChildren.isEmpty else { return nil }
-            return TaskDetailViewModel.ProjectGroup(root: group.root, children: rootMatches ? group.children : matchingChildren)
-        }
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.lg) {
-                    ForEach(filteredGroups) { group in
-                        VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                            MoveProjectPickerRow(project: group.root, isBold: true) { select(group.root) }
-                            ForEach(group.children) { child in
-                                MoveProjectPickerRow(project: child, isBold: false) { select(child) }
-                                    .padding(.leading, VikunjaSpacing.lg)
-                            }
-                        }
-                    }
-                }
-                .padding(.vertical, VikunjaSpacing.sm)
-            }
-            .searchable(text: $query, prompt: "Search projects...")
-            .navigationTitle("Move to Project")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-            }
-        }
-        .presentationDetents([.fraction(0.75), .large])
-        .presentationDragIndicator(.visible)
-        .task { await viewModel.loadAllProjects() }
-    }
-
-    private func select(_ project: Project) {
-        dismiss()
-        onSelect(project)
-    }
-}
-
-private struct MoveProjectPickerRow: View {
-    let project: Project
-    let isBold: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
-                    .frame(width: 8, height: 8)
-                Text(project.title)
-                    .font(.system(size: 15, weight: isBold ? .semibold : .regular))
-                    .foregroundStyle(Color.primary)
-                Spacer()
-            }
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.vertical, VikunjaSpacing.sm)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 private struct LabelPickerSheet: View {
     @Bindable var viewModel: TaskDetailViewModel
     @Environment(\.dismiss) private var dismiss

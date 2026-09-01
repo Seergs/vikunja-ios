@@ -1033,7 +1033,7 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
-    func `move project groups excludes the tasks current project`() async {
+    func `loadAllProjects populates the move-picker candidates`() async {
         let projectRepository = FakeProjectRepository()
         projectRepository.projects = [
             Project(id: 1, title: "Work"),
@@ -1053,8 +1053,7 @@ struct TaskDetailViewModelTests {
 
         await viewModel.loadAllProjects()
 
-        #expect(viewModel.moveProjectGroups.map(\.root.id) == [2])
-        #expect(viewModel.moveProjectGroups.first?.children.map(\.id) == [3])
+        #expect(viewModel.allProjects.map(\.id) == [1, 2, 3])
     }
 
     @Test

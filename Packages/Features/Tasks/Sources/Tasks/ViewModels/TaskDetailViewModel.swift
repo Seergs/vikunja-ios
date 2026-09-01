@@ -239,29 +239,6 @@ public final class TaskDetailViewModel {
         allProjects = await (try? projectRepository.fetchProjects()) ?? allProjects
     }
 
-    /// `allProjects` arranged for the "Move to Project" picker: one group per
-    /// top-level project, each carrying its direct children (mirrors
-    /// `QuickAddTaskViewModel.projectGroups` — only one level deep, not a
-    /// full recursive tree), with the task's current project excluded since
-    /// moving it there would be a no-op.
-    public var moveProjectGroups: [ProjectGroup] {
-        let candidates = allProjects.filter { $0.id != task.projectID }
-        let childrenByParentID = Dictionary(grouping: candidates, by: \.parentProjectID)
-        return (childrenByParentID[nil] ?? [])
-            .sorted { $0.position < $1.position }
-            .map { root in
-                ProjectGroup(root: root, children: (childrenByParentID[root.id] ?? []).sorted { $0.position < $1.position })
-            }
-    }
-
-    public struct ProjectGroup: Identifiable, Hashable {
-        public let root: Project
-        public let children: [Project]
-        public var id: Int {
-            root.id
-        }
-    }
-
     /// Moves the task to `project` and persists it, mirroring `persist(previous:)`'s
     /// optimistic-with-rollback pattern. `project` is fixed for this view
     /// model's whole lifetime, so a moved task's own detail screen can no

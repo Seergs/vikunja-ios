@@ -72,7 +72,13 @@ public struct QuickAddSheetView: View {
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
         .sheet(isPresented: $isShowingProjectPicker) {
-            ProjectPickerView(groups: viewModel.projectGroups, selectedProjectID: $viewModel.selectedProjectID)
+            ProjectPickerSheet(
+                title: "Choose Project",
+                projects: viewModel.projects,
+                selectedProjectID: viewModel.selectedProjectID,
+            ) { project in
+                viewModel.selectedProjectID = project?.id
+            }
         }
         .task { await viewModel.load() }
     }
@@ -220,9 +226,7 @@ private struct ProjectField: View {
         Button(action: action) {
             HStack(spacing: VikunjaSpacing.sm) {
                 if let project {
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
-                        .frame(width: 8, height: 8)
+                    ProjectPickerIcon(hexColor: project.hexColor)
                     Text(project.title)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(Color.primary)
@@ -270,109 +274,5 @@ private struct PriorityChip: View {
             )
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// The "Choose Project" sheet: every non-archived project, grouped under its
-/// top-level project (see `QuickAddTaskViewModel.ProjectGroup`), filterable
-/// by `.searchable`. A separate, taller sheet from the compact quick-add
-/// card itself — this one can hold an arbitrarily long project list, so it
-/// gets a fixed large detent rather than a content-measured one.
-private struct ProjectPickerView: View {
-    let groups: [QuickAddTaskViewModel.ProjectGroup]
-    @Binding var selectedProjectID: Int?
-    @Environment(\.dismiss) private var dismiss
-    @State private var query = ""
-
-    private var filteredGroups: [QuickAddTaskViewModel.ProjectGroup] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return groups }
-        return groups.compactMap { group in
-            let rootMatches = group.root.title.localizedCaseInsensitiveContains(trimmed)
-            let matchingChildren = group.children.filter { $0.title.localizedCaseInsensitiveContains(trimmed) }
-            guard rootMatches || !matchingChildren.isEmpty else { return nil }
-            return QuickAddTaskViewModel.ProjectGroup(root: group.root, children: rootMatches ? group.children : matchingChildren)
-        }
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.lg) {
-                    ForEach(filteredGroups) { group in
-                        VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                            ProjectPickerRow(
-                                project: group.root,
-                                isBold: true,
-                                isSelected: selectedProjectID == group.root.id,
-                                action: { select(group.root) },
-                            )
-                            ForEach(group.children) { child in
-                                ProjectPickerRow(
-                                    project: child,
-                                    isBold: false,
-                                    isSelected: selectedProjectID == child.id,
-                                    action: { select(child) },
-                                )
-                                .padding(.leading, VikunjaSpacing.lg)
-                            }
-                        }
-                    }
-                }
-                .padding(.vertical, VikunjaSpacing.sm)
-            }
-            .searchable(text: $query, prompt: "Search projects...")
-            .navigationTitle("Choose Project")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                        .fontWeight(.semibold)
-                }
-            }
-        }
-        .presentationDetents([.fraction(0.75), .large])
-        .presentationDragIndicator(.visible)
-    }
-
-    private func select(_ project: Project) {
-        selectedProjectID = project.id
-        dismiss()
-    }
-}
-
-private struct ProjectPickerRow: View {
-    let project: Project
-    let isBold: Bool
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary)
-                    .frame(width: 8, height: 8)
-                Text(project.title)
-                    .font(.system(size: 15, weight: isBold ? .semibold : .regular))
-                    .foregroundStyle(Color.primary)
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(VikunjaColor.brandPrimary)
-                }
-            }
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .background(
-                isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
-            )
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, VikunjaSpacing.sm)
     }
 }
