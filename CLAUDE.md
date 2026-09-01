@@ -196,6 +196,15 @@ by the compiler, not just convention:
   - `VikunjaSpacing` — spacing scale on a 4pt grid (`xxs` through `xxl`).
   - `VikunjaRadius` — corner-radius scale (`sm`/`md`/`lg`) for fields, cards,
     buttons, sheet corners.
+  - `DueDateFormatter` (`Date/`) — `compact(_:relativeTo:)`, the shared
+    one-token due-date phrasing (`Today`/`Tomorrow`/`Yesterday` →
+    abbreviated weekday within a week → `Sep 6`, adding the year only when it
+    differs from the reference date). Every compact task row uses it
+    (`Features/Home`, `Features/Projects`, `Features/Search`, and the Today
+    widget's `.upcoming` label) instead of `Text(date, style: .date)`, whose
+    full localized date wraps a dense row onto several lines. Those rows also
+    pin the date/relations glyph to their natural width so a long project name
+    is what truncates, keeping the metadata line to one line.
   - **Project picker** (`ProjectPicker/`) — `ProjectPickerSheet`, the shared
     "pick a project" `.sheet` used by every screen that chooses one (quick-add,
     create/edit-project parent, "move task to project"). A native
