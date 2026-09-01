@@ -7,6 +7,7 @@ enum ServerInfoMapper {
             caldavEnabled: dto.caldavEnabled ?? false,
             totpEnabled: dto.totpEnabled ?? false,
             registrationEnabled: dto.registrationEnabled ?? false,
+            maxFileSizeBytes: MaxFileSizeParser.bytes(from: dto.maxFileSize),
         )
     }
 }

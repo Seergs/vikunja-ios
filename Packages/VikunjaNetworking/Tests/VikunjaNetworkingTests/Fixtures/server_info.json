@@ -2,5 +2,6 @@
   "version": "0.24.6",
   "caldav_enabled": true,
   "totp_enabled": true,
-  "registration_enabled": false
+  "registration_enabled": false,
+  "max_file_size": "20MB"
 }
