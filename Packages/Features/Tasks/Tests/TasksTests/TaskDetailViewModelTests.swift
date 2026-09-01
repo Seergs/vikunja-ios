@@ -16,6 +16,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -34,6 +35,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
             quickAddContext: context,
@@ -59,6 +61,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -80,6 +83,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -99,6 +103,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -128,6 +133,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -152,6 +158,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -171,6 +178,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -192,6 +200,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -211,6 +220,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -231,6 +241,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -250,6 +261,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -270,6 +282,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -289,6 +302,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -309,6 +323,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -329,6 +344,7 @@ struct TaskDetailViewModelTests {
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -349,6 +365,7 @@ struct TaskDetailViewModelTests {
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -370,6 +387,7 @@ struct TaskDetailViewModelTests {
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -392,6 +410,7 @@ struct TaskDetailViewModelTests {
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -411,6 +430,7 @@ struct TaskDetailViewModelTests {
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -433,6 +453,7 @@ struct TaskDetailViewModelTests {
             labelRepository: labelRepository,
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -453,6 +474,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -481,6 +503,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -502,6 +525,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -521,6 +545,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -542,6 +567,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -562,6 +588,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -584,6 +611,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: relationRepository,
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -615,6 +643,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -636,6 +665,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -666,6 +696,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -686,6 +717,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -706,6 +738,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: projectRepository,
             toastPresenter: FakeToastPresenter(),
         )
@@ -724,6 +757,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -742,6 +776,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: projectRepository,
             toastPresenter: FakeToastPresenter(),
         )
@@ -766,6 +801,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -787,6 +823,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -806,6 +843,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -825,6 +863,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -846,6 +885,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -871,6 +911,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -899,6 +940,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -924,6 +966,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -948,6 +991,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: FakeToastPresenter(),
         )
@@ -974,6 +1018,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: commentRepository,
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -997,6 +1042,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -1021,6 +1067,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -1047,6 +1094,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: projectRepository,
             toastPresenter: FakeToastPresenter(),
         )
@@ -1068,6 +1116,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )
@@ -1091,6 +1140,7 @@ struct TaskDetailViewModelTests {
             labelRepository: FakeLabelRepository(),
             relationRepository: FakeTaskRelationRepository(),
             commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
             projectRepository: FakeProjectRepository(),
             toastPresenter: toastPresenter,
         )

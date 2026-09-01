@@ -65,4 +65,13 @@ public struct VikunjaInstanceClientFactory: InstanceClientFactoryProtocol {
             client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
         )
     }
+
+    public func makeTaskAttachmentRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?,
+    ) -> TaskAttachmentRepositoryProtocol {
+        VikunjaTaskAttachmentRepository(
+            client: URLSessionAPIClient(baseURL: baseURL, authTokenProvider: tokenProvider),
+        )
+    }
 }

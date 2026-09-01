@@ -38,6 +38,7 @@ public final class TaskDetailViewModel {
     private let labelRepository: LabelRepositoryProtocol
     private let relationRepository: TaskRelationRepositoryProtocol
     private let commentRepository: TaskCommentRepositoryProtocol
+    private let attachmentRepository: TaskAttachmentRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
     /// Set by `AppContainer` so a quick-add opened while this task is on
@@ -52,6 +53,7 @@ public final class TaskDetailViewModel {
         labelRepository: LabelRepositoryProtocol,
         relationRepository: TaskRelationRepositoryProtocol,
         commentRepository: TaskCommentRepositoryProtocol,
+        attachmentRepository: TaskAttachmentRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting,
         quickAddContext: QuickAddContextTracking? = nil,
@@ -62,6 +64,7 @@ public final class TaskDetailViewModel {
         self.labelRepository = labelRepository
         self.relationRepository = relationRepository
         self.commentRepository = commentRepository
+        self.attachmentRepository = attachmentRepository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
         self.quickAddContext = quickAddContext
@@ -314,6 +317,7 @@ public final class TaskDetailViewModel {
             labelRepository: labelRepository,
             relationRepository: relationRepository,
             commentRepository: commentRepository,
+            attachmentRepository: attachmentRepository,
             projectRepository: projectRepository,
             toastPresenter: toastPresenter,
             quickAddContext: quickAddContext,

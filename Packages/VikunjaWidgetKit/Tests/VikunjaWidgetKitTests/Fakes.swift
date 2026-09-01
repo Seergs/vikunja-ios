@@ -173,6 +173,12 @@ struct FakeClientFactory: InstanceClientFactoryProtocol {
         fatalError("unused")
     }
 
+    func makeTaskAttachmentRepository(
+        baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
+    ) -> TaskAttachmentRepositoryProtocol {
+        fatalError("unused")
+    }
+
     func makeUserRepository(
         baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> UserRepositoryProtocol {

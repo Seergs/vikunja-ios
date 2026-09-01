@@ -35,6 +35,11 @@ public protocol InstanceClientFactoryProtocol: Sendable {
         tokenProvider: @escaping @Sendable () async -> String?,
     ) -> TaskCommentRepositoryProtocol
 
+    func makeTaskAttachmentRepository(
+        baseURL: URL,
+        tokenProvider: @escaping @Sendable () async -> String?,
+    ) -> TaskAttachmentRepositoryProtocol
+
     func makeUserRepository(
         baseURL: URL,
         tokenProvider: @escaping @Sendable () async -> String?,

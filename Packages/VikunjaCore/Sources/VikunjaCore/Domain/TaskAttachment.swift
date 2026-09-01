@@ -37,5 +37,8 @@ public struct TaskAttachment: Identifiable, Equatable, Sendable {
 /// a scaled-down preview instead of the original for `sm`/`md`/`lg`/`xl`
 /// (`?preview_size=`), and the full file when unset.
 public enum AttachmentPreviewSize: String, Sendable {
-    case sm, md, lg, xl
+    case sm
+    case md
+    case lg
+    case xl
 }

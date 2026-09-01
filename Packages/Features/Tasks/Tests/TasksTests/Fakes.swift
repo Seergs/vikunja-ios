@@ -231,6 +231,68 @@ final class FakeTaskCommentRepository: TaskCommentRepositoryProtocol, @unchecked
     }
 }
 
+final class FakeTaskAttachmentRepository: TaskAttachmentRepositoryProtocol, @unchecked Sendable {
+    var attachments: [TaskAttachment] = []
+    var downloadData: [Int: Data] = [:]
+    var fetchError: VikunjaError?
+    var uploadError: VikunjaError?
+    var downloadError: VikunjaError?
+    var deleteError: VikunjaError?
+    private(set) var uploaded: [(fileName: String, mimeType: String, size: Int, taskID: Int)] = []
+    private(set) var downloadedPreviewSizes: [AttachmentPreviewSize?] = []
+    private var nextID = 100
+
+    func fetchAttachments(taskID _: Int) async throws -> [TaskAttachment] {
+        if let fetchError {
+            throw fetchError
+        }
+        return attachments
+    }
+
+    func uploadAttachment(
+        data: Data,
+        fileName: String,
+        mimeType: String,
+        toTask taskID: Int,
+    ) async throws -> [TaskAttachment] {
+        if let uploadError {
+            throw uploadError
+        }
+        uploaded.append((fileName, mimeType, data.count, taskID))
+        let created = TaskAttachment(
+            id: nextID,
+            taskID: taskID,
+            fileName: fileName,
+            mimeType: mimeType,
+            sizeBytes: data.count,
+            created: Date(),
+            createdBy: User(id: 1, username: "me"),
+        )
+        nextID += 1
+        attachments.append(created)
+        return [created]
+    }
+
+    func downloadAttachment(
+        _ id: Int,
+        fromTask _: Int,
+        previewSize: AttachmentPreviewSize?,
+    ) async throws -> Data {
+        downloadedPreviewSizes.append(previewSize)
+        if let downloadError {
+            throw downloadError
+        }
+        return downloadData[id] ?? Data()
+    }
+
+    func deleteAttachment(_ id: Int, fromTask _: Int) async throws {
+        if let deleteError {
+            throw deleteError
+        }
+        attachments.removeAll { $0.id == id }
+    }
+}
+
 final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
     private(set) var shownMessages: [(message: String, style: ToastStyle)] = []
 
