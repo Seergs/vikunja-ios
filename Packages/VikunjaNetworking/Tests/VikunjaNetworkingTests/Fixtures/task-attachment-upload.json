@@ -1,0 +1,18 @@
+{
+  "errors": [],
+  "success": [
+    {
+      "id": 3,
+      "task_id": 42,
+      "created_by": { "id": 7, "username": "alex", "name": "Alex" },
+      "file": {
+        "id": 102,
+        "name": "notes.txt",
+        "mime": "text/plain",
+        "size": 128,
+        "created": "2026-08-22T10:15:00Z"
+      },
+      "created": "2026-08-22T10:15:00Z"
+    }
+  ]
+}

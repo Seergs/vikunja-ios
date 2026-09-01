@@ -263,6 +263,81 @@ struct URLSessionAPIClientTests {
         }
     }
 
+    // `VikunjaTaskAttachmentRepository` is tested here for the same reason as
+    // `VikunjaLabelRepository` above — it shares `MockURLProtocol`'s static
+    // state with this `.serialized` suite.
+
+    @Test
+    func `fetch attachments GE ts the tasks attachments endpoint`() async throws {
+        let body = #"""
+        [{"id":1,"task_id":42,"created_by":{"id":7,"username":"alex"},
+          "file":{"id":100,"name":"a.pdf","mime":"application/pdf","size":10,"created":"2026-08-20T09:00:00Z"},
+          "created":"2026-08-20T09:00:00Z"}]
+        """#
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: body)
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
+        let repository = VikunjaTaskAttachmentRepository(client: client)
+
+        let attachments = try await repository.fetchAttachments(taskID: 42)
+
+        #expect(attachments.map(\.fileName) == ["a.pdf"])
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "GET")
+        #expect(request.url?.path == "/api/v1/tasks/42/attachments")
+    }
+
+    @Test
+    func `upload attachment PU ts A multipart body to the attachments endpoint`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(
+            statusCode: 200,
+            body: #"{"errors":[],"success":[{"id":3,"task_id":42,"created_by":{"id":7,"username":"alex"},"file":{"id":102,"name":"notes.txt","mime":"text/plain","size":2,"created":"2026-08-22T10:15:00Z"},"created":"2026-08-22T10:15:00Z"}]}"#,
+        )
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
+        let repository = VikunjaTaskAttachmentRepository(client: client)
+
+        let created = try await repository.uploadAttachment(
+            data: Data("hi".utf8), fileName: "notes.txt", mimeType: "text/plain", toTask: 42,
+        )
+
+        #expect(created.map(\.id) == [3])
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "PUT")
+        #expect(request.url?.path == "/api/v1/tasks/42/attachments")
+        #expect(request.value(forHTTPHeaderField: "Content-Type")?.hasPrefix("multipart/form-data; boundary=") == true)
+        let bodyData = try #require(request.httpBody)
+        let sentBody = try #require(String(data: bodyData, encoding: .utf8))
+        #expect(sentBody.contains(#"name="files"; filename="notes.txt""#))
+        #expect(sentBody.contains("hi"))
+    }
+
+    @Test
+    func `download attachment GE ts the raw bytes with the preview size query`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "RAWBYTES")
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
+        let repository = VikunjaTaskAttachmentRepository(client: client)
+
+        let data = try await repository.downloadAttachment(2, fromTask: 42, previewSize: .sm)
+
+        #expect(data == Data("RAWBYTES".utf8))
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "GET")
+        #expect(request.url?.path == "/api/v1/tasks/42/attachments/2")
+        #expect(request.url?.query == "preview_size=sm")
+    }
+
+    @Test
+    func `delete attachment DELET es the attachment by ID`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: "")
+        let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)
+        let repository = VikunjaTaskAttachmentRepository(client: client)
+
+        try await repository.deleteAttachment(2, fromTask: 42)
+
+        let request = try #require(await capture.lastRequest)
+        #expect(request.httpMethod == "DELETE")
+        #expect(request.url?.path == "/api/v1/tasks/42/attachments/2")
+    }
+
     @Test
     func `sends the endpoints content type for A multipart body`() async throws {
         var form = MultipartFormData(boundary: "TESTBOUNDARY")

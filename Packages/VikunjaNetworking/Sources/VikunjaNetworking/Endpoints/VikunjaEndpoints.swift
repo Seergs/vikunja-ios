@@ -127,6 +127,27 @@ enum VikunjaEndpoints {
         Endpoint(path: "/api/v1/tasks/\(taskID)/comments/\(commentID)", method: .delete)
     }
 
+    static func taskAttachments(taskID: Int) -> Endpoint {
+        Endpoint(path: "/api/v1/tasks/\(taskID)/attachments")
+    }
+
+    static func uploadTaskAttachment(taskID: Int, form: MultipartFormData) -> Endpoint {
+        .multipart(path: "/api/v1/tasks/\(taskID)/attachments", method: .put, form: form)
+    }
+
+    static func downloadTaskAttachment(
+        taskID: Int,
+        attachmentID: Int,
+        previewSize: AttachmentPreviewSize?,
+    ) -> Endpoint {
+        let queryItems = previewSize.map { [URLQueryItem(name: "preview_size", value: $0.rawValue)] } ?? []
+        return Endpoint(path: "/api/v1/tasks/\(taskID)/attachments/\(attachmentID)", queryItems: queryItems)
+    }
+
+    static func deleteTaskAttachment(taskID: Int, attachmentID: Int) -> Endpoint {
+        Endpoint(path: "/api/v1/tasks/\(taskID)/attachments/\(attachmentID)", method: .delete)
+    }
+
     static func currentUser() -> Endpoint {
         Endpoint(path: "/api/v1/user")
     }
