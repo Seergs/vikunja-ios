@@ -196,6 +196,18 @@ by the compiler, not just convention:
   - `VikunjaSpacing` — spacing scale on a 4pt grid (`xxs` through `xxl`).
   - `VikunjaRadius` — corner-radius scale (`sm`/`md`/`lg`) for fields, cards,
     buttons, sheet corners.
+  - **Project picker** (`ProjectPicker/`) — `ProjectPickerSheet`, the shared
+    "pick a project" `.sheet` used by every screen that chooses one (quick-add,
+    create/edit-project parent, "move task to project"). A native
+    `.insetGrouped` `List` in the style of Notes' "Move to Folder": rows on a
+    card surface above the sheet, native separators, a disclosure chevron that
+    expands/collapses a project's subprojects to arbitrary depth, and a tinted
+    `folder.fill`/`list.bullet.rectangle.fill` glyph (`ProjectPickerIcon`, also
+    reused by the collapsed fields that open the sheet) instead of a color dot.
+    Takes a flat `[Project]` (the caller filters archived); `ProjectPickerTree`
+    (internal, unit-tested) builds the tree, does search filtering, and handles
+    `excludingSubtreeOf:` — this replaced the two-level `ProjectGroup` grouping
+    that used to be recomputed on five separate view models.
   - **Toasts** (`Toast/`) — the app-wide toast system. `ToastCenter` is an
     `@Observable`/`@MainActor` queue (one toast on screen at a time; a second
     `show` while one is up waits its turn) that implements `VikunjaCore`'s
