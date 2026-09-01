@@ -17,14 +17,19 @@ public enum DeepLink: Equatable, Sendable {
 
 /// Holds the deep link the app was last opened with until a screen is mounted
 /// and ready to act on it: set from `RootView`'s `.onOpenURL` or an App
-/// Intent's `perform()`, consumed by `QuickAddOverlay`. Kept as a long-lived
-/// instance on `AppContainer` (not view `@State`) so a link that arrives during
-/// a cold launch — before the tab shell exists — survives until the shell is
-/// up. Also registered with `AppDependencyManager` so `OpenQuickAddIntent` can
-/// reach the same instance.
+/// Intent's `perform()`, consumed by `QuickAddOverlay`. Not view `@State`, so a
+/// link that arrives during a cold launch — before the tab shell exists —
+/// survives until the shell is up.
+///
+/// A process-wide singleton (`shared`) rather than a `@Dependency`:
+/// `OpenQuickAddIntent` sets `openAppWhenRun`, so its `perform()` runs in the
+/// app's process and touches the same instance the UI observes, with no
+/// registration-timing window to lose an invocation in.
 @Observable
 @MainActor
 public final class DeepLinkRouter {
+    public static let shared = DeepLinkRouter()
+
     public private(set) var pending: DeepLink?
 
     public init() {}
