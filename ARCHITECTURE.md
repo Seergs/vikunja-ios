@@ -98,7 +98,8 @@ vikunja-ios/
     │
     ├── VikunjaNavigation/         # pure SwiftUI/Observation, no networking, no deps
     │   └── Sources/VikunjaNavigation/
-    │       └── Router.swift       # generic Router<Route: Hashable>, wraps NavigationPath
+    │       ├── Router.swift       # generic Router<Route: Hashable>, wraps NavigationPath
+    │       └── DeepLink.swift     # DeepLink enum + DeepLinkRouter (external entry points — §2c)
     │
     ├── VikunjaDesignSystem/       # color/typography/spacing/radius tokens; toast system (growing set)
     │   └── Sources/VikunjaDesignSystem/
@@ -319,6 +320,65 @@ editing, and removing connections is a `Features/Settings` concern
 (`ConnectionsListView`/`ConnectionFormView`, see §5) rather than top-level
 navigation state; `RootView` only reacts to the *result* via
 `onAccountsChanged`.
+
+---
+
+## 2c. External entry points: deep links and App Intents
+
+Several things outside the app need to open it straight to the quick-add task
+sheet: the Today widget's "add" button, a Lock Screen accessory widget, a Siri
+phrase / the Shortcuts app, and a Control Center control. Rather than each one
+knowing how to drive navigation, they all converge on one small primitive.
+
+**`DeepLink` + `DeepLinkRouter` (`VikunjaNavigation`).** `DeepLink` is a
+dependency-free enum of external destinations (`.quickAdd(projectID:)` today).
+`DeepLinkRouter` is an `@Observable`/`@MainActor` box holding one pending
+`DeepLink` — set by whoever received the external trigger, drained by the screen
+that acts on it. It lives in `VikunjaNavigation` (next to `Router<Route>`) for
+two reasons: it's a navigation primitive, and `VikunjaWidgetKit` has to import
+it so a widget-side App Intent can construct a `DeepLink` without depending on
+the app target.
+
+**Feeding the router:**
+
+- **URL scheme.** The app registers `vikunja://` (an `Info.plist`
+  `CFBundleURLTypes` entry — the one reason the otherwise-generated Info.plist
+  is checked in). `RootView`'s `.onOpenURL` parses `vikunja://quick-add` into a
+  `DeepLink` (parsing stays in the app target, since the scheme string is
+  `VikunjaWidgetKit`'s) and calls `router.open(_:)`. Both widgets reach it via
+  `.widgetURL` — the same mechanism the Today widget already used for
+  `vikunja://today`.
+- **App Intents.** `OpenQuickAddIntent` (`openAppWhenRun = true`) calls
+  `DeepLinkRouter.shared.open(.quickAdd(...))` from its `perform()`.
+
+**Draining the router.** `MainTabView`'s `QuickAddOverlay` — the same child view
+that owns the FAB and its sheet (§2b) — observes `router.pending` via
+`.onChange` (a link that lands while the shell is up) plus `.task` (a link
+already parked at cold launch, before the tab shell existed), presents the
+quick-add sheet, and clears the router. This stays in `QuickAddOverlay` rather
+than `MainTabView` for the same reason the FAB state does: reading the router in
+`MainTabView`'s body would rebuild every tab's `NavigationStack`.
+
+**Two decisions worth recording:**
+
+- **A process-wide singleton (`DeepLinkRouter.shared`), not an App Intents
+  `@Dependency`.** `@Dependency` + `AppDependencyManager` registration races the
+  intent's `perform()` when `openAppWhenRun` cold-launches the app, and failed
+  in practice. `AppContainer` holds `DeepLinkRouter.shared`, so the intent
+  (whose `perform()` runs in the app's process) and the UI observe one instance.
+- **The Siri-facing `OpenQuickAddIntent` lives in the app target; the Control
+  Center control uses a separate `QuickAddControlIntent` in `VikunjaWidgetKit`.**
+  An App Intent type registered in *both* the app and the widget extension (via
+  a shared framework) breaks Siri's App Shortcut dispatch — Siri matches the
+  phrase, then can't launch the app. So the intent behind the
+  `AppShortcutsProvider` (`VikunjaShortcuts`, which has to be in the app target
+  anyway) stays app-only, and the control gets its own hidden
+  (`isDiscoverable = false`) intent. Both do the same one line against
+  `DeepLinkRouter.shared`.
+
+Siri phrases are localized in `AppShortcuts.xcstrings` — Siri matches phrases in
+its own language, not by the words the user speaks, so an English-only phrase
+list is invisible to a non-English Siri.
 
 ---
 
