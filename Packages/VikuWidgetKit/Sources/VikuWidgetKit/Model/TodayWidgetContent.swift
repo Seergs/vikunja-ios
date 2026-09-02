@@ -134,10 +134,22 @@ public extension TodayWidgetContent {
         todayCount: 3,
         upcomingCount: 4,
         tasks: [
-            TodayWidgetTask(id: 1, title: "Reply to the hosting invoice", isDone: false, dueDate: Date(), bucket: .overdue, projectName: "Admin", projectColorHex: "#E85E00"),
-            TodayWidgetTask(id: 2, title: "Draft the release notes", isDone: false, dueDate: Date(), bucket: .today, projectName: "Vikunja iOS", projectColorHex: "#196AFF"),
-            TodayWidgetTask(id: 3, title: "Water the plants", isDone: false, dueDate: Date(), bucket: .today, projectName: "Home", projectColorHex: "#1FA669"),
-            TodayWidgetTask(id: 4, title: "Book the dentist", isDone: false, dueDate: Date().addingTimeInterval(86400), bucket: .upcoming, projectName: "Health", projectColorHex: "#DF202E"),
+            TodayWidgetTask(
+                id: 1, title: "Reply to the hosting invoice", isDone: false, dueDate: Date(),
+                bucket: .overdue, projectName: "Admin", projectColorHex: "#E85E00",
+            ),
+            TodayWidgetTask(
+                id: 2, title: "Draft the release notes", isDone: false, dueDate: Date(),
+                bucket: .today, projectName: "Vikunja iOS", projectColorHex: "#196AFF",
+            ),
+            TodayWidgetTask(
+                id: 3, title: "Water the plants", isDone: false, dueDate: Date(),
+                bucket: .today, projectName: "Home", projectColorHex: "#1FA669",
+            ),
+            TodayWidgetTask(
+                id: 4, title: "Book the dentist", isDone: false, dueDate: Date().addingTimeInterval(86400),
+                bucket: .upcoming, projectName: "Health", projectColorHex: "#DF202E",
+            ),
         ],
     )
 }

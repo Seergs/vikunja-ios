@@ -160,7 +160,9 @@ private struct TodayWidgetRow: View {
                     }
                     if let due = dueLabel {
                         Text("· \(due)")
-                            .foregroundStyle(task.bucket == .overdue ? VikuColor.Semantic.dangerText : VikuColor.textSecondary)
+                            .foregroundStyle(
+                                task.bucket == .overdue ? VikuColor.Semantic.dangerText : VikuColor.textSecondary,
+                            )
                     }
                 }
                 .font(VikuFont.caption2)
