@@ -44,7 +44,7 @@ public struct TodayWidgetContent: Sendable, Hashable, Codable {
     public let overdueCount: Int
     public let todayCount: Int
     public let upcomingCount: Int
-    /// Ordered overdue → today → upcoming, capped at `VikunjaWidgetConfig.taskLimit`.
+    /// Ordered overdue → today → upcoming, capped at `VikuWidgetConfig.taskLimit`.
     public let tasks: [TodayWidgetTask]
 
     public init(
@@ -80,7 +80,7 @@ public struct TodayWidgetContent: Sendable, Hashable, Codable {
         projectsByID: [Int: Project],
         accountName: String,
         now: Date,
-        taskLimit: Int = VikunjaWidgetConfig.taskLimit,
+        taskLimit: Int = VikuWidgetConfig.taskLimit,
     ) -> TodayWidgetContent {
         func widgetTask(_ task: VikunjaTask, _ bucket: TaskDueBucket) -> TodayWidgetTask {
             let project = projectsByID[task.projectID]

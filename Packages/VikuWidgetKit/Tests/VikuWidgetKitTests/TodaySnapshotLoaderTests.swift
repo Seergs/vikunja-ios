@@ -182,7 +182,7 @@ struct TodaySnapshotLoaderTests {
             Issue.record("expected content")
             return
         }
-        #expect(content.tasks.count == VikunjaWidgetConfig.taskLimit)
+        #expect(content.tasks.count == VikuWidgetConfig.taskLimit)
         #expect(content.todayCount == 20)
     }
 }

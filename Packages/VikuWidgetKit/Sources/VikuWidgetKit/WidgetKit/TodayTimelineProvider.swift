@@ -13,7 +13,7 @@ public struct TodayEntry: TimelineEntry, Sendable {
 }
 
 /// Drives `TodayWidget`. Each refresh runs `TodaySnapshotLoader` once and
-/// schedules the next one `VikunjaWidgetConfig.refreshInterval` out — WidgetKit
+/// schedules the next one `VikuWidgetConfig.refreshInterval` out — WidgetKit
 /// only grants a bounded number of refreshes per day, so the cadence stays
 /// coarse and the app nudges `WidgetCenter.reloadTimelines(ofKind:)` after a
 /// task edit for anything more immediate.
@@ -30,7 +30,7 @@ public struct TodayTimelineProvider: TimelineProvider {
             return
         }
         Task {
-            let state = await VikunjaWidgetEnvironment.makeSnapshotLoader().loadState()
+            let state = await VikuWidgetEnvironment.makeSnapshotLoader().loadState()
             completion(TodayEntry(date: Date(), state: state))
         }
     }
@@ -38,8 +38,8 @@ public struct TodayTimelineProvider: TimelineProvider {
     public func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<TodayEntry>) -> Void) {
         Task {
             let now = Date()
-            let state = await VikunjaWidgetEnvironment.makeSnapshotLoader().loadState()
-            let next = now.addingTimeInterval(VikunjaWidgetConfig.refreshInterval)
+            let state = await VikuWidgetEnvironment.makeSnapshotLoader().loadState()
+            let next = now.addingTimeInterval(VikuWidgetConfig.refreshInterval)
             let timeline = Timeline(entries: [TodayEntry(date: now, state: state)], policy: .after(next))
             completion(timeline)
         }

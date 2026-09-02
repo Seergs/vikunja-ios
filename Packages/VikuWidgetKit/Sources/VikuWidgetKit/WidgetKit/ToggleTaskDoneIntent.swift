@@ -20,7 +20,7 @@ public struct ToggleTaskDoneIntent: AppIntent {
     }
 
     public func perform() async throws -> some IntentResult {
-        guard let repository = await VikunjaWidgetEnvironment.makeTaskRepository() else {
+        guard let repository = await VikuWidgetEnvironment.makeTaskRepository() else {
             return .result()
         }
         var task = try await repository.fetchTask(id: taskID)
