@@ -54,14 +54,37 @@
 		EC3BB466303D1EF6002753FC /* Viku.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Viku.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A1F0E5C10000000000000001 /* Exceptions for "Viku-widgets" folder in "Viku-widgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9F1A298945A4417C5C239F1C /* Viku-widgets */;
+		};
+		A1F0E5C10000000000000002 /* Exceptions for "Viku" folder in "Viku" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = EC3BB465303D1EF6002753FC /* Viku */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B92C853A6FE7E809CD2F2E95 /* Viku-widgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1F0E5C10000000000000001 /* Exceptions for "Viku-widgets" folder in "Viku-widgets" target */,
+			);
 			path = "Viku-widgets";
 			sourceTree = "<group>";
 		};
 		EC3BB468303D1EF6002753FC /* Viku */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1F0E5C10000000000000002 /* Exceptions for "Viku" folder in "Viku" target */,
+			);
 			path = Viku;
 			sourceTree = "<group>";
 		};
