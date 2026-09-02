@@ -4,8 +4,8 @@
 
 included:
   - Packages
-  - vikunja
-  - vikunja-widgets
+  - Viku
+  - Viku-widgets
 
 excluded:
   - "**/.build"
