@@ -1,14 +1,14 @@
 #!/usr/bin/env ruby
 require 'xcodeproj'
 
-project_path = 'vikunja.xcodeproj'
+project_path = 'Viku.xcodeproj'
 project = Xcodeproj::Project.open(project_path)
 
-app_target = project.targets.find { |t| t.name == 'vikunja' } or abort 'no app target'
+app_target = project.targets.find { |t| t.name == 'Viku' } or abort 'no app target'
 
 PKG_PATH = 'Packages/VikuWidgetKit'
 PRODUCT  = 'VikuWidgetKit'
-WIDGET_NAME = 'vikunja-widgets'
+WIDGET_NAME = 'Viku-widgets'
 
 # --- 1. Local Swift package reference -----------------------------------------
 pkg_ref = project.root_object.package_references.find do |r|
@@ -49,7 +49,7 @@ end
 # Product type must be the widgetkit extension flavor.
 widget_target.product_type = 'com.apple.product-type.app-extension'
 
-# --- 3. File-system-synchronized group for vikunja-widgets/ -----------------
+# --- 3. File-system-synchronized group for Viku-widgets/ -----------------
 fss = project.main_group.children.find do |c|
   c.isa == 'PBXFileSystemSynchronizedRootGroup' && c.path == WIDGET_NAME
 end
@@ -73,7 +73,7 @@ already = fss.exceptions.any? { |e| e.target == widget_target }
 unless already
   ex = project.new(Xcodeproj::Project::Object::PBXFileSystemSynchronizedBuildFileExceptionSet)
   ex.target = widget_target
-  ex.membership_exceptions = ['Info.plist', 'vikunja-widgets.entitlements', 'WIDGET_SETUP.md', 'add_widget_target.rb']
+  ex.membership_exceptions = ['Info.plist', 'Viku-widgets.entitlements', 'WIDGET_SETUP.md', 'add_widget_target.rb']
   fss.exceptions << ex
   puts '+ FSS membership exceptions (Info.plist, entitlements, docs)'
 end
@@ -85,19 +85,19 @@ unless widget_target.package_product_dependencies.any? { |d| d.product_name == P
 end
 unless app_target.package_product_dependencies.any? { |d| d.product_name == PRODUCT }
   link_product(project, app_target, new_product_dep(project, pkg_ref, PRODUCT))
-  puts "+ #{PRODUCT} -> vikunja (app)"
+  puts "+ #{PRODUCT} -> Viku (app)"
 end
 
 # --- 5. Build settings for the widget target -------------------------------
 common = {
-  'CODE_SIGN_ENTITLEMENTS'        => 'vikunja-widgets/vikunja-widgets.entitlements',
+  'CODE_SIGN_ENTITLEMENTS'        => 'Viku-widgets/Viku-widgets.entitlements',
   'CODE_SIGN_STYLE'               => 'Automatic',
   'CURRENT_PROJECT_VERSION'       => '1',
   'DEVELOPMENT_TEAM'              => '5CM24MBKSG',
   'ENABLE_PREVIEWS'              => 'YES',
   'GENERATE_INFOPLIST_FILE'      => 'YES',
-  'INFOPLIST_FILE'               => 'vikunja-widgets/Info.plist',
-  'INFOPLIST_KEY_CFBundleDisplayName' => 'Vikunja',
+  'INFOPLIST_FILE'               => 'Viku-widgets/Info.plist',
+  'INFOPLIST_KEY_CFBundleDisplayName' => 'Viku',
   'INFOPLIST_KEY_NSHumanReadableCopyright' => '',
   'IPHONEOS_DEPLOYMENT_TARGET'   => '26.2',
   'LD_RUNPATH_SEARCH_PATHS'      => ['$(inherited)', '@executable_path/Frameworks', '@executable_path/../../Frameworks'],
@@ -115,11 +115,11 @@ common = {
 widget_target.build_configurations.each do |config|
   config.build_settings.merge!(common)
   if config.name == 'Debug'
-    config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'dev.sergiosuarez.vikunja.dev.widgets'
+    config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'dev.sergiosuarez.viku.dev.widgets'
     config.build_settings['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] = 'DEBUG $(inherited)'
     config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
   else
-    config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'dev.sergiosuarez.vikunja.widgets'
+    config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = 'dev.sergiosuarez.viku.widgets'
     config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
   end
 end
@@ -137,7 +137,7 @@ unless embed.files_references.include?(widget_target.product_reference)
   bf.file_ref = widget_target.product_reference
   bf.settings = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
   embed.files << bf
-  puts '+ embed vikunja-widgets.appex'
+  puts '+ embed Viku-widgets.appex'
 end
 
 # Make sure the app builds the extension first.
@@ -148,25 +148,25 @@ end
 
 # --- 7. App target entitlements ------------------------------------------
 app_target.build_configurations.each do |config|
-  config.build_settings['CODE_SIGN_ENTITLEMENTS'] = 'vikunja/vikunja.entitlements'
+  config.build_settings['CODE_SIGN_ENTITLEMENTS'] = 'Viku/Viku.entitlements'
 end
-puts '= app CODE_SIGN_ENTITLEMENTS -> vikunja/vikunja.entitlements'
+puts '= app CODE_SIGN_ENTITLEMENTS -> Viku/Viku.entitlements'
 
 # --- 8. Per-config identifiers (project level, inherited by both targets) --
 # App Group / keychain group / URL scheme are split dev vs prod so a Debug and
 # a Release install on the same device don't share storage. The .entitlements
-# and Info.plist expand $(VIKUNJA_ID_PREFIX) / $(VIKUNJA_URL_SCHEME);
-# VikunjaWidgetConfig mirrors the prefix with #if DEBUG.
+# and Info.plist expand $(VIKU_ID_PREFIX) / $(VIKU_URL_SCHEME);
+# VikuWidgetConfig mirrors the prefix with #if DEBUG.
 project.build_configurations.each do |config|
   if config.name == 'Debug'
-    config.build_settings['VIKUNJA_ID_PREFIX'] = 'dev.sergiosuarez.vikunja.dev'
-    config.build_settings['VIKUNJA_URL_SCHEME'] = 'vikunja-dev'
+    config.build_settings['VIKU_ID_PREFIX'] = 'dev.sergiosuarez.viku.dev'
+    config.build_settings['VIKU_URL_SCHEME'] = 'viku-dev'
   else
-    config.build_settings['VIKUNJA_ID_PREFIX'] = 'dev.sergiosuarez.vikunja'
-    config.build_settings['VIKUNJA_URL_SCHEME'] = 'vikunja'
+    config.build_settings['VIKU_ID_PREFIX'] = 'dev.sergiosuarez.viku'
+    config.build_settings['VIKU_URL_SCHEME'] = 'viku'
   end
 end
-puts '= project VIKUNJA_ID_PREFIX / VIKUNJA_URL_SCHEME (per config)'
+puts '= project VIKU_ID_PREFIX / VIKU_URL_SCHEME (per config)'
 
 project.save
 puts 'saved.'
