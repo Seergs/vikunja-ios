@@ -44,7 +44,10 @@ struct ConnectionFormView: View {
                 if case let .failure(message) = viewModel.validationState {
                     StatusBanner(style: .danger, message: message)
                 } else if viewModel.validationState == .success {
-                    StatusBanner(style: .success, message: viewModel.savedAccount != nil ? "Saved" : "Connection successful")
+                    StatusBanner(
+                        style: .success,
+                        message: viewModel.savedAccount != nil ? "Saved" : "Connection successful",
+                    )
                 }
 
                 saveButton
@@ -162,7 +165,10 @@ struct ConnectionFormView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, VikuSpacing.sm + VikuSpacing.xs)
-                .background(VikuColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
+                .background(
+                    VikuColor.brandPrimary,
+                    in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous),
+                )
         }
         .buttonStyle(.plain)
         .disabled(!viewModel.canSave)
@@ -199,7 +205,10 @@ private struct FormField: View {
                 .font(VikuFont.body)
                 .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
                 .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
-                .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+                .background(
+                    VikuColor.Surface.field,
+                    in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous),
+                )
         }
     }
 }

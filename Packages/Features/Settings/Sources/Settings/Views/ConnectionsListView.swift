@@ -80,12 +80,18 @@ struct ConnectionsListView: View {
 
                             if index < viewModel.accounts.count - 1 {
                                 Divider()
-                                    .padding(.leading, VikuSpacing.md - VikuSpacing.xxs + 40 + VikuSpacing.sm + VikuSpacing.xxs)
+                                    .padding(
+                                        .leading,
+                                        VikuSpacing.md - VikuSpacing.xxs + 40 + VikuSpacing.sm + VikuSpacing.xxs,
+                                    )
                             }
                         }
                     }
                     .padding(.vertical, VikuSpacing.xs)
-                    .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
+                    .background(
+                        VikuColor.Surface.card,
+                        in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous),
+                    )
 
                     AddConnectionButton {
                         router.push(.connectionForm(.create))
