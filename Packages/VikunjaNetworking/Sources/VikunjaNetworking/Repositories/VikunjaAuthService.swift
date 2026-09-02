@@ -1,7 +1,7 @@
 import VikunjaCore
 
 /// Implements login against `/api/v1/login`. Persisting the token (Keychain,
-/// multi-account) is the responsibility of a future `VikunjaAuth` package — this
+/// multi-account) is the responsibility of a future `VikuAuth` package — this
 /// service only knows how to talk to the endpoint.
 public final class VikunjaAuthService: AuthServiceProtocol {
     private let client: APIClient
@@ -12,7 +12,7 @@ public final class VikunjaAuthService: AuthServiceProtocol {
 
     /// `/api/v1/login` only returns the JWT, not the user — that's why
     /// `AuthSession.user` is a placeholder here; resolving the real user
-    /// (GET /api/v1/user) is future `VikunjaAuth` work, once it knows where to
+    /// (GET /api/v1/user) is future `VikuAuth` work, once it knows where to
     /// persist the token.
     public func login(username: String, password: String) async throws -> AuthSession {
         let endpoint = try VikunjaEndpoints.login(username: username, password: password)
