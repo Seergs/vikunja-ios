@@ -102,9 +102,10 @@ vikunja-ios/
     │       ├── Router.swift       # generic Router<Route: Hashable>, wraps NavigationPath
     │       └── DeepLink.swift     # DeepLink enum + DeepLinkRouter (external entry points — §2c)
     │
-    ├── VikunjaDesignSystem/       # color/typography/spacing/radius tokens; toast system (growing set)
+    ├── VikunjaDesignSystem/       # color/typography/spacing/radius tokens; toast + haptics systems (growing set)
     │   └── Sources/VikunjaDesignSystem/
-    │       └── Toast/             # ToastCenter (implements Core's ToastPresenting), ToastView, toastHost(_:)
+    │       ├── Toast/             # ToastCenter (implements Core's ToastPresenting), ToastView, toastHost(_:)
+    │       └── Haptics/           # HapticFeedbackCenter (implements Core's HapticFeedbackPresenting), View.vikunjaHaptic(_:trigger:)
     │
     └── Features/
         ├── Onboarding/            # "connect to your instance" — built end to end
@@ -125,10 +126,11 @@ This is what protects the app when Vikunja's API changes:
 - `VikunjaNetworking` and `VikunjaAuth` → depend on `VikunjaCore` (they implement
   its protocols), but **nothing else depends on them except the composition root**.
 - `VikunjaDesignSystem` → depends on `VikunjaCore` too, for the same reason:
-  `ToastCenter` implements Core's `ToastPresenting` protocol, so a ViewModel can
-  take a toast dependency via constructor injection without importing
-  `VikunjaDesignSystem` or SwiftUI. Every other token in the package stays
-  dependency-free.
+  `ToastCenter` implements Core's `ToastPresenting` protocol (and
+  `HapticFeedbackCenter` implements `HapticFeedbackPresenting`), so a ViewModel
+  can take a toast or haptic dependency via constructor injection without
+  importing `VikunjaDesignSystem` or SwiftUI. Every other token in the package
+  stays dependency-free.
 - `Features/*` → depend on `VikunjaCore` (protocols + models), `VikunjaNavigation`,
   and `VikunjaDesignSystem` as each needs — every feature with real content
   (`Onboarding`, `Home`, `Projects`, `Settings`, `Tasks`) pulls `VikunjaCore` +
@@ -556,10 +558,12 @@ final class AppContainer {
     let accountStore: AccountStoreProtocol          // KeychainAccountStore
     let clientFactory: InstanceClientFactoryProtocol // VikunjaInstanceClientFactory
     let toastCenter = ToastCenter()                  // the app's single toast host
+    let hapticCenter = HapticFeedbackCenter()        // the app's single Taptic Engine
 
     // One factory per screen. Each resolves the account's repositories from the
     // factory (baseURL + a per-request keychain token-provider closure) and
-    // passes `toastCenter` wherever a `ToastPresenting` is needed.
+    // passes `toastCenter` wherever a `ToastPresenting` is needed (and
+    // `hapticCenter` wherever a ViewModel takes `HapticFeedbackPresenting`).
     func makeTodayViewModel(account: InstanceAccount) -> TodayViewModel { ... }
     func makeProjectsListViewModel(account: InstanceAccount) -> ProjectsListViewModel { ... }
     func makeTaskDetailViewModel(task:project:account:) -> TaskDetailViewModel { ... }

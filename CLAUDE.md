@@ -256,6 +256,25 @@ by the compiler, not just convention:
     `make...ViewModel` factory), then call
     `toastPresenter.show("Task created", style: .success)` — no setup beyond
     that one constructor parameter.
+  - **Haptics** (`Haptics/`) — the app-wide Taptic Engine, built on the same
+    split as toasts. `VikunjaCore` owns the vocabulary: `HapticStyle`
+    (`.success`/`.warning`/`.error` outcomes, `.selection` ticks,
+    `.light`/`.medium`/`.heavy`/`.soft`/`.rigid` impacts) and the
+    `HapticFeedbackPresenting` protocol (`play(_:)` + an optional
+    `prepare(_:)` warm-up), plus `NoopHapticFeedback` for previews/tests.
+    `VikunjaDesignSystem`'s `HapticFeedbackCenter` implements it over UIKit's
+    feedback generators (kept alive between calls so `prepare` actually helps;
+    inert no-op where UIKit is unavailable). `AppContainer` owns the single
+    instance (`container.hapticCenter`). **Two ways to fire one**, nothing
+    else is wired yet:
+    - From a ViewModel's own logic (an optimistic toggle rolled back, a
+      create succeeded): take `hapticPresenter: HapticFeedbackPresenting` via
+      constructor injection, pass `container.hapticCenter` from the relevant
+      `make...ViewModel` factory (exactly like `toastPresenter:`), call
+      `hapticPresenter.play(.success)`.
+    - From a pure SwiftUI view reacting to state: `View.vikunjaHaptic(_:trigger:)`
+      (or the `condition:` overload), a thin wrapper over `.sensoryFeedback`
+      that reuses `HapticStyle` — no injection needed.
 
 - **`Features/Onboarding`** — the "connect to your instance" screen. Depends on
   `VikunjaCore` + `VikunjaDesignSystem`.
