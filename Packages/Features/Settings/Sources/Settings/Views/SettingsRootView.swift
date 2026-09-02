@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaNavigation
+import VikuNavigation
 
 /// Settings' entry point for the app target: owns the tab's own
 /// `NavigationStack` and `Router<SettingsRoute>`, so pushing a screen from

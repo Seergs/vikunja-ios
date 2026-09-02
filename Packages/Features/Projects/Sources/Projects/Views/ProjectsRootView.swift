@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaNavigation
+import VikuNavigation
 
 /// Projects' entry point for the app target: owns the tab's own
 /// `NavigationStack` and `Router<ProjectsRoute>`, so pushing a screen from

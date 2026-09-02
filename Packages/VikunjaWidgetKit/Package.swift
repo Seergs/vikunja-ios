@@ -12,12 +12,12 @@ let package = Package(
         .package(path: "../VikunjaNetworking"),
         .package(path: "../VikunjaAuth"),
         .package(path: "../VikunjaDesignSystem"),
-        .package(path: "../VikunjaNavigation"),
+        .package(path: "../VikuNavigation"),
     ],
     targets: [
         .target(
             name: "VikunjaWidgetKit",
-            dependencies: ["VikunjaCore", "VikunjaNetworking", "VikunjaAuth", "VikunjaDesignSystem", "VikunjaNavigation"],
+            dependencies: ["VikunjaCore", "VikunjaNetworking", "VikunjaAuth", "VikunjaDesignSystem", "VikuNavigation"],
         ),
         .testTarget(name: "VikunjaWidgetKitTests", dependencies: ["VikunjaWidgetKit"]),
     ],

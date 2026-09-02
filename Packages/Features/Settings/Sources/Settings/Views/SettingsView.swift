@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaDesignSystem
-import VikunjaNavigation
+import VikuNavigation
 
 /// The Settings tab's landing screen. Real preferences aren't built yet — the
 /// entry points here today are connection management and label management.

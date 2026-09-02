@@ -9,11 +9,11 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../../VikunjaCore"),
-        .package(path: "../../VikunjaNavigation"),
+        .package(path: "../../VikuNavigation"),
         .package(path: "../../VikunjaDesignSystem"),
     ],
     targets: [
-        .target(name: "Settings", dependencies: ["VikunjaCore", "VikunjaNavigation", "VikunjaDesignSystem"]),
+        .target(name: "Settings", dependencies: ["VikunjaCore", "VikuNavigation", "VikunjaDesignSystem"]),
         .testTarget(name: "SettingsTests", dependencies: ["Settings"]),
     ],
 )

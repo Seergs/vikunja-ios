@@ -9,10 +9,10 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../../VikunjaCore"),
-        .package(path: "../../VikunjaNavigation"),
+        .package(path: "../../VikuNavigation"),
         .package(path: "../../VikunjaDesignSystem"),
     ],
     targets: [
-        .target(name: "Search", dependencies: ["VikunjaCore", "VikunjaNavigation", "VikunjaDesignSystem"]),
+        .target(name: "Search", dependencies: ["VikunjaCore", "VikuNavigation", "VikunjaDesignSystem"]),
     ],
 )
