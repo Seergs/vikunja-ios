@@ -100,7 +100,7 @@ struct MainTabView: View {
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(VikunjaColor.brandPrimary)
         // A light selection tick whenever the active tab changes — including a
-        // programmatic switch from a `vikunja://` deep link. Doesn't fire on
+        // programmatic switch from a `viku://` deep link. Doesn't fire on
         // first render, or on re-tapping the current tab (which pops to root
         // rather than changing `selection`). Reading `selection` here (like the
         // old `.vikunjaHaptic(trigger:)`) makes `body` re-run on every tab
@@ -191,7 +191,7 @@ private struct QuickAddOverlay: View {
                 ),
             )
         }
-        // A `vikunja://quick-add` deep link opens the same sheet. Handled
+        // A `viku://quick-add` deep link opens the same sheet. Handled
         // here, not in `MainTabView`, so reading the router doesn't rebuild
         // every tab's `NavigationStack`. `.onChange` covers a link that
         // arrives while the shell is up; `.task` covers one already parked

@@ -37,7 +37,7 @@ final class AppContainer {
     /// Tracks which project (if any) the visible screen represents, so the
     /// tab-bar quick-add sheet defaults to it — see `QuickAddContext`.
     let quickAddContext = QuickAddContext()
-    /// Carries a `vikunja://` deep link (or an `OpenQuickAddIntent`) from
+    /// Carries a `viku://` deep link (or an `OpenQuickAddIntent`) from
     /// `RootView`'s `.onOpenURL` to the screen that acts on it. The shared
     /// instance, so the App Intent's `perform()` reaches the same router.
     let deepLinkRouter = DeepLinkRouter.shared

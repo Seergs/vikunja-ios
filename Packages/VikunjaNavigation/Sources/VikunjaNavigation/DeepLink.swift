@@ -2,12 +2,12 @@ import Observation
 
 /// An external entry point resolved into an in-app destination. Today the only
 /// case is quick-add — reached from the Today widget's "add" button, a
-/// `vikunja://quick-add` URL (Shortcuts, other apps), the Siri shortcut, or a
+/// `viku://quick-add` URL (Shortcuts, other apps), the Siri shortcut, or a
 /// Control Center control. `today`/`task` links will be added here once their
 /// in-app routing exists.
 ///
 /// URL parsing lives in the app target (`DeepLink.init?(url:)`), since the
-/// `vikunja` scheme string is defined in `VikunjaWidgetKit`; this enum stays
+/// `viku` scheme string is defined in `VikunjaWidgetKit`; this enum stays
 /// dependency-free so `VikunjaWidgetKit`'s App Intents can build one directly.
 public enum DeepLink: Equatable, Sendable {
     /// Present the tab-bar quick-add sheet, defaulting to the given project

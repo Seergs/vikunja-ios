@@ -8,25 +8,25 @@ import Foundation
 /// Everything derived from `bundleIDPrefix` is split per build configuration so
 /// a Debug ("dev") install and a Release install on the same device never share
 /// storage. The Swift side switches on `#if DEBUG`; the entitlements / Info.plist
-/// side reads the matching `VIKUNJA_ID_PREFIX` / `VIKUNJA_URL_SCHEME` build
+/// side reads the matching `VIKU_ID_PREFIX` / `VIKU_URL_SCHEME` build
 /// settings (project level, `project.pbxproj`) via `$(...)` expansion. Keep the
 /// two in sync: Debug ↔ `.dev`, Release ↔ prod.
 public enum VikunjaWidgetConfig {
     /// The app's bundle-identifier prefix, shared by the app target and the
-    /// widget extension. Mirrors `VIKUNJA_ID_PREFIX` in `project.pbxproj`.
+    /// widget extension. Mirrors `VIKU_ID_PREFIX` in `project.pbxproj`.
     #if DEBUG
-    public static let bundleIDPrefix = "dev.sergiosuarez.vikunja.dev"
+    public static let bundleIDPrefix = "dev.sergiosuarez.viku.dev"
     #else
-    public static let bundleIDPrefix = "dev.sergiosuarez.vikunja"
+    public static let bundleIDPrefix = "dev.sergiosuarez.viku"
     #endif
 
     /// App Group container, used only for the cached Today snapshot. Added to
-    /// the App Groups capability of both targets as `group.$(VIKUNJA_ID_PREFIX)`.
+    /// the App Groups capability of both targets as `group.$(VIKU_ID_PREFIX)`.
     public static let appGroupIdentifier = "group.\(bundleIDPrefix)"
 
     /// Shared keychain group holding the account index, the active-account
     /// pointer, and each account's bearer token. Listed as
-    /// `$(AppIdentifierPrefix)$(VIKUNJA_ID_PREFIX).shared` under Keychain
+    /// `$(AppIdentifierPrefix)$(VIKU_ID_PREFIX).shared` under Keychain
     /// Sharing in both targets' entitlements; the runtime prepends the team
     /// prefix, so the code passes only the suffix.
     public static let keychainAccessGroup = "\(bundleIDPrefix).shared"
@@ -45,13 +45,13 @@ public enum VikunjaWidgetConfig {
     public static let quickAddWidgetKind = "QuickAddWidget"
 
     /// URL scheme the widget deep-links back into the app with
-    /// (`vikunja://today`, `vikunja://quick-add`). Registered under the app
-    /// target's URL Types as `$(VIKUNJA_URL_SCHEME)`; split per build config so
+    /// (`viku://today`, `viku://quick-add`). Registered under the app
+    /// target's URL Types as `$(VIKU_URL_SCHEME)`; split per build config so
     /// a dev and a prod install don't both claim the same scheme.
     #if DEBUG
-    public static let urlScheme = "vikunja-dev"
+    public static let urlScheme = "viku-dev"
     #else
-    public static let urlScheme = "vikunja"
+    public static let urlScheme = "viku"
     #endif
 
     /// How many task rows the snapshot carries — enough for `.systemLarge`,

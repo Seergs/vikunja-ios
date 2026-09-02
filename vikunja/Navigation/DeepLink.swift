@@ -3,14 +3,14 @@ import VikunjaNavigation
 import VikunjaWidgetKit
 
 extension DeepLink {
-    /// Parses a `vikunja://` URL the app was opened with. `nil` for anything
+    /// Parses a `viku://` URL the app was opened with. `nil` for anything
     /// that isn't a recognized route. `DeepLink` itself lives in
     /// `VikunjaNavigation` (so `VikunjaWidgetKit`'s App Intents can build one);
-    /// only this URL bridge needs the `vikunja` scheme string.
+    /// only this URL bridge needs the `viku` scheme string.
     init?(url: URL) {
         guard url.scheme?.lowercased() == VikunjaWidgetConfig.urlScheme else { return nil }
         // A custom-scheme URL puts its first segment in `host`
-        // (`vikunja://quick-add` → host "quick-add", not a path component).
+        // (`viku://quick-add` → host "quick-add", not a path component).
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         switch components?.host {
         case "quick-add":
