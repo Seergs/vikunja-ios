@@ -1,6 +1,6 @@
 //
 //  VikuWidgetsBundle.swift
-//  vikunja-widgets
+//  Viku-widgets
 //
 //  The widget extension's entry point. All widget logic lives in the
 //  `VikuWidgetKit` package; this file only registers the bundle.

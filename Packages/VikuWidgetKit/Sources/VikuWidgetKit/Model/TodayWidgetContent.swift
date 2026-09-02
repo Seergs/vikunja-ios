@@ -128,7 +128,7 @@ public enum TodayWidgetState: Sendable, Hashable {
 public extension TodayWidgetContent {
     /// Sample data for the widget gallery and SwiftUI previews.
     static let placeholder = TodayWidgetContent(
-        accountName: "Vikunja",
+        accountName: "Viku",
         generatedAt: Date(),
         overdueCount: 2,
         todayCount: 3,

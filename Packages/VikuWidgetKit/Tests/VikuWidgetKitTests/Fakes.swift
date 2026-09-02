@@ -193,7 +193,7 @@ enum TestSupport {
 
     static func tempCacheDirectory() -> URL {
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("vikunja-widget-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("viku-widget-tests-\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
     }

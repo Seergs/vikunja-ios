@@ -12,7 +12,7 @@ import VikuNavigation
 /// `DeepLinkRouter.shared` is the instance the UI observes.
 public struct QuickAddControlIntent: AppIntent {
     public static let title: LocalizedStringResource = "Add Task"
-    public static let description = IntentDescription("Opens Vikunja's quick-add sheet to jot down a new task.")
+    public static let description = IntentDescription("Opens Viku's quick-add sheet to jot down a new task.")
     public static let openAppWhenRun = true
     public static let isDiscoverable = false
 
