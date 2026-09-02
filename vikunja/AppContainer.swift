@@ -10,7 +10,7 @@ import VikunjaCore
 import VikuDesignSystem
 import VikuNavigation
 import VikunjaNetworking
-import VikunjaWidgetKit
+import VikuWidgetKit
 import WidgetKit
 
 /// Composition root. The only type in the app target allowed to know about

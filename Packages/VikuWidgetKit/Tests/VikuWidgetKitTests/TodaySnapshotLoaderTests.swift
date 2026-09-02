@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import VikunjaCore
-@testable import VikunjaWidgetKit
+@testable import VikuWidgetKit
 
 struct TodaySnapshotLoaderTests {
     private static let now = Date()
