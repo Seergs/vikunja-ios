@@ -45,9 +45,14 @@ public enum VikunjaWidgetConfig {
     public static let quickAddWidgetKind = "QuickAddWidget"
 
     /// URL scheme the widget deep-links back into the app with
-    /// (`vikunja://today`, `vikunja://task/<id>`). Register it under the app
-    /// target's URL Types.
+    /// (`vikunja://today`, `vikunja://quick-add`). Registered under the app
+    /// target's URL Types as `$(VIKUNJA_URL_SCHEME)`; split per build config so
+    /// a dev and a prod install don't both claim the same scheme.
+    #if DEBUG
+    public static let urlScheme = "vikunja-dev"
+    #else
     public static let urlScheme = "vikunja"
+    #endif
 
     /// How many task rows the snapshot carries — enough for `.systemLarge`,
     /// keeping the cached payload and the extension's memory footprint small.

@@ -446,6 +446,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VIKUNJA_ID_PREFIX = "dev.sergiosuarez.vikunja.dev";
+				VIKUNJA_URL_SCHEME = "vikunja-dev";
 			};
 			name = Debug;
 		};
@@ -504,6 +505,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 				VIKUNJA_ID_PREFIX = "dev.sergiosuarez.vikunja";
+				VIKUNJA_URL_SCHEME = vikunja;
 			};
 			name = Release;
 		};
