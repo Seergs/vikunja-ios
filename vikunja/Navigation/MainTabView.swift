@@ -31,18 +31,37 @@ struct MainTabView: View {
 
     @State private var selection: AppTab = .home
 
+    // Each tab's root view model is built once, here, and held for the life of
+    // this shell (which is itself keyed `.id(connectedAccount)`, so switching
+    // account still rebuilds them). Building them inside `body` instead meant a
+    // fresh, empty view model on every `body` re-evaluation — and `body` re-runs
+    // on every tab switch as soon as anything reads `selection` (the haptic
+    // tick) — which flashed a loading spinner on the tab being switched to.
+    @State private var todayViewModel: TodayViewModel
+    @State private var projectsViewModel: ProjectsListViewModel
+    @State private var searchViewModel: SearchViewModel
+
+    init(account: InstanceAccount, container: AppContainer, onAccountsChanged: @escaping () -> Void) {
+        self.account = account
+        self.container = container
+        self.onAccountsChanged = onAccountsChanged
+        _todayViewModel = State(initialValue: container.makeTodayViewModel(account: account))
+        _projectsViewModel = State(initialValue: container.makeProjectsListViewModel(account: account))
+        _searchViewModel = State(initialValue: container.makeSearchViewModel(account: account))
+    }
+
     var body: some View {
         TabView(selection: $selection) {
             Tab(AppTab.home.title, systemImage: AppTab.home.systemImage, value: .home) {
                 HomeRootView(
-                    viewModel: container.makeTodayViewModel(account: account),
+                    viewModel: todayViewModel,
                     taskDetailDestination: taskDetailDestination,
                 )
             }
 
             Tab(AppTab.projects.title, systemImage: AppTab.projects.systemImage, value: .projects) {
                 ProjectsRootView(
-                    viewModel: container.makeProjectsListViewModel(account: account),
+                    viewModel: projectsViewModel,
                     makeOverviewViewModel: { node in
                         container.makeProjectOverviewViewModel(node: node, account: account)
                     },
@@ -73,7 +92,7 @@ struct MainTabView: View {
 
             Tab(value: AppTab.search, role: .search) {
                 SearchRootView(
-                    viewModel: container.makeSearchViewModel(account: account),
+                    viewModel: searchViewModel,
                     onTaskSelected: taskDetailDestination,
                 )
             }
@@ -83,8 +102,13 @@ struct MainTabView: View {
         // A light selection tick whenever the active tab changes — including a
         // programmatic switch from a `vikunja://` deep link. Doesn't fire on
         // first render, or on re-tapping the current tab (which pops to root
-        // rather than changing `selection`).
-        .vikunjaHaptic(.selection, trigger: selection)
+        // rather than changing `selection`). Reading `selection` here (like the
+        // old `.vikunjaHaptic(trigger:)`) makes `body` re-run on every tab
+        // switch; that's only cheap because the tab view models are now held in
+        // `@State` rather than rebuilt inside `body`.
+        .onChange(of: selection) { _, _ in
+            container.hapticCenter.play(.selection)
+        }
         .overlay(alignment: .topTrailing) {
             if BuildConfig.isDevBuild {
                 Text("DEV")
