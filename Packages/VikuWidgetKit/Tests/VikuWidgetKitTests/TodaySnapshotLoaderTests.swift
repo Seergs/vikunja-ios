@@ -6,9 +6,9 @@ import VikunjaCore
 struct TodaySnapshotLoaderTests {
     private static let now = Date()
     private static let calendar = Calendar.current
-    private static let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
-    private static let laterToday = calendar.date(byAdding: .hour, value: 1, to: now)!
-    private static let nextWeek = calendar.date(byAdding: .day, value: 5, to: now)!
+    private static let yesterday = calendar.date(byAdding: .day, value: -1, to: now) ?? now
+    private static let laterToday = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
+    private static let nextWeek = calendar.date(byAdding: .day, value: 5, to: now) ?? now
 
     private func makeLoader(
         account: InstanceAccount? = TestSupport.account(),
