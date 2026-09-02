@@ -10,7 +10,7 @@ import VikunjaNavigation
 /// uses its own `QuickAddControlIntent` in the extension instead.
 ///
 /// `openAppWhenRun` is true, so `perform()` runs in the app's process and hands
-/// off through `DeepLinkRouter.shared` — the same route a `vikunja://quick-add`
+/// off through `DeepLinkRouter.shared` — the same route a `viku://quick-add`
 /// URL takes.
 struct OpenQuickAddIntent: AppIntent {
     static let title: LocalizedStringResource = "Add Task"

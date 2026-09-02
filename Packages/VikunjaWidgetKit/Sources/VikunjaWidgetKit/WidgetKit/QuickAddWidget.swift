@@ -7,8 +7,8 @@ import WidgetKit
 /// A minimal Lock Screen / StandBy accessory widget: a single "+" that opens
 /// the app's quick-add sheet — the Lock Screen counterpart of `QuickAddControl`
 /// in Control Center. Static: no data, no network, never refreshes. Opens via
-/// the `vikunja://quick-add` deep link rather than an App Intent, the same way
-/// `TodayWidget` deep-links to `vikunja://today`. Add `QuickAddWidget()` to the
+/// the `viku://quick-add` deep link rather than an App Intent, the same way
+/// `TodayWidget` deep-links to `viku://today`. Add `QuickAddWidget()` to the
 /// extension's `WidgetBundle`.
 public struct QuickAddWidget: Widget {
     public init() {}
