@@ -41,7 +41,12 @@ public struct ProjectsRootView: View {
 
     public var body: some View {
         NavigationStack(path: $router.path) {
-            ProjectsView(viewModel: viewModel, router: router, makeCreateProjectViewModel: makeCreateProjectViewModel, makeEditProjectViewModel: makeEditProjectViewModel)
+            ProjectsView(
+                viewModel: viewModel,
+                router: router,
+                makeCreateProjectViewModel: makeCreateProjectViewModel,
+                makeEditProjectViewModel: makeEditProjectViewModel,
+            )
                 .navigationDestination(for: ProjectsRoute.self) { route in
                     switch route {
                     case let .projectOverview(node):

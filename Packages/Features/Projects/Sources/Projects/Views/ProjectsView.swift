@@ -39,20 +39,20 @@ struct ProjectsView: View {
             }
             .sheet(isPresented: $isShowingCreateProject, onDismiss: {
                 Task { await viewModel.load() }
-            }) {
+            }, content: {
                 CreateProjectSheetView(viewModel: makeCreateProjectViewModel())
-            }
+            })
             .sheet(item: $editingProject, onDismiss: {
                 Task { await viewModel.load() }
-            }) { project in
+            }, content: { project in
                 EditProjectSheetView(viewModel: makeEditProjectViewModel(project))
-            }
+            })
             .confirmationDialog(
                 deleteConfirmationMessage,
                 isPresented: Binding(
                     get: { projectPendingDelete != nil },
-                    set: {
-                        isPresented in if !isPresented {
+                    set: { isPresented in
+                        if !isPresented {
                             projectPendingDelete = nil
                         }
                     },
