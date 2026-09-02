@@ -10,14 +10,14 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  XCODE_VERSION: "16.2"
+  XCODE_VERSION: "26.2"
   SCHEME: "Viku"
   PROJECT: "Viku.xcodeproj"
 
 jobs:
   lint:
     name: Lint
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
 
@@ -34,7 +34,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: macos-15
+    runs-on: macos-26
     needs: lint
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
 
   test:
     name: Unit + UI Tests
-    runs-on: macos-15
+    runs-on: macos-26
     needs: build
     steps:
       - uses: actions/checkout@v7
