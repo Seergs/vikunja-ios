@@ -108,7 +108,10 @@ final class AppContainer {
         }
         return TodayViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            projectRepository: clientFactory.makeProjectRepository(
+                baseURL: account.baseURL,
+                tokenProvider: tokenProvider,
+            ),
             toastPresenter: toastCenter,
             hapticPresenter: hapticCenter,
         )
@@ -121,7 +124,11 @@ final class AppContainer {
         }
         let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let taskRepository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
-        return ProjectsListViewModel(repository: repository, taskRepository: taskRepository, toastPresenter: toastCenter)
+        return ProjectsListViewModel(
+            repository: repository,
+            taskRepository: taskRepository,
+            toastPresenter: toastCenter,
+        )
     }
 
     func makeCreateProjectViewModel(parentProjectID: Int? = nil, account: InstanceAccount) -> CreateProjectViewModel {
@@ -129,7 +136,11 @@ final class AppContainer {
         let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL) {
             try? await accountStore.token(forAccountID: account.id)
         }
-        return CreateProjectViewModel(parentProjectID: parentProjectID, repository: repository, toastPresenter: toastCenter)
+        return CreateProjectViewModel(
+            parentProjectID: parentProjectID,
+            repository: repository,
+            toastPresenter: toastCenter,
+        )
     }
 
     func makeEditProjectViewModel(project: Project, account: InstanceAccount) -> EditProjectViewModel {
@@ -146,7 +157,10 @@ final class AppContainer {
             try? await accountStore.token(forAccountID: account.id)
         }
         let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
-        let projectRepository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        let projectRepository = clientFactory.makeProjectRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider,
+        )
         return ProjectOverviewViewModel(
             project: node.project,
             subprojects: node.children,
@@ -173,10 +187,22 @@ final class AppContainer {
         }
         let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let labelRepository = clientFactory.makeLabelRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
-        let relationRepository = clientFactory.makeTaskRelationRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
-        let commentRepository = clientFactory.makeTaskCommentRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
-        let attachmentRepository = clientFactory.makeTaskAttachmentRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
-        let projectRepository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
+        let relationRepository = clientFactory.makeTaskRelationRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider,
+        )
+        let commentRepository = clientFactory.makeTaskCommentRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider,
+        )
+        let attachmentRepository = clientFactory.makeTaskAttachmentRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider,
+        )
+        let projectRepository = clientFactory.makeProjectRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider,
+        )
         return TaskDetailViewModel(
             task: task,
             project: project,
@@ -208,7 +234,10 @@ final class AppContainer {
             preselectedProjectID: preselectedProjectID,
             accountDefaultProjectID: defaultProjectStore.projectID(forAccountID: account.id),
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            projectRepository: clientFactory.makeProjectRepository(
+                baseURL: account.baseURL,
+                tokenProvider: tokenProvider,
+            ),
             toastPresenter: toastCenter,
         )
     }
@@ -222,7 +251,11 @@ final class AppContainer {
     }
 
     func makeConnectionsListViewModel(onActiveAccountChanged: @escaping () -> Void) -> ConnectionsListViewModel {
-        ConnectionsListViewModel(accountStore: accountStore, toastPresenter: toastCenter, onActiveAccountChanged: onActiveAccountChanged)
+        ConnectionsListViewModel(
+            accountStore: accountStore,
+            toastPresenter: toastCenter,
+            onActiveAccountChanged: onActiveAccountChanged,
+        )
     }
 
     func makeConnectionFormViewModel(
@@ -245,7 +278,10 @@ final class AppContainer {
         }
         return SearchViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
-            projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            projectRepository: clientFactory.makeProjectRepository(
+                baseURL: account.baseURL,
+                tokenProvider: tokenProvider,
+            ),
             toastPresenter: toastCenter,
             hapticPresenter: hapticCenter,
         )
