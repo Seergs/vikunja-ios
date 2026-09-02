@@ -24,8 +24,12 @@ struct RootView: View {
                 // entire tab shell — every tab's view models were built
                 // against the old account's `baseURL` at construction time
                 // and don't observe changes to it.
-                MainTabView(account: connectedAccount, container: container, onAccountsChanged: { Task { await refreshActiveAccount() } })
-                    .id(connectedAccount)
+                MainTabView(
+                    account: connectedAccount,
+                    container: container,
+                    onAccountsChanged: { Task { await refreshActiveAccount() } },
+                )
+                .id(connectedAccount)
             } else if hasCheckedForSavedAccount {
                 NavigationStack {
                     InstanceSetupView(
