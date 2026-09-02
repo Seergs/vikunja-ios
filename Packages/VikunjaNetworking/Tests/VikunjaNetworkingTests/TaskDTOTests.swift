@@ -41,9 +41,15 @@ struct TaskDTOTests {
         let dto = try loadTaskDTO()
         let task = TaskMapper.toDomain(dto)
 
-        #expect(task.otherRelations[.related] == [TaskRelation(id: 6, title: "Buy filters", isDone: false, projectID: 4)])
-        #expect(task.otherRelations[.precedes] == [TaskRelation(id: 7, title: "Clean machine", isDone: false, projectID: 4)])
-        #expect(task.otherRelations[.follows] == [TaskRelation(id: 8, title: "Descale machine", isDone: true, projectID: 4)])
+        #expect(
+            task.otherRelations[.related] == [TaskRelation(id: 6, title: "Buy filters", isDone: false, projectID: 4)],
+        )
+        #expect(
+            task.otherRelations[.precedes] == [TaskRelation(id: 7, title: "Clean machine", isDone: false, projectID: 4)],
+        )
+        #expect(
+            task.otherRelations[.follows] == [TaskRelation(id: 8, title: "Descale machine", isDone: true, projectID: 4)],
+        )
         #expect(task.otherRelations[.subtask] == nil)
         #expect(task.otherRelations[.blocked] == nil)
         #expect(task.otherRelations[.blocking] == nil)

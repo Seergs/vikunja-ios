@@ -37,10 +37,11 @@ struct TaskDTO: Codable {
     /// structure isn't verified against live swagger docs, and guessing
     /// wrong would silently drop a sub-field — exactly the bug this exists
     /// to prevent.
-    // `var`, not `let`: a `let` property with a default value is excluded
-    // from the synthesized memberwise initializer entirely (Swift treats it
-    // as already fully initialized), which would make it impossible for
-    // `TaskMapper.merge(_:onto:)` to pass one through explicitly.
+    ///
+    /// `var`, not `let`: a `let` property with a default value is excluded
+    /// from the synthesized memberwise initializer entirely (Swift treats it
+    /// as already fully initialized), which would make it impossible for
+    /// `TaskMapper.merge(_:onto:)` to pass one through explicitly.
     var relatedTasks: [String: [RelatedTaskDTO]]?
     var doneAt: Date?
     var startDate: Date?

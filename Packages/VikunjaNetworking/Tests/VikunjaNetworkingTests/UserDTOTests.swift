@@ -37,7 +37,7 @@ struct UserDTOTests {
 
     @Test
     func `tolerates A user payload with no settings block`() throws {
-        let data = #"{"id": 9, "username": "author", "name": "Author"}"#.data(using: .utf8)!
+        let data = Data(#"{"id": 9, "username": "author", "name": "Author"}"#.utf8)
         let dto = try JSONDecoder().decode(UserDTO.self, from: data)
 
         #expect(dto.settings == nil)
