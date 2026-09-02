@@ -80,6 +80,11 @@ struct MainTabView: View {
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(VikunjaColor.brandPrimary)
+        // A light selection tick whenever the active tab changes — including a
+        // programmatic switch from a `vikunja://` deep link. Doesn't fire on
+        // first render, or on re-tapping the current tab (which pops to root
+        // rather than changing `selection`).
+        .vikunjaHaptic(.selection, trigger: selection)
         .overlay(alignment: .topTrailing) {
             if BuildConfig.isDevBuild {
                 Text("DEV")
