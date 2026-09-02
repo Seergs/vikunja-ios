@@ -43,7 +43,10 @@ public struct QuickAddSheetView: View {
                     .submitLabel(.done)
                     .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
                     .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
-                    .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+                    .background(
+                        VikuColor.Surface.field,
+                        in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous),
+                    )
 
                 projectSection
 

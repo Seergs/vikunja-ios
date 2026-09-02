@@ -202,7 +202,10 @@ public struct TaskDetailView: View {
                 }
             case let .pickTask(kind):
                 RelationTaskPickerSheet(viewModel: viewModel, kind: kind) { candidate in
-                    let relation = TaskRelation(id: candidate.id, title: candidate.title, isDone: candidate.isDone, projectID: candidate.projectID)
+                    let relation = TaskRelation(
+                        id: candidate.id, title: candidate.title,
+                        isDone: candidate.isDone, projectID: candidate.projectID,
+                    )
                     Task { await viewModel.addRelation(relation, kind: kind) }
                     relationSheetStep = nil
                 }
@@ -353,7 +356,9 @@ public struct TaskDetailView: View {
                     iconColor: task.dueDate == nil ? VikuColor.textTertiary : VikuColor.textSecondary,
                     title: "Due",
                     value: task.dueDate.map(TaskDueDateFormatter.string(for:)) ?? "Set due date",
-                    valueColor: task.dueDate == nil ? VikuColor.textTertiary : (isOverdue(task) ? VikuColor.Semantic.dangerText : nil),
+                    valueColor: task.dueDate == nil
+                        ? VikuColor.textTertiary
+                        : (isOverdue(task) ? VikuColor.Semantic.dangerText : nil),
                     showsChevron: true,
                 )
             }
@@ -581,7 +586,10 @@ private struct BlockedBanner: View {
         .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
         .padding(.vertical, VikuSpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikuColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+        .background(
+            VikuColor.Semantic.danger.opacity(0.12),
+            in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous),
+        )
     }
 }
 
@@ -1134,7 +1142,10 @@ private struct RelationTaskPickerSheet: View {
                         Button {
                             onSelect(candidate)
                         } label: {
-                            RelationCandidateRow(task: candidate, projectTitle: viewModel.projectTitle(forProjectID: candidate.projectID))
+                            RelationCandidateRow(
+                                task: candidate,
+                                projectTitle: viewModel.projectTitle(forProjectID: candidate.projectID),
+                            )
                         }
                         .buttonStyle(.plain)
                     }
@@ -1453,7 +1464,10 @@ private struct CreateLabelCard: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, VikuSpacing.sm)
-                    .background(VikuColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+                    .background(
+                        VikuColor.brandPrimary,
+                        in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous),
+                    )
             }
             .buttonStyle(.plain)
         }
@@ -1613,7 +1627,8 @@ private enum AttachmentSizeFormatter {
 /// each write to keep only the most recent preview around.
 private enum AttachmentPreviewFile {
     static func write(_ data: Data, named fileName: String) -> URL? {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("attachment-previews", isDirectory: true)
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("attachment-previews", isDirectory: true)
         try? FileManager.default.removeItem(at: directory)
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -1677,7 +1692,10 @@ private struct CommentRow: View {
 
     private var displayName: String {
         let name = comment.author.name?.trimmingCharacters(in: .whitespacesAndNewlines)
-        return (name?.isEmpty == false) ? name! : comment.author.username
+        if let name, !name.isEmpty {
+            return name
+        }
+        return comment.author.username
     }
 
     private var initials: String {
@@ -1792,7 +1810,10 @@ private struct EditCommentSheet: View {
                     .font(.system(size: 15))
                     .foregroundStyle(Color.primary)
                     .padding(VikuSpacing.sm)
-                    .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+                    .background(
+                        VikuColor.Surface.card,
+                        in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous),
+                    )
                     .padding(.horizontal, VikuSpacing.md)
                     .padding(.top, VikuSpacing.md)
             }
@@ -1863,7 +1884,9 @@ private enum TaskDueDateFormatter {
         if calendar.isDateInYesterday(date) {
             return "Yesterday"
         }
-        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: Date()), to: calendar.startOfDay(for: date)).day ?? 0
+        let days = calendar.dateComponents(
+            [.day], from: calendar.startOfDay(for: Date()), to: calendar.startOfDay(for: date),
+        ).day ?? 0
         if abs(days) <= 6 {
             return date.formatted(.dateTime.weekday(.wide))
         }
