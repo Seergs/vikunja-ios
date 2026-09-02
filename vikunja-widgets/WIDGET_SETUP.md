@@ -7,12 +7,28 @@ the App Group and keychain group. `xcodebuild -scheme vikunja build` produces
 
 ## Identifiers (kept in sync with `VikunjaWidgetKit/Config/VikunjaWidgetConfig.swift`)
 
-| Thing | Value |
-|---|---|
-| App Group | `group.dev.sergiosuarez.vikunja` |
-| Keychain group | `$(AppIdentifierPrefix)dev.sergiosuarez.vikunja.shared` |
-| Widget bundle id | `dev.sergiosuarez.vikunja.widgets` / `.dev.widgets` (Debug) |
-| Widget `kind` | `TodayWidget` |
+Everything is split per build configuration so a Debug ("dev") install and a
+Release install on the same device never share storage. Two project-level build
+settings in `project.pbxproj` drive it (both targets inherit them):
+
+| Build setting | Debug | Release |
+|---|---|---|
+| `VIKUNJA_ID_PREFIX` | `dev.sergiosuarez.vikunja.dev` | `dev.sergiosuarez.vikunja` |
+| `VIKUNJA_URL_SCHEME` | `vikunja-dev` | `vikunja` |
+
+Derived from `VIKUNJA_ID_PREFIX`:
+
+| Thing | Debug | Release |
+|---|---|---|
+| App Group | `group.dev.sergiosuarez.vikunja.dev` | `group.dev.sergiosuarez.vikunja` |
+| Keychain group | `…vikunja.dev.shared` | `…vikunja.shared` |
+| Keychain service | `…vikunja.dev.accounts` | `…vikunja.accounts` |
+| Widget bundle id | `dev.sergiosuarez.vikunja.dev.widgets` | `dev.sergiosuarez.vikunja.widgets` |
+| Widget `kind` | `TodayWidget` | `TodayWidget` |
+
+The Swift side (`VikunjaWidgetConfig`) picks the prefix with `#if DEBUG`; the
+entitlements / `Info.plist` read `$(VIKUNJA_ID_PREFIX)` / `$(VIKUNJA_URL_SCHEME)`.
+Keep the two aligned: Debug ↔ `.dev`, Release ↔ prod.
 
 Entitlements: `vikunja/vikunja.entitlements` and
 `vikunja-widgets/vikunja-widgets.entitlements`. Both list, in this order:
@@ -21,10 +37,10 @@ Entitlements: `vikunja/vikunja.entitlements` and
    group. **Must be first** so Keychain queries with no explicit group keep
    defaulting to it (otherwise the pre-widget account becomes invisible and
    `migrateToAccessGroup()` can't find it).
-2. `$(AppIdentifierPrefix)dev.sergiosuarez.vikunja.shared` — the shared group
+2. `$(AppIdentifierPrefix)$(VIKUNJA_ID_PREFIX).shared` — the shared group
    the app writes and the widget reads.
 
-Plus the App Group `group.dev.sergiosuarez.vikunja`. `CODE_SIGN_ENTITLEMENTS`
+Plus the App Group `group.$(VIKUNJA_ID_PREFIX)`. `CODE_SIGN_ENTITLEMENTS`
 is set on both targets.
 
 `KeychainAccountStore` probes the shared group once on first use and silently
@@ -50,6 +66,8 @@ Keychain Sharing with the portal.
 4. "Embed Foundation Extensions" copy-files phase on the app + a target
    dependency.
 5. `CODE_SIGN_ENTITLEMENTS` on both targets.
+6. `VIKUNJA_ID_PREFIX` / `VIKUNJA_URL_SCHEME` on the two **project-level** build
+   configurations (Debug → `.dev` / `vikunja-dev`, Release → prod / `vikunja`).
 
 If you ever regenerate the project, re-run that script.
 
@@ -71,8 +89,9 @@ refreshes ~every 30 min, on app-backgrounding, and after the toggle intent.
   `VikunjaCore` (same shape as `ToastPresenting`), implemented in the app with
   `WidgetCenter`, injected into `TodayViewModel` / `TaskDetailViewModel` /
   `QuickAddTaskViewModel` / `ProjectOverviewViewModel`.
-- `vikunja://task/<id>` deep links into `TaskDetailView` (register the
-  `vikunja` URL scheme on the app target, handle in `RootView`/`MainTabView`).
+- `vikunja://task/<id>` deep links into `TaskDetailView` (the URL scheme is
+  registered — `$(VIKUNJA_URL_SCHEME)`; add the `task` host to
+  `DeepLink(url:)` and handle it in `RootView`/`MainTabView`).
 - `.accessoryRectangular` / `.accessoryCircular` lock-screen widgets.
 - `AppIntentConfiguration` for a filter (All / Overdue / Today) and, with
   multi-account, an account picker.

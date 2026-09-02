@@ -528,7 +528,14 @@ to `VikunjaNetworking` instead of rippling into UI code.
   - `Config/VikunjaWidgetConfig` — the identifiers the app target and the
     extension must agree on (App Group, `keychain-access-group`,
     `KeychainAccountStore` service, widget `kind`, URL scheme, refresh
-    interval). Mirrored in the two targets' entitlements.
+    interval). Mirrored in the two targets' entitlements. The App Group,
+    keychain group, keychain service, and URL scheme are all derived from
+    `bundleIDPrefix`, which is split per build configuration (`#if DEBUG` →
+    `…vikunja.dev`, else `…vikunja`) so a Debug ("dev") and a Release install
+    on the same device never share storage or claim the same `vikunja://`
+    scheme. The entitlements / `Info.plist` get the matching value from the
+    project-level `VIKUNJA_ID_PREFIX` / `VIKUNJA_URL_SCHEME` build settings via
+    `$(…)` expansion — keep those aligned with the `#if DEBUG` branch.
   - `Data/TodaySnapshotLoader` — one refresh: resolve the active account +
     token, fetch every project's tasks concurrently (dropping a project whose
     fetch fails, exactly like `TodayViewModel`), bucket them via
@@ -570,7 +577,11 @@ stores the account index, the active-account pointer, and each account's token
 in a shared `keychain-access-group` so the widget process can read them;
 `migrateToAccessGroup()` is a one-time move of pre-existing items from the
 app's private group (safe to call every launch). Passing `accessGroup: nil`
-(the default) keeps the single-process behavior.
+keeps the single-process behavior. That shared group (and the App Group and
+`service`) is per-build-config — Debug and Release use disjoint
+`…vikunja.dev.*` / `…vikunja.*` identifiers, so dev and prod installs on one
+device don't see each other's accounts. No migration between the two: switching
+config starts from an empty account list.
 
 **Top-level navigation** (`vikunja/RootView.swift`, `vikunja/Navigation/`): `RootView`
 switches between `InstanceSetupView` (no saved account yet) and `MainTabView`

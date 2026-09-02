@@ -344,13 +344,15 @@ the app target.
 
 **Feeding the router:**
 
-- **URL scheme.** The app registers `vikunja://` (an `Info.plist`
+- **URL scheme.** The app registers its scheme (an `Info.plist`
   `CFBundleURLTypes` entry — the one reason the otherwise-generated Info.plist
-  is checked in). `RootView`'s `.onOpenURL` parses `vikunja://quick-add` into a
-  `DeepLink` (parsing stays in the app target, since the scheme string is
-  `VikunjaWidgetKit`'s) and calls `router.open(_:)`. Both widgets reach it via
-  `.widgetURL` — the same mechanism the Today widget already used for
-  `vikunja://today`.
+  is checked in — set from the `$(VIKUNJA_URL_SCHEME)` build setting, so it's
+  `vikunja` in Release and `vikunja-dev` in Debug to keep a dev and a prod
+  install from clashing). `RootView`'s `.onOpenURL` parses `<scheme>://quick-add`
+  into a `DeepLink` (parsing stays in the app target, since the scheme string is
+  `VikunjaWidgetKit`'s `VikunjaWidgetConfig.urlScheme`) and calls
+  `router.open(_:)`. Both widgets reach it via `.widgetURL` — the same mechanism
+  the Today widget already used for `<scheme>://today`.
 - **App Intents.** `OpenQuickAddIntent` (`openAppWhenRun = true`) calls
   `DeepLinkRouter.shared.open(.quickAdd(...))` from its `perform()`.
 

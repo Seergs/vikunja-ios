@@ -152,5 +152,21 @@ app_target.build_configurations.each do |config|
 end
 puts '= app CODE_SIGN_ENTITLEMENTS -> vikunja/vikunja.entitlements'
 
+# --- 8. Per-config identifiers (project level, inherited by both targets) --
+# App Group / keychain group / URL scheme are split dev vs prod so a Debug and
+# a Release install on the same device don't share storage. The .entitlements
+# and Info.plist expand $(VIKUNJA_ID_PREFIX) / $(VIKUNJA_URL_SCHEME);
+# VikunjaWidgetConfig mirrors the prefix with #if DEBUG.
+project.build_configurations.each do |config|
+  if config.name == 'Debug'
+    config.build_settings['VIKUNJA_ID_PREFIX'] = 'dev.sergiosuarez.vikunja.dev'
+    config.build_settings['VIKUNJA_URL_SCHEME'] = 'vikunja-dev'
+  else
+    config.build_settings['VIKUNJA_ID_PREFIX'] = 'dev.sergiosuarez.vikunja'
+    config.build_settings['VIKUNJA_URL_SCHEME'] = 'vikunja'
+  end
+end
+puts '= project VIKUNJA_ID_PREFIX / VIKUNJA_URL_SCHEME (per config)'
+
 project.save
 puts 'saved.'
