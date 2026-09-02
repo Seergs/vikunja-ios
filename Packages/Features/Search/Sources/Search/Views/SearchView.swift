@@ -24,8 +24,8 @@ struct SearchView: View {
                 "This permanently deletes the task.",
                 isPresented: Binding(
                     get: { taskPendingDelete != nil },
-                    set: {
-                        isPresented in if !isPresented {
+                    set: { isPresented in
+                        if !isPresented {
                             taskPendingDelete = nil
                         }
                     },
