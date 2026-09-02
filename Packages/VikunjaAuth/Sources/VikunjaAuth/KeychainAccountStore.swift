@@ -19,7 +19,7 @@ public actor KeychainAccountStore: AccountStoreProtocol {
     private let decoder: JSONDecoder
 
     public init(
-        service: String = "dev.sergiosuarez.vikunja.accounts",
+        service: String,
         accessGroup: String? = nil,
     ) {
         self.service = service

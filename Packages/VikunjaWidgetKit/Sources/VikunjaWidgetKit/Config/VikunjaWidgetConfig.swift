@@ -4,22 +4,36 @@ import Foundation
 /// These must match the App Group and `keychain-access-group` entries in both
 /// targets' entitlements, and `accountStoreService` must match the `service`
 /// the app's `KeychainAccountStore` is constructed with.
+///
+/// Everything derived from `bundleIDPrefix` is split per build configuration so
+/// a Debug ("dev") install and a Release install on the same device never share
+/// storage. The Swift side switches on `#if DEBUG`; the entitlements / Info.plist
+/// side reads the matching `VIKUNJA_ID_PREFIX` / `VIKUNJA_URL_SCHEME` build
+/// settings (project level, `project.pbxproj`) via `$(...)` expansion. Keep the
+/// two in sync: Debug ↔ `.dev`, Release ↔ prod.
 public enum VikunjaWidgetConfig {
-    /// App Group container, used only for the cached Today snapshot. Add this
-    /// exact group to the App Groups capability of both the app target and the
-    /// widget extension.
-    public static let appGroupIdentifier = "group.dev.sergiosuarez.vikunja"
+    /// The app's bundle-identifier prefix, shared by the app target and the
+    /// widget extension. Mirrors `VIKUNJA_ID_PREFIX` in `project.pbxproj`.
+    #if DEBUG
+    public static let bundleIDPrefix = "dev.sergiosuarez.vikunja.dev"
+    #else
+    public static let bundleIDPrefix = "dev.sergiosuarez.vikunja"
+    #endif
+
+    /// App Group container, used only for the cached Today snapshot. Added to
+    /// the App Groups capability of both targets as `group.$(VIKUNJA_ID_PREFIX)`.
+    public static let appGroupIdentifier = "group.\(bundleIDPrefix)"
 
     /// Shared keychain group holding the account index, the active-account
-    /// pointer, and each account's bearer token. List
-    /// `$(AppIdentifierPrefix)dev.sergiosuarez.vikunja.shared` under
-    /// Keychain Sharing in both targets' entitlements; the runtime prepends
-    /// the team prefix, so the code passes only the suffix.
-    public static let keychainAccessGroup = "dev.sergiosuarez.vikunja.shared"
+    /// pointer, and each account's bearer token. Listed as
+    /// `$(AppIdentifierPrefix)$(VIKUNJA_ID_PREFIX).shared` under Keychain
+    /// Sharing in both targets' entitlements; the runtime prepends the team
+    /// prefix, so the code passes only the suffix.
+    public static let keychainAccessGroup = "\(bundleIDPrefix).shared"
 
     /// Must match the `service:` passed to `KeychainAccountStore` in the app's
-    /// `AppContainer` (its default, today).
-    public static let accountStoreService = "dev.sergiosuarez.vikunja.accounts"
+    /// `AppContainer` and in `VikunjaWidgetEnvironment`.
+    public static let accountStoreService = "\(bundleIDPrefix).accounts"
 
     /// `kind` string tying `TodayWidget` to `WidgetCenter.reloadTimelines(ofKind:)`.
     public static let todayWidgetKind = "TodayWidget"

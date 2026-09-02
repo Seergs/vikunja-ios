@@ -48,6 +48,7 @@ final class AppContainer {
 
     init(
         accountStore: AccountStoreProtocol = KeychainAccountStore(
+            service: VikunjaWidgetConfig.accountStoreService,
             accessGroup: VikunjaWidgetConfig.keychainAccessGroup,
         ),
         clientFactory: InstanceClientFactoryProtocol = VikunjaInstanceClientFactory(),
