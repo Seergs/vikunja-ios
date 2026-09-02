@@ -19,6 +19,7 @@ public struct TaskDetailView: View {
     @State private var isShowingDueDatePicker = false
     @State private var isShowingLabelPicker = false
     @State private var isShowingMovePicker = false
+    @State private var isShowingDuplicateSheet = false
     @State private var isShowingDeleteConfirmation = false
     @State private var commentPendingDeletion: TaskComment?
     @State private var commentPendingEdit: TaskComment?
@@ -85,6 +86,9 @@ public struct TaskDetailView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Menu {
+                    Button("Duplicate Task", systemImage: "plus.square.on.square") {
+                        isShowingDuplicateSheet = true
+                    }
                     Button("Move to Project", systemImage: "folder") {
                         isShowingMovePicker = true
                     }
@@ -138,6 +142,12 @@ public struct TaskDetailView: View {
                 }
             }
             .task { await viewModel.loadAllProjects() }
+        }
+        .sheet(isPresented: $isShowingDuplicateSheet) {
+            DuplicateTaskSheetView(viewModel: viewModel.makeDuplicateTaskViewModel()) { task, project in
+                // Reuses the same push path a tapped relation row takes.
+                relatedTaskDestination = RelatedTaskDestination(task: task, project: project)
+            }
         }
         .confirmationDialog(
             "This permanently deletes the task.",

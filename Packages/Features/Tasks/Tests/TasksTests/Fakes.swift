@@ -5,10 +5,12 @@ import VikunjaCore
 final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     var tasks: [VikunjaTask] = []
     var fetchError: VikunjaError?
+    var createError: VikunjaError?
     var updateError: VikunjaError?
     var deleteError: VikunjaError?
     var searchError: VikunjaError?
     var searchResults: [VikunjaTask] = []
+    private var nextID = 1000
 
     func fetchTasks(projectID: Int) async throws -> [VikunjaTask] {
         if let fetchError {
@@ -28,7 +30,23 @@ final class FakeTaskRepository: TaskRepositoryProtocol, @unchecked Sendable {
     }
 
     func create(_ task: VikunjaTask) async throws -> VikunjaTask {
-        task
+        if let createError {
+            throw createError
+        }
+        // Mirrors the real API: the server assigns the id. Relations/labels
+        // aren't accepted in the create body, so they're dropped here too.
+        let created = VikunjaTask(
+            id: nextID,
+            title: task.title,
+            description: task.description,
+            isDone: task.isDone,
+            dueDate: task.dueDate,
+            priority: task.priority,
+            projectID: task.projectID,
+        )
+        nextID += 1
+        tasks.append(created)
+        return created
     }
 
     func update(_ task: VikunjaTask) async throws -> VikunjaTask {

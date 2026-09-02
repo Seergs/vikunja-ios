@@ -338,6 +338,25 @@ public final class TaskDetailViewModel {
         )
     }
 
+    /// Builds a `DuplicateTaskViewModel` for the current task, reusing this
+    /// view model's own repositories — lets `TaskDetailView` present the
+    /// duplicate sheet without the app target's `AppContainer` needing a
+    /// factory for it (same pattern as `makeDetailViewModel(task:project:)`).
+    /// `task` is whatever `load()` last refreshed, so its labels and
+    /// relations are current.
+    public func makeDuplicateTaskViewModel() -> DuplicateTaskViewModel {
+        DuplicateTaskViewModel(
+            source: task,
+            sourceProject: project,
+            taskRepository: repository,
+            labelRepository: labelRepository,
+            relationRepository: relationRepository,
+            projectRepository: projectRepository,
+            toastPresenter: toastPresenter,
+            hapticPresenter: hapticPresenter,
+        )
+    }
+
     /// Loads this task's comments. Failures surface into `commentsLoadState`
     /// (mirroring `load()`) rather than being swallowed like `allLabels`'s
     /// lazy load — comments are always-visible content on this screen, not a
