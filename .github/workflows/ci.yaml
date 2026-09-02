@@ -1,0 +1,89 @@
+name: ci
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  XCODE_VERSION: "16.2"
+  SCHEME: "Viku"
+  PROJECT: "Viku.xcodeproj"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: jdx/mise-action@v4
+        with: 
+          cache: true
+
+      - name: SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging
+
+      - name: SwiftFormat
+        run: swiftformat --lint .
+
+
+  build:
+    name: Build
+    runs-on: macos-15
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Resolve SPM dependencies
+        run: xcodebuild -resolvePackageDependencies -project ${{ env.PROJECT }}
+
+      - name: Cache SPM
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+          key: spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: spm-
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project ${{ env.PROJECT }} \\
+            -scheme ${{ env.SCHEME }} \\
+            -destination "platform=iOS Simulator,name=iPhone 17,OS=latest" \\
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO
+
+
+  test:
+    name: Unit + UI Tests
+    runs-on: macos-15
+    needs: build
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+          -project ${{ env.PROJECT }} \
+          -scheme ${{ env.SCHEME }} \
+          -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
+          -resultBundlePath TestResults.xcresult \
+          CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults.xcresult
