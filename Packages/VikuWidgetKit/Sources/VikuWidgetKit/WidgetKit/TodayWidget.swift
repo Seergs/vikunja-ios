@@ -9,7 +9,7 @@ public struct TodayWidget: Widget {
     public init() {}
 
     public var body: some WidgetConfiguration {
-        StaticConfiguration(kind: VikunjaWidgetConfig.todayWidgetKind, provider: TodayTimelineProvider()) { entry in
+        StaticConfiguration(kind: VikuWidgetConfig.todayWidgetKind, provider: TodayTimelineProvider()) { entry in
             TodayWidgetView(entry: entry)
         }
         .configurationDisplayName("Today")

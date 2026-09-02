@@ -24,7 +24,7 @@ struct TodayWidgetView: View {
             .padding(contentInset)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .containerBackground(VikuColor.Surface.page, for: .widget)
-            .widgetURL(URL(string: "\(VikunjaWidgetConfig.urlScheme)://today"))
+            .widgetURL(URL(string: "\(VikuWidgetConfig.urlScheme)://today"))
     }
 
     @ViewBuilder
@@ -61,7 +61,7 @@ struct TodayWidgetView: View {
         case .systemMedium:
             TodayListView(content: content, rowLimit: 3)
         default:
-            TodayListView(content: content, rowLimit: VikunjaWidgetConfig.taskLimit)
+            TodayListView(content: content, rowLimit: VikuWidgetConfig.taskLimit)
         }
     }
 }
@@ -240,7 +240,7 @@ private struct TodayWidgetHeader: View {
     }
 
     private var quickAddURL: URL? {
-        URL(string: "\(VikunjaWidgetConfig.urlScheme)://quick-add")
+        URL(string: "\(VikuWidgetConfig.urlScheme)://quick-add")
     }
 }
 

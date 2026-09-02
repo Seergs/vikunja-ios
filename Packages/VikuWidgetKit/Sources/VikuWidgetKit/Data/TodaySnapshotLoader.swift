@@ -8,7 +8,7 @@ import VikunjaCore
 /// cached snapshot when the network fails.
 ///
 /// Takes its dependencies as `VikunjaCore` protocols so it can be tested with
-/// fakes; `VikunjaWidgetEnvironment` wires the real ones.
+/// fakes; `VikuWidgetEnvironment` wires the real ones.
 public struct TodaySnapshotLoader: Sendable {
     private let accountStore: AccountStoreProtocol
     private let clientFactory: InstanceClientFactoryProtocol
@@ -20,7 +20,7 @@ public struct TodaySnapshotLoader: Sendable {
         accountStore: AccountStoreProtocol,
         clientFactory: InstanceClientFactoryProtocol,
         cache: TodaySnapshotCache,
-        taskLimit: Int = VikunjaWidgetConfig.taskLimit,
+        taskLimit: Int = VikuWidgetConfig.taskLimit,
         now: @escaping @Sendable () -> Date = { Date() },
     ) {
         self.accountStore = accountStore
@@ -86,7 +86,7 @@ public struct TodaySnapshotLoader: Sendable {
     private func cachedContentState(forceStale: Bool) -> TodayWidgetState? {
         guard var cached = cache.read() else { return nil }
         let age = now().timeIntervalSince(cached.generatedAt)
-        cached.isStale = forceStale || age > VikunjaWidgetConfig.refreshInterval * 2
+        cached.isStale = forceStale || age > VikuWidgetConfig.refreshInterval * 2
         return .content(cached)
     }
 

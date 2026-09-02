@@ -11,7 +11,7 @@ import Foundation
 /// side reads the matching `VIKU_ID_PREFIX` / `VIKU_URL_SCHEME` build
 /// settings (project level, `project.pbxproj`) via `$(...)` expansion. Keep the
 /// two in sync: Debug ↔ `.dev`, Release ↔ prod.
-public enum VikunjaWidgetConfig {
+public enum VikuWidgetConfig {
     /// The app's bundle-identifier prefix, shared by the app target and the
     /// widget extension. Mirrors `VIKU_ID_PREFIX` in `project.pbxproj`.
     #if DEBUG
@@ -32,7 +32,7 @@ public enum VikunjaWidgetConfig {
     public static let keychainAccessGroup = "\(bundleIDPrefix).shared"
 
     /// Must match the `service:` passed to `KeychainAccountStore` in the app's
-    /// `AppContainer` and in `VikunjaWidgetEnvironment`.
+    /// `AppContainer` and in `VikuWidgetEnvironment`.
     public static let accountStoreService = "\(bundleIDPrefix).accounts"
 
     /// `kind` string tying `TodayWidget` to `WidgetCenter.reloadTimelines(ofKind:)`.

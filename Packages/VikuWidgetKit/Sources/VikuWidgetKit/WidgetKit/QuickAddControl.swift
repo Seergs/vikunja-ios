@@ -15,7 +15,7 @@ public struct QuickAddControl: ControlWidget {
     public init() {}
 
     public var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: VikunjaWidgetConfig.quickAddControlKind) {
+        StaticControlConfiguration(kind: VikuWidgetConfig.quickAddControlKind) {
             ControlWidgetButton(action: QuickAddControlIntent()) {
                 Label("Add Task", systemImage: "plus.circle.fill")
             }

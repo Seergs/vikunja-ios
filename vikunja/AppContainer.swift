@@ -48,8 +48,8 @@ final class AppContainer {
 
     init(
         accountStore: AccountStoreProtocol = KeychainAccountStore(
-            service: VikunjaWidgetConfig.accountStoreService,
-            accessGroup: VikunjaWidgetConfig.keychainAccessGroup,
+            service: VikuWidgetConfig.accountStoreService,
+            accessGroup: VikuWidgetConfig.keychainAccessGroup,
         ),
         clientFactory: InstanceClientFactoryProtocol = VikunjaInstanceClientFactory(),
     ) {
@@ -76,7 +76,7 @@ final class AppContainer {
         let loader = TodaySnapshotLoader(
             accountStore: accountStore,
             clientFactory: clientFactory,
-            cache: TodaySnapshotCache(appGroupIdentifier: VikunjaWidgetConfig.appGroupIdentifier),
+            cache: TodaySnapshotCache(appGroupIdentifier: VikuWidgetConfig.appGroupIdentifier),
         )
         _ = await loader.loadState()
         WidgetCenter.shared.reloadAllTimelines()

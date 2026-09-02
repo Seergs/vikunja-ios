@@ -14,7 +14,7 @@ public struct QuickAddWidget: Widget {
     public init() {}
 
     public var body: some WidgetConfiguration {
-        StaticConfiguration(kind: VikunjaWidgetConfig.quickAddWidgetKind, provider: QuickAddTimelineProvider()) { _ in
+        StaticConfiguration(kind: VikuWidgetConfig.quickAddWidgetKind, provider: QuickAddTimelineProvider()) { _ in
             QuickAddWidgetView()
         }
         .configurationDisplayName("Quick Add")
@@ -53,7 +53,7 @@ struct QuickAddWidgetView: View {
         Image(systemName: "plus")
             .font(.system(size: 20, weight: .bold))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .widgetURL(URL(string: "\(VikunjaWidgetConfig.urlScheme)://quick-add"))
+            .widgetURL(URL(string: "\(VikuWidgetConfig.urlScheme)://quick-add"))
             .containerBackground(for: .widget) {
                 AccessoryWidgetBackground()
             }
