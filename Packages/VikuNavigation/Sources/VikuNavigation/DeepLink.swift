@@ -7,8 +7,8 @@ import Observation
 /// in-app routing exists.
 ///
 /// URL parsing lives in the app target (`DeepLink.init?(url:)`), since the
-/// `viku` scheme string is defined in `VikunjaWidgetKit`; this enum stays
-/// dependency-free so `VikunjaWidgetKit`'s App Intents can build one directly.
+/// `viku` scheme string is defined in `VikuWidgetKit`; this enum stays
+/// dependency-free so `VikuWidgetKit`'s App Intents can build one directly.
 public enum DeepLink: Equatable, Sendable {
     /// Present the tab-bar quick-add sheet, defaulting to the given project
     /// when supplied.

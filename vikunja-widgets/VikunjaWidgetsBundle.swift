@@ -3,11 +3,11 @@
 //  vikunja-widgets
 //
 //  The widget extension's entry point. All widget logic lives in the
-//  `VikunjaWidgetKit` package; this file only registers the bundle.
+//  `VikuWidgetKit` package; this file only registers the bundle.
 //
 
 import SwiftUI
-import VikunjaWidgetKit
+import VikuWidgetKit
 import WidgetKit
 
 @main

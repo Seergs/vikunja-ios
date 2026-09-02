@@ -4,7 +4,7 @@ import VikuNavigation
 /// Opens the quick-add task sheet. Backs the Siri shortcut (`VikunjaShortcuts`)
 /// and shows up in the Shortcuts app and Spotlight on its own.
 ///
-/// Lives in the app target, not `VikunjaWidgetKit`: an App Intent type that
+/// Lives in the app target, not `VikuWidgetKit`: an App Intent type that
 /// ends up registered in both the app and the widget extension breaks Siri's
 /// App Shortcut dispatch ("something went wrong"). The Control Center control
 /// uses its own `QuickAddControlIntent` in the extension instead.

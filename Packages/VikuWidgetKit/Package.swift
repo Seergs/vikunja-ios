@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "VikunjaWidgetKit",
+    name: "VikuWidgetKit",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .library(name: "VikunjaWidgetKit", targets: ["VikunjaWidgetKit"]),
+        .library(name: "VikuWidgetKit", targets: ["VikuWidgetKit"]),
     ],
     dependencies: [
         .package(path: "../VikunjaCore"),
@@ -16,9 +16,9 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "VikunjaWidgetKit",
+            name: "VikuWidgetKit",
             dependencies: ["VikunjaCore", "VikunjaNetworking", "VikuAuth", "VikuDesignSystem", "VikuNavigation"],
         ),
-        .testTarget(name: "VikunjaWidgetKitTests", dependencies: ["VikunjaWidgetKit"]),
+        .testTarget(name: "VikuWidgetKitTests", dependencies: ["VikuWidgetKit"]),
     ],
 )

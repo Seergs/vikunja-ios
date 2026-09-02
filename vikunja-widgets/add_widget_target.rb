@@ -6,8 +6,8 @@ project = Xcodeproj::Project.open(project_path)
 
 app_target = project.targets.find { |t| t.name == 'vikunja' } or abort 'no app target'
 
-PKG_PATH = 'Packages/VikunjaWidgetKit'
-PRODUCT  = 'VikunjaWidgetKit'
+PKG_PATH = 'Packages/VikuWidgetKit'
+PRODUCT  = 'VikuWidgetKit'
 WIDGET_NAME = 'vikunja-widgets'
 
 # --- 1. Local Swift package reference -----------------------------------------
@@ -78,7 +78,7 @@ unless already
   puts '+ FSS membership exceptions (Info.plist, entitlements, docs)'
 end
 
-# --- 4. Link VikunjaWidgetKit into the widget target and the app -----------
+# --- 4. Link VikuWidgetKit into the widget target and the app -----------
 unless widget_target.package_product_dependencies.any? { |d| d.product_name == PRODUCT }
   link_product(project, widget_target, new_product_dep(project, pkg_ref, PRODUCT))
   puts "+ #{PRODUCT} -> #{WIDGET_NAME}"

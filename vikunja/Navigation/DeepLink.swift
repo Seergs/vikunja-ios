@@ -1,11 +1,11 @@
 import Foundation
 import VikuNavigation
-import VikunjaWidgetKit
+import VikuWidgetKit
 
 extension DeepLink {
     /// Parses a `viku://` URL the app was opened with. `nil` for anything
     /// that isn't a recognized route. `DeepLink` itself lives in
-    /// `VikuNavigation` (so `VikunjaWidgetKit`'s App Intents can build one);
+    /// `VikuNavigation` (so `VikuWidgetKit`'s App Intents can build one);
     /// only this URL bridge needs the `viku` scheme string.
     init?(url: URL) {
         guard url.scheme?.lowercased() == VikunjaWidgetConfig.urlScheme else { return nil }
