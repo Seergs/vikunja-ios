@@ -605,6 +605,13 @@ centers it over the tab bar, which can't be suppressed or anchored to a
 corner. `QuickAddOverlay` is a child view specifically so the FAB/sheet
 `@State` never re-evaluates `MainTabView`'s body — doing so rebuilds every
 tab's `NavigationStack` + view models and blanks the screen behind the sheet.
+For the same reason the per-tab root view models (`todayViewModel`/
+`projectsViewModel`/`searchViewModel`) are `@State`, built once in
+`MainTabView.init`, not inside `body`: `body` *does* re-run on every tab switch
+(anything that reads `selection` — e.g. the `.onChange` haptic tick — makes it),
+and rebuilding a view model there would hand each tab a fresh empty one and
+flash a spinner on switch. `MainTabView` is keyed `.id(connectedAccount)`, so an
+account switch still rebuilds them.
 The FAB presents `Tasks`' `QuickAddSheetView` as a `.sheet`
 (`container.makeQuickAddTaskViewModel(preselectedProjectID:account:)`); it
 stays global rather than moving per-screen — the sheet defaults its project
