@@ -21,7 +21,7 @@ public struct QuickAddControl: ControlWidget {
             }
         }
         .displayName("Add Task")
-        .description("Open Vikunja's quick-add sheet.")
+        .description("Open Viku's quick-add sheet.")
     }
 }
 #endif

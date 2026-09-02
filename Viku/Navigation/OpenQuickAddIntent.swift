@@ -14,7 +14,7 @@ import VikuNavigation
 /// URL takes.
 struct OpenQuickAddIntent: AppIntent {
     static let title: LocalizedStringResource = "Add Task"
-    static let description = IntentDescription("Opens Vikunja's quick-add sheet to jot down a new task.")
+    static let description = IntentDescription("Opens Viku's quick-add sheet to jot down a new task.")
     static let openAppWhenRun = true
 
     @MainActor

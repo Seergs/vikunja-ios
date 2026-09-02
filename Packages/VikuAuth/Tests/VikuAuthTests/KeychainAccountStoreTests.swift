@@ -9,7 +9,7 @@ import VikunjaCore
 @Suite(.serialized)
 struct KeychainAccountStoreTests {
     private func makeStore() -> KeychainAccountStore {
-        KeychainAccountStore(service: "dev.sergiosuarez.vikunja.tests.\(UUID().uuidString)")
+        KeychainAccountStore(service: "dev.sergiosuarez.viku.tests.\(UUID().uuidString)")
     }
 
     private func makeAccount(displayName: String = "Home") -> InstanceAccount {
@@ -21,7 +21,7 @@ struct KeychainAccountStoreTests {
         // A bogus access group the test process has no entitlement for: the
         // store must not fail every call, it must transparently fall back to
         // the app's private keychain.
-        let service = "dev.sergiosuarez.vikunja.tests.\(UUID().uuidString)"
+        let service = "dev.sergiosuarez.viku.tests.\(UUID().uuidString)"
         let store = KeychainAccountStore(service: service, accessGroup: "bogus.unentitled.group")
         let account = makeAccount()
 

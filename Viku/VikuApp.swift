@@ -1,6 +1,6 @@
 //
 //  VikuApp.swift
-//  vikunja
+//  Viku
 //
 //  Created by Sergio Suárez álvarez on 24/08/26.
 //
