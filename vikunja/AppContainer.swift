@@ -5,7 +5,7 @@ import Projects
 import Search
 import Settings
 import Tasks
-import VikunjaAuth
+import VikuAuth
 import VikunjaCore
 import VikunjaDesignSystem
 import VikuNavigation
@@ -14,7 +14,7 @@ import VikunjaWidgetKit
 import WidgetKit
 
 /// Composition root. The only type in the app target allowed to know about
-/// concrete `VikunjaNetworking`/`VikunjaAuth` implementations — it wires them
+/// concrete `VikunjaNetworking`/`VikuAuth` implementations — it wires them
 /// into the `VikunjaCore` protocols each `Features/*` module receives through
 /// constructor injection.
 @MainActor

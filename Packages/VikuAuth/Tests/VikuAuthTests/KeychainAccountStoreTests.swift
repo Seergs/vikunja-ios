@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import VikunjaAuth
+@testable import VikuAuth
 import VikunjaCore
 
 /// Exercises the real Keychain (generic password items), so this suite runs

@@ -1,9 +1,9 @@
 import Foundation
-import VikunjaAuth
+import VikuAuth
 import VikunjaCore
 import VikunjaNetworking
 
-/// Builds the concrete `VikunjaAuth`/`VikunjaNetworking` types the widget
+/// Builds the concrete `VikuAuth`/`VikunjaNetworking` types the widget
 /// runs against — the widget's equivalent of the app target's `AppContainer`.
 /// The extension is not a `Features/*` module, so importing the networking and
 /// auth layers here is allowed.

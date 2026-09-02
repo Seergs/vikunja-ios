@@ -2,16 +2,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "VikunjaAuth",
+    name: "VikuAuth",
     platforms: [.iOS(.v17), .macOS(.v13)],
     products: [
-        .library(name: "VikunjaAuth", targets: ["VikunjaAuth"]),
+        .library(name: "VikuAuth", targets: ["VikuAuth"]),
     ],
     dependencies: [
         .package(path: "../VikunjaCore"),
     ],
     targets: [
-        .target(name: "VikunjaAuth", dependencies: ["VikunjaCore"]),
-        .testTarget(name: "VikunjaAuthTests", dependencies: ["VikunjaAuth"]),
+        .target(name: "VikuAuth", dependencies: ["VikunjaCore"]),
+        .testTarget(name: "VikuAuthTests", dependencies: ["VikuAuth"]),
     ],
 )

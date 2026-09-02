@@ -2,7 +2,7 @@ import Foundation
 
 /// Persists the user's configured Vikunja instance connections and tracks
 /// which one is active. Implemented by a Keychain-backed store in
-/// `VikunjaAuth` — account metadata and credentials must never live in
+/// `VikuAuth` — account metadata and credentials must never live in
 /// `UserDefaults`.
 public protocol AccountStoreProtocol: Sendable {
     func fetchAccounts() async throws -> [InstanceAccount]
