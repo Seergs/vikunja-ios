@@ -1,8 +1,8 @@
 import QuickLook
 import SwiftUI
 import UniformTypeIdentifiers
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 
 /// A single task's detail screen: completion, due date, priority, labels,
 /// subtasks, and dependencies. Pushed as a leaf screen inside whichever

@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 
 // The small building blocks shared by the compact task sheets
 // (`QuickAddSheetView`, `DuplicateTaskSheetView`) so the two stay visually

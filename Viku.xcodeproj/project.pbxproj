@@ -54,39 +54,14 @@
 		EC3BB466303D1EF6002753FC /* Viku.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Viku.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1D5CA3FE38DF6E41C00D7DB1 /* Exceptions for "Viku-widgets" folder in "Viku-widgets" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				add_widget_target.rb,
-				Info.plist,
-				WIDGET_SETUP.md,
-			);
-			target = 9F1A298945A4417C5C239F1C /* Viku-widgets */;
-		};
-		1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "Viku" folder in "Viku" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = EC3BB465303D1EF6002753FC /* Viku */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B92C853A6FE7E809CD2F2E95 /* Viku-widgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				1D5CA3FE38DF6E41C00D7DB1 /* Exceptions for "Viku-widgets" folder in "Viku-widgets" target */,
-			);
 			path = "Viku-widgets";
 			sourceTree = "<group>";
 		};
 		EC3BB468303D1EF6002753FC /* Viku */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "Viku" folder in "Viku" target */,
-			);
 			path = Viku;
 			sourceTree = "<group>";
 		};

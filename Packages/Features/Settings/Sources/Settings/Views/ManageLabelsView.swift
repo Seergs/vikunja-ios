@@ -1,7 +1,7 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
 import VikuNavigation
+import VikunjaCore
 
 /// Lists every label on the active account, with a swatch + title per row.
 /// Tap a row to rename/recolor it, the toolbar "+" to create one, swipe to

@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 
 /// The quick-add sheet opened from the tab bar's floating action button:
 /// title + project + priority only, matching the design mockup's

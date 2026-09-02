@@ -112,8 +112,8 @@ public struct ProjectPickerSheet: View {
             .searchable(text: $query, prompt: Text("Search projects..."))
             .navigationTitle(title)
             #if os(iOS)
-                .listStyle(.insetGrouped)
-                .navigationBarTitleDisplayMode(.inline)
+            .listStyle(.insetGrouped)
+            .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -146,7 +146,9 @@ public struct ProjectPickerSheet: View {
     private struct Row: Identifiable {
         let node: ProjectPickerNode
         let depth: Int
-        var id: Int { node.id }
+        var id: Int {
+            node.id
+        }
     }
 }
 

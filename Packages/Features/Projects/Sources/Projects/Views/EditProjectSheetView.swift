@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 
 /// Edit an existing project's title, color, and parent — the same shape as
 /// `CreateProjectSheetView` (`NavigationStack` + inline title + toolbar
@@ -39,7 +39,7 @@ public struct EditProjectSheetView: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
             .navigationTitle("Edit Project")
             #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

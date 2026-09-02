@@ -1,6 +1,6 @@
 import Testing
-import VikunjaCore
 @testable import VikuDesignSystem
+import VikunjaCore
 
 @Suite("ProjectPickerTree")
 struct ProjectPickerTreeTests {
@@ -8,8 +8,8 @@ struct ProjectPickerTreeTests {
         Project(id: id, title: title ?? "Project \(id)", parentProjectID: parent, position: position)
     }
 
-    @Test("Arranges projects into a parent/child tree ordered by position")
-    func buildsOrderedTree() {
+    @Test
+    func `Arranges projects into a parent/child tree ordered by position`() {
         let projects = [
             project(1, position: 2),
             project(2, position: 1),
@@ -23,8 +23,8 @@ struct ProjectPickerTreeTests {
         #expect(tree[1].children.map(\.id) == [4, 3])
     }
 
-    @Test("Nests to arbitrary depth")
-    func nestsDeeply() {
+    @Test
+    func `Nests to arbitrary depth`() {
         let projects = [
             project(1),
             project(2, parent: 1),
@@ -37,8 +37,8 @@ struct ProjectPickerTreeTests {
         #expect(tree[0].children[0].children[0].children[0].id == 4)
     }
 
-    @Test("Drops a project and its whole subtree when excluded")
-    func excludesSubtree() {
+    @Test
+    func `Drops a project and its whole subtree when excluded`() {
         let projects = [
             project(1),
             project(2, parent: 1),
@@ -51,8 +51,8 @@ struct ProjectPickerTreeTests {
         #expect(tree.map(\.id) == [4])
     }
 
-    @Test("Survives a cyclic parentProjectID")
-    func toleratesCycle() {
+    @Test
+    func `Survives a cyclic parentProjectID`() {
         let projects = [
             project(1, parent: 2),
             project(2, parent: 1),
@@ -63,8 +63,8 @@ struct ProjectPickerTreeTests {
         #expect(tree.isEmpty)
     }
 
-    @Test("flatMatches filters by title, case-insensitively, ignoring hierarchy")
-    func flatMatchesFilters() {
+    @Test
+    func `flatMatches filters by title, case-insensitively, ignoring hierarchy`() {
         let projects = [
             project(1, title: "Work"),
             project(2, parent: 1, title: "Workout plan"),
@@ -76,8 +76,8 @@ struct ProjectPickerTreeTests {
         #expect(matches.map(\.id) == [1, 2])
     }
 
-    @Test("flatMatches honors the excluded subtree")
-    func flatMatchesExcludesSubtree() {
+    @Test
+    func `flatMatches honors the excluded subtree`() {
         let projects = [
             project(1, title: "Work"),
             project(2, parent: 1, title: "Work sub"),
@@ -86,8 +86,8 @@ struct ProjectPickerTreeTests {
         #expect(ProjectPickerTree.flatMatches(projects, query: "work", excludingSubtreeOf: 1).isEmpty)
     }
 
-    @Test("ancestorIDs walks from a project up to its root")
-    func ancestorIDsWalkUp() {
+    @Test
+    func `ancestorIDs walks from a project up to its root`() {
         let projects = [
             project(1),
             project(2, parent: 1),

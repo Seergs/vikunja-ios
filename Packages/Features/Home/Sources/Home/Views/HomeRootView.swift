@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuNavigation
+import VikunjaCore
 
 /// Home's entry point for the app target: owns the tab's own `NavigationStack`
 /// and `Router<HomeRoute>`, so pushing a screen from inside Home never needs

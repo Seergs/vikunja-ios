@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuNavigation
+import VikunjaCore
 
 public struct SearchRootView: View {
     @State private var router = Router<SearchRoute>()

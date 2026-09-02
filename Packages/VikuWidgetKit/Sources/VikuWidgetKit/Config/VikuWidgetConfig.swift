@@ -12,8 +12,8 @@ import Foundation
 /// settings (project level, `project.pbxproj`) via `$(...)` expansion. Keep the
 /// two in sync: Debug ↔ `.dev`, Release ↔ prod.
 public enum VikuWidgetConfig {
-    /// The app's bundle-identifier prefix, shared by the app target and the
-    /// widget extension. Mirrors `VIKU_ID_PREFIX` in `project.pbxproj`.
+    // The app's bundle-identifier prefix, shared by the app target and the
+    // widget extension. Mirrors `VIKU_ID_PREFIX` in `project.pbxproj`.
     #if DEBUG
     public static let bundleIDPrefix = "dev.sergiosuarez.viku.dev"
     #else
@@ -44,10 +44,10 @@ public enum VikuWidgetConfig {
     /// `kind` string for the Lock Screen quick-add accessory widget (`QuickAddWidget`).
     public static let quickAddWidgetKind = "QuickAddWidget"
 
-    /// URL scheme the widget deep-links back into the app with
-    /// (`viku://today`, `viku://quick-add`). Registered under the app
-    /// target's URL Types as `$(VIKU_URL_SCHEME)`; split per build config so
-    /// a dev and a prod install don't both claim the same scheme.
+    // URL scheme the widget deep-links back into the app with
+    // (`viku://today`, `viku://quick-add`). Registered under the app
+    // target's URL Types as `$(VIKU_URL_SCHEME)`; split per build config so
+    // a dev and a prod install don't both claim the same scheme.
     #if DEBUG
     public static let urlScheme = "viku-dev"
     #else

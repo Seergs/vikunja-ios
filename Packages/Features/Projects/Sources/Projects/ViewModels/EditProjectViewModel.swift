@@ -28,7 +28,9 @@ public final class EditProjectViewModel {
     /// The project being edited — excluded (with its whole subtree) from the
     /// parent-project picker, since a project can't be reparented under
     /// itself or one of its descendants.
-    public var editingProjectID: Int { project.id }
+    public var editingProjectID: Int {
+        project.id
+    }
 
     private let project: Project
     private let repository: ProjectRepositoryProtocol
