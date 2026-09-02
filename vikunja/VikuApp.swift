@@ -1,5 +1,5 @@
 //
-//  vikunjaApp.swift
+//  VikuApp.swift
 //  vikunja
 //
 //  Created by Sergio Suárez álvarez on 24/08/26.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct vikunjaApp: App {
+struct VikuApp: App {
     private let container = AppContainer()
 
     @Environment(\.scenePhase) private var scenePhase

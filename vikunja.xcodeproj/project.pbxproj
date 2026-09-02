@@ -445,7 +445,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				VIKU_ID_PREFIX = "dev.sergiosuarez.viku.dev";
+				VIKU_ID_PREFIX = dev.sergiosuarez.viku.dev;
 				VIKU_URL_SCHEME = "viku-dev";
 			};
 			name = Debug;
@@ -504,7 +504,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
-				VIKU_ID_PREFIX = "dev.sergiosuarez.viku";
+				VIKU_ID_PREFIX = dev.sergiosuarez.viku;
 				VIKU_URL_SCHEME = viku;
 			};
 			name = Release;

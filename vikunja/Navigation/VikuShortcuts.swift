@@ -3,7 +3,7 @@ import AppIntents
 /// Siri / Spotlight / Action Button phrases for the app's App Intents. The
 /// system discovers these from the app bundle at install time, so an
 /// `AppShortcutsProvider` has to live in the app target rather than a package.
-struct VikunjaShortcuts: AppShortcutsProvider {
+struct VikuShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: OpenQuickAddIntent(),

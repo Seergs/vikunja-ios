@@ -1,5 +1,5 @@
 //
-//  VikunjaWidgetsBundle.swift
+//  VikuWidgetsBundle.swift
 //  vikunja-widgets
 //
 //  The widget extension's entry point. All widget logic lives in the
@@ -11,7 +11,7 @@ import VikuWidgetKit
 import WidgetKit
 
 @main
-struct VikunjaWidgetsBundle: WidgetBundle {
+struct VikuWidgetsBundle: WidgetBundle {
     var body: some Widget {
         TodayWidget()
         QuickAddWidget()
