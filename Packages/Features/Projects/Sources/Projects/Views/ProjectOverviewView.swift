@@ -553,11 +553,11 @@ private struct ProjectTaskRow: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .contextMenu {
-            Button("Move", systemImage: "folder", action: onMove)
+            Button("Move to Project", systemImage: "folder", action: onMove)
             // `role: .destructive` alone renders blue here, not red: the tab
             // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
             // menu and overrides the role's tint. Pin it back to danger.
-            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+            Button("Delete Task", systemImage: "trash", role: .destructive, action: onDelete)
                 .tint(VikunjaColor.Semantic.danger)
         }
     }

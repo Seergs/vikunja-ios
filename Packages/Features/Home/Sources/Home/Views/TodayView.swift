@@ -394,8 +394,8 @@ private struct TodayTaskRow: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .contextMenu {
-            Button("Move", systemImage: "folder", action: onMove)
-            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+            Button("Move to Project", systemImage: "folder", action: onMove)
+            Button("Delete Task", systemImage: "trash", role: .destructive, action: onDelete)
                 .tint(VikunjaColor.Semantic.danger)
         }
     }

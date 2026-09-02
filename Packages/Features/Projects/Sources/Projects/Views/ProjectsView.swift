@@ -259,11 +259,11 @@ private struct ProjectRow: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
         .contextMenu {
-            Button("Edit", systemImage: "pencil", action: { onEdit(project) })
+            Button("Edit Project", systemImage: "pencil", action: { onEdit(project) })
             // `role: .destructive` alone renders blue here, not red: the tab
             // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
             // menu and overrides the role's tint. Pin it back to danger.
-            Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+            Button("Delete Project", systemImage: "trash", role: .destructive, action: onDelete)
                 .tint(VikunjaColor.Semantic.danger)
         }
         .accessibilityElement(children: .combine)
