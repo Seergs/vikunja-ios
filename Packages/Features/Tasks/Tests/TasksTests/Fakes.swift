@@ -178,8 +178,14 @@ final class FakeLabelRepository: LabelRepositoryProtocol, @unchecked Sendable {
 }
 
 final class FakeTaskRelationRepository: TaskRelationRepositoryProtocol, @unchecked Sendable {
-    var addedRelations: [(kind: RelationKind, otherTaskID: Int, taskID: Int)] = []
-    var removedRelations: [(kind: RelationKind, otherTaskID: Int, taskID: Int)] = []
+    struct RecordedRelation: Sendable {
+        let kind: RelationKind
+        let otherTaskID: Int
+        let taskID: Int
+    }
+
+    var addedRelations: [RecordedRelation] = []
+    var removedRelations: [RecordedRelation] = []
     var addError: VikunjaError?
     var removeError: VikunjaError?
 
@@ -187,14 +193,14 @@ final class FakeTaskRelationRepository: TaskRelationRepositoryProtocol, @uncheck
         if let addError {
             throw addError
         }
-        addedRelations.append((kind, otherTaskID, taskID))
+        addedRelations.append(RecordedRelation(kind: kind, otherTaskID: otherTaskID, taskID: taskID))
     }
 
     func removeRelation(kind: RelationKind, otherTaskID: Int, fromTask taskID: Int) async throws {
         if let removeError {
             throw removeError
         }
-        removedRelations.append((kind, otherTaskID, taskID))
+        removedRelations.append(RecordedRelation(kind: kind, otherTaskID: otherTaskID, taskID: taskID))
     }
 }
 
@@ -256,7 +262,14 @@ final class FakeTaskAttachmentRepository: TaskAttachmentRepositoryProtocol, @unc
     var uploadError: VikunjaError?
     var downloadError: VikunjaError?
     var deleteError: VikunjaError?
-    private(set) var uploaded: [(fileName: String, mimeType: String, size: Int, taskID: Int)] = []
+    struct RecordedUpload: Sendable {
+        let fileName: String
+        let mimeType: String
+        let size: Int
+        let taskID: Int
+    }
+
+    private(set) var uploaded: [RecordedUpload] = []
     private(set) var downloadedPreviewSizes: [AttachmentPreviewSize?] = []
     private var nextID = 100
 
@@ -276,7 +289,7 @@ final class FakeTaskAttachmentRepository: TaskAttachmentRepositoryProtocol, @unc
         if let uploadError {
             throw uploadError
         }
-        uploaded.append((fileName, mimeType, data.count, taskID))
+        uploaded.append(RecordedUpload(fileName: fileName, mimeType: mimeType, size: data.count, taskID: taskID))
         let created = TaskAttachment(
             id: nextID,
             taskID: taskID,

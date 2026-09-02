@@ -853,7 +853,8 @@ struct TaskDetailViewModelTests {
 
         await viewModel.loadComments()
 
-        #expect(viewModel.commentsLoadState == .failure("Couldn't reach that server. Check the address and your connection."))
+        let unreachable = ScreenLoadState.failure("Couldn't reach that server. Check the address and your connection.")
+        #expect(viewModel.commentsLoadState == unreachable)
     }
 
     @Test
@@ -906,7 +907,8 @@ struct TaskDetailViewModelTests {
 
         await viewModel.loadAttachments()
 
-        #expect(viewModel.attachmentsLoadState == .failure("Couldn't reach that server. Check the address and your connection."))
+        let unreachable = ScreenLoadState.failure("Couldn't reach that server. Check the address and your connection.")
+        #expect(viewModel.attachmentsLoadState == unreachable)
     }
 
     @Test
@@ -1024,8 +1026,14 @@ struct TaskDetailViewModelTests {
     @Test
     func `delete attachment removes it optimistically`() async {
         let attachmentRepository = FakeTaskAttachmentRepository()
-        let first = TaskAttachment(id: 1, taskID: 1, fileName: "a.pdf", mimeType: "application/pdf", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
-        let second = TaskAttachment(id: 2, taskID: 1, fileName: "b.png", mimeType: "image/png", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
+        let first = TaskAttachment(
+            id: 1, taskID: 1, fileName: "a.pdf", mimeType: "application/pdf", sizeBytes: 1,
+            created: Date(), createdBy: User(id: 2, username: "sam"),
+        )
+        let second = TaskAttachment(
+            id: 2, taskID: 1, fileName: "b.png", mimeType: "image/png", sizeBytes: 1,
+            created: Date(), createdBy: User(id: 2, username: "sam"),
+        )
         attachmentRepository.attachments = [first, second]
         let toastPresenter = FakeToastPresenter()
         let viewModel = TaskDetailViewModel(
@@ -1050,7 +1058,10 @@ struct TaskDetailViewModelTests {
     @Test
     func `delete attachment rolls back and toasts on failure`() async {
         let attachmentRepository = FakeTaskAttachmentRepository()
-        let attachment = TaskAttachment(id: 1, taskID: 1, fileName: "a.pdf", mimeType: "application/pdf", sizeBytes: 1, created: Date(), createdBy: User(id: 2, username: "sam"))
+        let attachment = TaskAttachment(
+            id: 1, taskID: 1, fileName: "a.pdf", mimeType: "application/pdf", sizeBytes: 1,
+            created: Date(), createdBy: User(id: 2, username: "sam"),
+        )
         attachmentRepository.attachments = [attachment]
         attachmentRepository.deleteError = .network("offline")
         let toastPresenter = FakeToastPresenter()
