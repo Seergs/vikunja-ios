@@ -32,7 +32,9 @@ struct ProjectOverviewView: View {
             .navigationTitle(viewModel.project.title)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button(action: { onEditProject(viewModel.project) }) {
+                    Button {
+                        onEditProject(viewModel.project)
+                    } label: {
                         Image(systemName: "pencil")
                     }
                 }
@@ -44,8 +46,8 @@ struct ProjectOverviewView: View {
                 "This permanently deletes the task.",
                 isPresented: Binding(
                     get: { taskPendingDelete != nil },
-                    set: {
-                        isPresented in if !isPresented {
+                    set: { isPresented in
+                        if !isPresented {
                             taskPendingDelete = nil
                         }
                     },

@@ -14,7 +14,11 @@ struct ProjectsListViewModelTests {
             Project(id: 4, title: "Work / Client B", parentProjectID: 1, position: 2),
             Project(id: 5, title: "Work / Client A / Invoices", parentProjectID: 3, position: 1),
         ]
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -35,7 +39,11 @@ struct ProjectsListViewModelTests {
             Project(id: 2, title: "First", position: 1),
             Project(id: 3, title: "Second", position: 2),
         ]
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -49,7 +57,11 @@ struct ProjectsListViewModelTests {
             Project(id: 1, title: "Active"),
             Project(id: 2, title: "Archived", isArchived: true),
         ]
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -63,7 +75,11 @@ struct ProjectsListViewModelTests {
             Project(id: 1, title: "Archived parent", isArchived: true),
             Project(id: 2, title: "Orphaned child", parentProjectID: 1),
         ]
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -77,7 +93,11 @@ struct ProjectsListViewModelTests {
             Project(id: 1, title: "A", parentProjectID: 2),
             Project(id: 2, title: "B", parentProjectID: 1),
         ]
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -98,7 +118,11 @@ struct ProjectsListViewModelTests {
             VikunjaTask(id: 2, title: "Plan it", isDone: false, projectID: 1),
             VikunjaTask(id: 3, title: "Client task", isDone: false, projectID: 2),
         ]
-        let viewModel = ProjectsListViewModel(repository: projectRepository, taskRepository: taskRepository, toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: projectRepository,
+            taskRepository: taskRepository,
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -112,7 +136,11 @@ struct ProjectsListViewModelTests {
         projectRepository.projects = [Project(id: 1, title: "Work")]
         let taskRepository = FakeTaskRepository()
         taskRepository.fetchError = .network("offline")
-        let viewModel = ProjectsListViewModel(repository: projectRepository, taskRepository: taskRepository, toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: projectRepository,
+            taskRepository: taskRepository,
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -124,7 +152,11 @@ struct ProjectsListViewModelTests {
     func `load surfaces A friendly message on failure`() async {
         let repository = FakeProjectRepository()
         repository.fetchError = .network("offline")
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
 
         await viewModel.load()
 
@@ -144,7 +176,11 @@ struct ProjectsListViewModelTests {
         let taskRepository = FakeTaskRepository()
         taskRepository.tasks = [VikunjaTask(id: 10, title: "Deep task", projectID: 4)]
         let toastPresenter = FakeToastPresenter()
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: taskRepository, toastPresenter: toastPresenter)
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: taskRepository,
+            toastPresenter: toastPresenter,
+        )
         await viewModel.load()
 
         await viewModel.deleteProject(viewModel.rootNodes[0])
@@ -163,7 +199,11 @@ struct ProjectsListViewModelTests {
             Project(id: 2, title: "Work / Client A", parentProjectID: 1, position: 1),
             Project(id: 3, title: "Work / Client B", parentProjectID: 1, position: 2),
         ]
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: FakeToastPresenter())
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: FakeToastPresenter(),
+        )
         await viewModel.load()
 
         await viewModel.deleteProject(viewModel.rootNodes[0].children[0])
@@ -177,7 +217,11 @@ struct ProjectsListViewModelTests {
         repository.projects = [Project(id: 1, title: "Work")]
         repository.deleteError = .network("offline")
         let toastPresenter = FakeToastPresenter()
-        let viewModel = ProjectsListViewModel(repository: repository, taskRepository: FakeTaskRepository(), toastPresenter: toastPresenter)
+        let viewModel = ProjectsListViewModel(
+            repository: repository,
+            taskRepository: FakeTaskRepository(),
+            toastPresenter: toastPresenter,
+        )
         await viewModel.load()
 
         await viewModel.deleteProject(viewModel.rootNodes[0])

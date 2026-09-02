@@ -186,7 +186,10 @@ private struct SaveErrorBanner: View {
         .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
         .padding(.vertical, VikuSpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikuColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+        .background(
+            VikuColor.Semantic.danger.opacity(0.12),
+            in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous),
+        )
     }
 }
 
