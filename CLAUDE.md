@@ -265,11 +265,14 @@ by the compiler, not just convention:
     `VikunjaDesignSystem`'s `HapticFeedbackCenter` implements it over UIKit's
     feedback generators (kept alive between calls so `prepare` actually helps;
     inert no-op where UIKit is unavailable). `AppContainer` owns the single
-    instance (`container.hapticCenter`). **Two ways to fire one**, nothing
-    else is wired yet:
+    instance (`container.hapticCenter`). Wired in so far: completing a task
+    (not un-completing it) plays `.success` from every `toggleDone` —
+    `TodayViewModel`, `ProjectOverviewViewModel`, `SearchViewModel`,
+    `TaskDetailViewModel`. **Two ways to fire one:**
     - From a ViewModel's own logic (an optimistic toggle rolled back, a
       create succeeded): take `hapticPresenter: HapticFeedbackPresenting` via
-      constructor injection, pass `container.hapticCenter` from the relevant
+      constructor injection (defaulted to `NoopHapticFeedback()` so tests
+      needn't pass it), pass `container.hapticCenter` from the relevant
       `make...ViewModel` factory (exactly like `toastPresenter:`), call
       `hapticPresenter.play(.success)`.
     - From a pure SwiftUI view reacting to state: `View.vikunjaHaptic(_:trigger:)`
@@ -447,7 +450,8 @@ by the compiler, not just convention:
     protocols (`TaskRepositoryProtocol`, `LabelRepositoryProtocol`,
     `TaskRelationRepositoryProtocol`, `TaskCommentRepositoryProtocol`,
     `TaskAttachmentRepositoryProtocol`, `ProjectRepositoryProtocol`) + a
-    `ToastPresenting`, all via constructor injection.
+    `ToastPresenting` + a `HapticFeedbackPresenting` (`.success` on
+    completing the task), all via constructor injection.
   - **Quick-add** (`QuickAddTaskViewModel`): title + project + priority only
     (matching the mockup's `AddTaskSheet`). Presented globally from the tab
     bar FAB, so it picks its starting project from context: a
