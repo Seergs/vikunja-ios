@@ -105,6 +105,7 @@ public struct InstanceSetupView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, VikuSpacing.md)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .foregroundStyle(.primary)
@@ -138,6 +139,7 @@ public struct InstanceSetupView: View {
                 .fontWeight(.bold)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, VikuSpacing.md)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .foregroundStyle(.white)
