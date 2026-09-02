@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 
 /// The "new project" sheet: title, color, and parent project — matching what
 /// `CreateProjectViewModel` needs to create a project. Same shape as `Tasks`'
@@ -46,7 +46,7 @@ public struct CreateProjectSheetView: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
             .navigationTitle("New Project")
             #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

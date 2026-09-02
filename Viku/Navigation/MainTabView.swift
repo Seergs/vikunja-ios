@@ -4,9 +4,9 @@ import Search
 import Settings
 import SwiftUI
 import Tasks
-import VikunjaCore
 import VikuDesignSystem
 import VikuNavigation
+import VikunjaCore
 
 /// The app's main navigation shell once a connection exists: a floating,
 /// Liquid Glass tab bar (the default look for `TabView` on iOS 26+) with one

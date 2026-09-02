@@ -49,7 +49,9 @@ public final class HapticFeedbackCenter: HapticFeedbackPresenting {
 
     #if canImport(UIKit)
     private func impactGenerator(for style: HapticStyle) -> UIImpactFeedbackGenerator {
-        if let existing = impacts[style] { return existing }
+        if let existing = impacts[style] {
+            return existing
+        }
         let generator = UIImpactFeedbackGenerator(style: Self.uiKitStyle(for: style))
         impacts[style] = generator
         return generator

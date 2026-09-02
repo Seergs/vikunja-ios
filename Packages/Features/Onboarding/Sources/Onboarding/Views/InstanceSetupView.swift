@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 
 /// "Add a connection" screen. Purely presentational — all validation, probing
 /// and persistence live in `InstanceSetupViewModel`, so future UI-only changes

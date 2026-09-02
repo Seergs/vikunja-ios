@@ -9,7 +9,9 @@ struct ProjectPickerNode: Identifiable, Hashable {
     let project: Project
     let children: [ProjectPickerNode]
 
-    var id: Int { project.id }
+    var id: Int {
+        project.id
+    }
 }
 
 /// Pure tree/filter helpers behind `ProjectPickerSheet` — the logic that used

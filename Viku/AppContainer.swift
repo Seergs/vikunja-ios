@@ -6,9 +6,9 @@ import Search
 import Settings
 import Tasks
 import VikuAuth
-import VikunjaCore
 import VikuDesignSystem
 import VikuNavigation
+import VikunjaCore
 import VikunjaNetworking
 import VikuWidgetKit
 import WidgetKit

@@ -1,6 +1,6 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 
 struct SearchView: View {
     @State var viewModel: SearchViewModel

@@ -1,8 +1,8 @@
 import Onboarding
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
 import VikuNavigation
+import VikunjaCore
 
 /// Top-level navigation between Features. Features never reference each other
 /// directly, so switching from Onboarding to the main tab bar happens only

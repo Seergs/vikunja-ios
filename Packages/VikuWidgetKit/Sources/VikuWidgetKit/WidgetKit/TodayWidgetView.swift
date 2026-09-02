@@ -1,7 +1,7 @@
 #if canImport(WidgetKit)
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
+import VikunjaCore
 import WidgetKit
 
 /// Root view for every `TodayWidget` family. Branches on the timeline state,

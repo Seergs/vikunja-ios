@@ -1,7 +1,7 @@
 import SwiftUI
-import VikunjaCore
 import VikuDesignSystem
 import VikuNavigation
+import VikunjaCore
 
 /// The Projects tab's list screen: a flattened, indented rendering of
 /// `ProjectsListViewModel.rootNodes` (a parent/child tree keyed by
