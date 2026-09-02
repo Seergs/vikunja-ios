@@ -3,7 +3,7 @@ import VikunjaCore
 
 enum TaskMapper {
     /// Vikunja's API represents "no due date" as this zero-value timestamp rather than `null`.
-    private static let noDueDateSentinel = ISO8601DateFormatter().date(from: "0001-01-01T00:00:00Z")!
+    private static let noDueDateSentinel = ISO8601DateFormatter().date(from: "0001-01-01T00:00:00Z") ?? .distantPast
 
     private static func dueDate(from dto: TaskDTO) -> Date? {
         guard let dueDate = dto.dueDate, dueDate != noDueDateSentinel else { return nil }

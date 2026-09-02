@@ -74,7 +74,14 @@ struct URLSessionAPIClientTests {
         let repository = VikunjaTaskRepository(client: client)
 
         let updated = try await repository.update(
-            VikunjaTask(id: 1, title: "Buy coffee", description: "Whole beans", isDone: true, priority: .high, projectID: 4),
+            VikunjaTask(
+                id: 1,
+                title: "Buy coffee",
+                description: "Whole beans",
+                isDone: true,
+                priority: .high,
+                projectID: 4,
+            ),
         )
 
         #expect(updated.isDone == true)
@@ -290,6 +297,7 @@ struct URLSessionAPIClientTests {
     func `upload attachment PU ts A multipart body to the attachments endpoint`() async throws {
         let (session, capture) = MockURLProtocol.makeSession(
             statusCode: 200,
+            // swiftlint:disable:next line_length
             body: #"{"errors":[],"success":[{"id":3,"task_id":42,"created_by":{"id":7,"username":"alex"},"file":{"id":102,"name":"notes.txt","mime":"text/plain","size":2,"created":"2026-08-22T10:15:00Z"},"created":"2026-08-22T10:15:00Z"}]}"#,
         )
         let client = try URLSessionAPIClient(baseURL: #require(URL(string: "https://vikunja.example.com")), session: session)

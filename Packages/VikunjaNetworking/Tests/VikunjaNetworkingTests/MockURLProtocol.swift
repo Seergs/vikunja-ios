@@ -40,10 +40,12 @@ final class MockURLProtocol: URLProtocol {
         return (URLSession(configuration: configuration), capture)
     }
 
+    // swiftlint:disable:next static_over_final_class
     override class func canInit(with _: URLRequest) -> Bool {
         true
     }
 
+    // swiftlint:disable:next static_over_final_class
     override class func canonicalRequest(for request: URLRequest) -> URLRequest {
         request
     }
@@ -74,12 +76,17 @@ final class MockURLProtocol: URLProtocol {
             Response(statusCode: 200, body: Data())
         }
 
-        let httpResponse = HTTPURLResponse(
-            url: request.url!,
-            statusCode: response.statusCode,
-            httpVersion: "HTTP/1.1",
-            headerFields: nil,
-        )!
+        guard let url = request.url,
+              let httpResponse = HTTPURLResponse(
+                  url: url,
+                  statusCode: response.statusCode,
+                  httpVersion: "HTTP/1.1",
+                  headerFields: nil,
+              )
+        else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
         client?.urlProtocol(self, didReceive: httpResponse, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: response.body)
         client?.urlProtocolDidFinishLoading(self)

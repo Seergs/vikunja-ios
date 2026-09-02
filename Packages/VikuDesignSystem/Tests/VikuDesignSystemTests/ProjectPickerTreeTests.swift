@@ -9,7 +9,7 @@ struct ProjectPickerTreeTests {
     }
 
     @Test
-    func `Arranges projects into a parent/child tree ordered by position`() {
+    func `arranges projects into a parent/child tree ordered by position`() {
         let projects = [
             project(1, position: 2),
             project(2, position: 1),
@@ -24,7 +24,7 @@ struct ProjectPickerTreeTests {
     }
 
     @Test
-    func `Nests to arbitrary depth`() {
+    func `nests to arbitrary depth`() {
         let projects = [
             project(1),
             project(2, parent: 1),
@@ -38,7 +38,7 @@ struct ProjectPickerTreeTests {
     }
 
     @Test
-    func `Drops a project and its whole subtree when excluded`() {
+    func `drops a project and its whole subtree when excluded`() {
         let projects = [
             project(1),
             project(2, parent: 1),
@@ -52,7 +52,7 @@ struct ProjectPickerTreeTests {
     }
 
     @Test
-    func `Survives a cyclic parentProjectID`() {
+    func `survives a cyclic parentProjectID`() {
         let projects = [
             project(1, parent: 2),
             project(2, parent: 1),
