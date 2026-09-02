@@ -13,7 +13,7 @@ struct SearchView: View {
             .animation(.easeInOut(duration: 0.2), value: viewModel.state.value?.map(\.id))
             .searchListStyle()
             .scrollContentBackground(.hidden)
-            .background(VikunjaColor.Surface.page)
+            .background(VikuColor.Surface.page)
             .navigationTitle("Search")
             .navigationDestination(item: $selectedTaskPair) { item in
                 if let onTaskSelected {
@@ -52,7 +52,7 @@ struct SearchView: View {
             case .loading:
                 ProgressView()
                     .frame(maxWidth: .infinity)
-                    .padding(.top, VikunjaSpacing.xxl)
+                    .padding(.top, VikuSpacing.xxl)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
@@ -66,20 +66,20 @@ struct SearchView: View {
                 }
 
             case let .failure(message):
-                VStack(spacing: VikunjaSpacing.sm) {
+                VStack(spacing: VikuSpacing.sm) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 28))
                         .foregroundStyle(.orange)
                     Text("Search Error")
-                        .font(VikunjaFont.headline)
+                        .font(VikuFont.headline)
                     Text(message)
-                        .font(VikunjaFont.subheadline)
-                        .foregroundStyle(VikunjaColor.textSecondary)
+                        .font(VikuFont.subheadline)
+                        .foregroundStyle(VikuColor.textSecondary)
                         .multilineTextAlignment(.center)
                 }
-                .padding(VikunjaSpacing.lg)
+                .padding(VikuSpacing.lg)
                 .frame(maxWidth: .infinity)
-                .padding(.top, VikunjaSpacing.lg)
+                .padding(.top, VikuSpacing.lg)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
@@ -89,16 +89,16 @@ struct SearchView: View {
 
     @ViewBuilder
     private func loadedContent(_ tasks: [VikunjaTask]) -> some View {
-        HStack(spacing: VikunjaSpacing.xs) {
+        HStack(spacing: VikuSpacing.xs) {
             Text("RESULTS")
                 .fontWeight(.bold)
             Text("\(tasks.count)")
                 .fontWeight(.regular)
         }
         .searchSectionLabelStyle()
-        .padding(.horizontal, VikunjaSpacing.md)
-        .padding(.top, VikunjaSpacing.md + VikunjaSpacing.xs)
-        .padding(.bottom, VikunjaSpacing.sm)
+        .padding(.horizontal, VikuSpacing.md)
+        .padding(.top, VikuSpacing.md + VikuSpacing.xs)
+        .padding(.bottom, VikuSpacing.sm)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
@@ -118,24 +118,24 @@ struct SearchView: View {
                         taskPendingDelete = task
                     },
                 )
-                .padding(.horizontal, VikunjaSpacing.md)
-                .padding(.vertical, VikunjaSpacing.md)
-                .background(VikunjaColor.Surface.card)
+                .padding(.horizontal, VikuSpacing.md)
+                .padding(.vertical, VikuSpacing.md)
+                .background(VikuColor.Surface.card)
                 .overlay(alignment: .bottom) {
                     if index < tasks.count - 1 {
-                        Divider().padding(.leading, VikunjaSpacing.md)
+                        Divider().padding(.leading, VikuSpacing.md)
                     }
                 }
                 .clipShape(
                     UnevenRoundedRectangle(
-                        topLeadingRadius: index == 0 ? VikunjaRadius.lg : 0,
-                        bottomLeadingRadius: index == tasks.count - 1 ? VikunjaRadius.lg : 0,
-                        bottomTrailingRadius: index == tasks.count - 1 ? VikunjaRadius.lg : 0,
-                        topTrailingRadius: index == 0 ? VikunjaRadius.lg : 0,
+                        topLeadingRadius: index == 0 ? VikuRadius.lg : 0,
+                        bottomLeadingRadius: index == tasks.count - 1 ? VikuRadius.lg : 0,
+                        bottomTrailingRadius: index == tasks.count - 1 ? VikuRadius.lg : 0,
+                        topTrailingRadius: index == 0 ? VikuRadius.lg : 0,
                         style: .continuous,
                     ),
                 )
-                .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
+                .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xs)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
@@ -144,33 +144,33 @@ struct SearchView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: VikunjaSpacing.lg) {
+        VStack(spacing: VikuSpacing.lg) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
             Text("Search Tasks")
-                .font(VikunjaFont.headline)
+                .font(VikuFont.headline)
             Text("Type a query to search all your tasks")
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(VikunjaSpacing.lg)
+        .padding(VikuSpacing.lg)
     }
 
     private var emptySearchResultsState: some View {
-        VStack(spacing: VikunjaSpacing.lg) {
+        VStack(spacing: VikuSpacing.lg) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
             Text("No Results")
-                .font(VikunjaFont.headline)
+                .font(VikuFont.headline)
             Text("No tasks match your search")
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(VikunjaSpacing.lg)
+        .padding(VikuSpacing.lg)
     }
 }
 
@@ -184,7 +184,7 @@ private struct SearchTaskRow: View {
     let onDelete: () -> Void
 
     private var projectColor: Color {
-        Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: project.hexColor) ?? VikuColor.brandPrimary
     }
 
     private var isOverdue: Bool {
@@ -195,15 +195,15 @@ private struct SearchTaskRow: View {
     private var priorityColor: Color? {
         switch task.priority {
         case .unset: nil
-        case .low: VikunjaColor.Priority.low
-        case .medium: VikunjaColor.Priority.medium
-        case .high: VikunjaColor.Priority.high
-        case .urgent, .doNow: VikunjaColor.Priority.urgent
+        case .low: VikuColor.Priority.low
+        case .medium: VikuColor.Priority.medium
+        case .high: VikuColor.Priority.high
+        case .urgent, .doNow: VikuColor.Priority.urgent
         }
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+        HStack(alignment: .top, spacing: VikuSpacing.sm + VikuSpacing.xxs) {
             Button(action: onToggle) {
                 Circle()
                     .strokeBorder(task.isDone ? Color.clear : projectColor, lineWidth: 2)
@@ -220,28 +220,28 @@ private struct SearchTaskRow: View {
             .buttonStyle(.plain)
             .padding(.top, 1)
 
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+            VStack(alignment: .leading, spacing: VikuSpacing.xs + VikuSpacing.xxs) {
                 Text(task.title)
-                    .font(VikunjaFont.body)
+                    .font(VikuFont.body)
                     .fontWeight(.medium)
                     .strikethrough(task.isDone)
-                    .foregroundStyle(task.isDone ? VikunjaColor.textTertiary : Color.primary)
+                    .foregroundStyle(task.isDone ? VikuColor.textTertiary : Color.primary)
 
-                HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
-                    HStack(spacing: VikunjaSpacing.xs) {
+                HStack(spacing: VikuSpacing.xs + VikuSpacing.xxs) {
+                    HStack(spacing: VikuSpacing.xs) {
                         RoundedRectangle(cornerRadius: 3, style: .continuous)
                             .fill(projectColor)
                             .frame(width: 6, height: 6)
                         Text(project.title)
                             .font(.system(size: 12.5, weight: .regular))
-                            .foregroundStyle(VikunjaColor.textSecondary)
+                            .foregroundStyle(VikuColor.textSecondary)
                             .truncationMode(.tail)
                     }
 
                     if task.dueDate != nil {
                         Text("·")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(VikunjaColor.textSecondary)
+                            .foregroundStyle(VikuColor.textSecondary)
                     }
 
                     // Kept at natural width so a long project name truncates
@@ -250,17 +250,17 @@ private struct SearchTaskRow: View {
                         if isOverdue {
                             Text("Overdue")
                                 .font(.system(size: 12.5, weight: .semibold))
-                                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                                .foregroundStyle(VikuColor.Semantic.dangerText)
                         } else if let dueDate = task.dueDate {
                             Text(DueDateFormatter.compact(dueDate))
                                 .font(.system(size: 12.5, weight: .regular))
-                                .foregroundStyle(VikunjaColor.textSecondary)
+                                .foregroundStyle(VikuColor.textSecondary)
                         }
 
                         if task.hasRelations {
                             Image(systemName: "link")
                                 .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(VikunjaColor.textTertiary)
+                                .foregroundStyle(VikuColor.textTertiary)
                         }
                     }
                     .fixedSize(horizontal: true, vertical: false)
@@ -268,7 +268,7 @@ private struct SearchTaskRow: View {
                 .lineLimit(1)
 
                 if !task.labels.isEmpty {
-                    HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+                    HStack(spacing: VikuSpacing.xs + VikuSpacing.xxs) {
                         ForEach(task.labels.prefix(Self.labelDisplayLimit)) { label in
                             SearchLabelPill(label: label)
                         }
@@ -281,20 +281,20 @@ private struct SearchTaskRow: View {
                 }
             }
 
-            Spacer(minLength: VikunjaSpacing.sm)
+            Spacer(minLength: VikuSpacing.sm)
 
             if let priorityColor {
                 Circle()
                     .fill(priorityColor)
                     .frame(width: 8, height: 8)
-                    .padding(.top, VikunjaSpacing.xs)
+                    .padding(.top, VikuSpacing.xs)
             }
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .contextMenu {
             Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
-                .tint(VikunjaColor.Semantic.danger)
+                .tint(VikuColor.Semantic.danger)
         }
     }
 }
@@ -303,15 +303,15 @@ private struct SearchLabelPill: View {
     let label: VikunjaCore.Label
 
     private var color: Color {
-        Color(vikunjaHex: label.hexColor) ?? VikunjaColor.textSecondary
+        Color(vikuHex: label.hexColor) ?? VikuColor.textSecondary
     }
 
     var body: some View {
         Text(label.title)
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(color)
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.xxs)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.xxs)
             .background(Capsule().fill(color.opacity(0.14)))
     }
 }
@@ -322,10 +322,10 @@ private struct SearchExtraLabelsPill: View {
     var body: some View {
         Text("+\(count)")
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(VikunjaColor.textTertiary)
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.xxs)
-            .background(Capsule().fill(VikunjaColor.textSecondary.opacity(0.14)))
+            .foregroundStyle(VikuColor.textTertiary)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.xxs)
+            .background(Capsule().fill(VikuColor.textSecondary.opacity(0.14)))
     }
 }
 
@@ -355,9 +355,9 @@ private extension View {
 
 private extension View {
     func searchSectionLabelStyle() -> some View {
-        font(VikunjaFont.footnote)
+        font(VikuFont.footnote)
             .fontWeight(.bold)
-            .foregroundStyle(VikunjaColor.textSecondary)
+            .foregroundStyle(VikuColor.textSecondary)
             .textCase(.uppercase)
             .kerning(0.3)
     }

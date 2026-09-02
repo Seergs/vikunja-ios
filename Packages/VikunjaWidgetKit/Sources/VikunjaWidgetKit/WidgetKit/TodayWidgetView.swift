@@ -23,7 +23,7 @@ struct TodayWidgetView: View {
         content
             .padding(contentInset)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .containerBackground(VikunjaColor.Surface.page, for: .widget)
+            .containerBackground(VikuColor.Surface.page, for: .widget)
             .widgetURL(URL(string: "\(VikunjaWidgetConfig.urlScheme)://today"))
     }
 
@@ -72,23 +72,23 @@ private struct TodaySmallView: View {
     let content: TodayWidgetContent
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
             TodayWidgetHeader(content: content)
 
             Spacer(minLength: 0)
 
-            HStack(alignment: .firstTextBaseline, spacing: VikunjaSpacing.xxs) {
+            HStack(alignment: .firstTextBaseline, spacing: VikuSpacing.xxs) {
                 Text("\(content.pendingCount)")
                     .font(.system(size: 30, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.primary)
                 Text(content.pendingCount == 1 ? "task" : "tasks")
-                    .font(VikunjaFont.caption)
-                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .font(VikuFont.caption)
+                    .foregroundStyle(VikuColor.textSecondary)
             }
 
             Text(pendingBreakdown)
-                .font(VikunjaFont.caption2)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.caption2)
+                .foregroundStyle(VikuColor.textSecondary)
         }
     }
 
@@ -111,18 +111,18 @@ private struct TodayListView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.xs) {
             TodayWidgetHeader(content: content)
 
             if rows.isEmpty {
                 Spacer(minLength: 0)
                 Text("Nothing due. Enjoy it.")
-                    .font(VikunjaFont.caption)
-                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .font(VikuFont.caption)
+                    .foregroundStyle(VikuColor.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                 Spacer(minLength: 0)
             } else {
-                VStack(spacing: VikunjaSpacing.xs) {
+                VStack(spacing: VikuSpacing.xs) {
                     ForEach(rows) { task in
                         TodayWidgetRow(task: task)
                     }
@@ -137,33 +137,33 @@ private struct TodayWidgetRow: View {
     let task: TodayWidgetTask
 
     private var projectColor: Color {
-        Color(vikunjaHex: task.projectColorHex) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: task.projectColorHex) ?? VikuColor.brandPrimary
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.xs + VikuSpacing.xxs) {
             toggle
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(task.title)
-                    .font(VikunjaFont.caption)
+                    .font(VikuFont.caption)
                     .fontWeight(.medium)
                     .strikethrough(task.isDone)
-                    .foregroundStyle(task.isDone ? VikunjaColor.textTertiary : Color.primary)
+                    .foregroundStyle(task.isDone ? VikuColor.textTertiary : Color.primary)
                     .lineLimit(1)
 
-                HStack(spacing: VikunjaSpacing.xs) {
+                HStack(spacing: VikuSpacing.xs) {
                     if !task.projectName.isEmpty {
                         Circle().fill(projectColor).frame(width: 4, height: 4)
                         Text(task.projectName)
-                            .foregroundStyle(VikunjaColor.textSecondary)
+                            .foregroundStyle(VikuColor.textSecondary)
                     }
                     if let due = dueLabel {
                         Text("· \(due)")
-                            .foregroundStyle(task.bucket == .overdue ? VikunjaColor.Semantic.dangerText : VikunjaColor.textSecondary)
+                            .foregroundStyle(task.bucket == .overdue ? VikuColor.Semantic.dangerText : VikuColor.textSecondary)
                     }
                 }
-                .font(VikunjaFont.caption2)
+                .font(VikuFont.caption2)
                 .lineLimit(1)
             }
 
@@ -211,18 +211,18 @@ private struct TodayWidgetHeader: View {
     let content: TodayWidgetContent
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.xs) {
+        HStack(spacing: VikuSpacing.xs) {
             Text("Today")
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
                 .textCase(.uppercase)
                 .kerning(0.4)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .foregroundStyle(VikuColor.textSecondary)
             Spacer(minLength: 0)
             if content.isStale {
                 Image(systemName: "clock.arrow.circlepath")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .foregroundStyle(VikuColor.textTertiary)
                     .accessibilityLabel("Showing saved data")
             }
             // `Link` is inert in `.systemSmall` (the whole widget is one tap
@@ -232,7 +232,7 @@ private struct TodayWidgetHeader: View {
                 Link(destination: url) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(VikunjaColor.brandPrimary)
+                        .foregroundStyle(VikuColor.brandPrimary)
                 }
                 .accessibilityLabel("Add task")
             }
@@ -250,16 +250,16 @@ private struct TodayWidgetMessage: View {
     let message: String
 
     var body: some View {
-        VStack(spacing: VikunjaSpacing.xs) {
+        VStack(spacing: VikuSpacing.xs) {
             Image(systemName: systemImage)
                 .font(.system(size: 18))
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .foregroundStyle(VikuColor.textTertiary)
             Text(title)
-                .font(VikunjaFont.caption)
+                .font(VikuFont.caption)
                 .fontWeight(.semibold)
             Text(message)
-                .font(VikunjaFont.caption2)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.caption2)
+                .foregroundStyle(VikuColor.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

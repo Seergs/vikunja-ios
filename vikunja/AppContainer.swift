@@ -31,7 +31,7 @@ final class AppContainer {
     /// haptic from its own logic (e.g. add a `hapticPresenter:` parameter to
     /// the relevant `make...ViewModel` factory below, exactly like
     /// `toastPresenter:`); the ViewModel never imports `VikuDesignSystem`.
-    /// A purely view-driven tap should use `View.vikunjaHaptic(_:trigger:)`
+    /// A purely view-driven tap should use `View.vikuHaptic(_:trigger:)`
     /// instead and needs nothing from here.
     let hapticCenter = HapticFeedbackCenter()
     /// Tracks which project (if any) the visible screen represents, so the

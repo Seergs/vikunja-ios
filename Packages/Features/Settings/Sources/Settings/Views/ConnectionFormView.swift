@@ -24,8 +24,8 @@ struct ConnectionFormView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: VikunjaSpacing.lg) {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+            VStack(alignment: .leading, spacing: VikuSpacing.lg) {
+                VStack(alignment: .leading, spacing: VikuSpacing.md) {
                     FormField(label: "Connection Name", placeholder: "e.g. Office Server", text: $viewModel.displayName)
                         .focused($isNameFocused)
 
@@ -54,15 +54,15 @@ struct ConnectionFormView: View {
                         isConfirmingDelete = true
                     } label: {
                         Text("Delete Connection")
-                            .font(VikunjaFont.body)
+                            .font(VikuFont.body)
                             .fontWeight(.bold)
-                            .foregroundStyle(VikunjaColor.Semantic.danger)
+                            .foregroundStyle(VikuColor.Semantic.danger)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, VikunjaSpacing.sm)
+                    .padding(.vertical, VikuSpacing.sm)
                 }
             }
-            .padding(VikunjaSpacing.md)
+            .padding(VikuSpacing.md)
         }
         .navigationTitle(viewModel.isEditing ? "Edit Connection" : "New Connection")
         #if os(iOS)
@@ -94,10 +94,10 @@ struct ConnectionFormView: View {
     }
 
     private var tokenField: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             FieldLabel("API Token")
 
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 Group {
                     if isTokenVisible {
                         TextField("vkj_...", text: $viewModel.apiToken)
@@ -105,7 +105,7 @@ struct ConnectionFormView: View {
                         SecureField("vkj_...", text: $viewModel.apiToken)
                     }
                 }
-                .font(VikunjaFont.body)
+                .font(VikuFont.body)
                 #if os(iOS)
                 .textInputAutocapitalization(.never)
                 #endif
@@ -115,18 +115,18 @@ struct ConnectionFormView: View {
                     isTokenVisible.toggle()
                 } label: {
                     Image(systemName: isTokenVisible ? "eye.slash" : "eye")
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .foregroundStyle(VikuColor.textTertiary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(isTokenVisible ? "Hide token" : "Show token")
             }
-            .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+            .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+            .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
 
             Text("Generate it on your Vikunja instance: Settings → API Tokens.")
-                .font(VikunjaFont.caption)
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .font(VikuFont.caption)
+                .foregroundStyle(VikuColor.textTertiary)
         }
     }
 
@@ -134,18 +134,18 @@ struct ConnectionFormView: View {
         Button {
             Task { await viewModel.testConnection() }
         } label: {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 if viewModel.isSaving {
                     ProgressView()
                 }
                 Text(viewModel.isSaving ? "Testing connection…" : "Test Connection")
-                    .font(VikunjaFont.body)
+                    .font(VikuFont.body)
                     .fontWeight(.semibold)
                     .foregroundStyle(Color.primary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+            .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+            .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(!viewModel.canTestConnection)
@@ -157,12 +157,12 @@ struct ConnectionFormView: View {
             Task { await viewModel.save() }
         } label: {
             Text(viewModel.isEditing ? "Save Connection" : "Save and Connect")
-                .font(VikunjaFont.body)
+                .font(VikuFont.body)
                 .fontWeight(.bold)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
-                .background(VikunjaColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+                .padding(.vertical, VikuSpacing.sm + VikuSpacing.xs)
+                .background(VikuColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
         }
         .buttonStyle(.plain)
         .disabled(!viewModel.canSave)
@@ -179,9 +179,9 @@ private struct FieldLabel: View {
 
     var body: some View {
         Text(title)
-            .font(VikunjaFont.footnote)
+            .font(VikuFont.footnote)
             .fontWeight(.semibold)
-            .foregroundStyle(VikunjaColor.textSecondary)
+            .foregroundStyle(VikuColor.textSecondary)
     }
 }
 
@@ -193,13 +193,13 @@ private struct FormField: View {
     @Binding var text: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             FieldLabel(label)
             TextField(placeholder, text: $text)
-                .font(VikunjaFont.body)
-                .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-                .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-                .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+                .font(VikuFont.body)
+                .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+                .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+                .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
         }
     }
 }
@@ -215,27 +215,27 @@ private struct StatusBanner: View {
     let message: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        HStack(alignment: .center, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             Image(systemName: style == .success ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                 .font(.system(size: 13))
                 .foregroundStyle(foreground)
             Text(message)
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
                 .foregroundStyle(foreground)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm)
+        .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(background.opacity(0.12), in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .background(background.opacity(0.12), in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 
     private var foreground: Color {
-        style == .success ? VikunjaColor.Semantic.successText : VikunjaColor.Semantic.dangerText
+        style == .success ? VikuColor.Semantic.successText : VikuColor.Semantic.dangerText
     }
 
     private var background: Color {
-        style == .success ? VikunjaColor.Semantic.success : VikunjaColor.Semantic.danger
+        style == .success ? VikuColor.Semantic.success : VikuColor.Semantic.danger
     }
 }

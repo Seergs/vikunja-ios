@@ -3,7 +3,7 @@ import VikunjaCore
 import VikuDesignSystem
 
 /// The compact "new label" / "edit label" sheet: a title field and a row of
-/// preset color swatches from `VikunjaColor.SwatchPalette` — no free-form
+/// preset color swatches from `VikuColor.SwatchPalette` — no free-form
 /// color picker, matching how projects choose their color. Same shape as
 /// `Projects`' `CreateProjectSheetView`: a `NavigationStack` carrying an
 /// inline title and `Cancel`/`Save` in the toolbar, on a single detent sized
@@ -26,7 +26,7 @@ struct LabelEditorSheet: View {
         switch mode {
         case .create:
             _title = State(initialValue: "")
-            _hexColor = State(initialValue: VikunjaColor.SwatchPalette.swatches[0])
+            _hexColor = State(initialValue: VikuColor.SwatchPalette.swatches[0])
         case let .edit(label):
             _title = State(initialValue: label.title)
             _hexColor = State(initialValue: label.hexColor)
@@ -39,12 +39,12 @@ struct LabelEditorSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+            VStack(alignment: .leading, spacing: VikuSpacing.md) {
                 nameField
                 colorSection
             }
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.top, VikunjaSpacing.md)
+            .padding(.horizontal, VikuSpacing.md)
+            .padding(.top, VikuSpacing.md)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .navigationTitle(mode.isEdit ? "Edit Label" : "New Label")
             #if os(iOS)
@@ -66,37 +66,37 @@ struct LabelEditorSheet: View {
             }
         }
         .presentationDetents([.height(Self.detentHeight)])
-        .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
+        .presentationCornerRadius(VikuRadius.lg + VikuSpacing.sm)
         .task { isTitleFocused = true }
     }
 
     private var nameField: some View {
-        HStack(spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             Circle()
-                .fill(Color(vikunjaHex: hexColor) ?? VikunjaColor.brandPrimary)
+                .fill(Color(vikuHex: hexColor) ?? VikuColor.brandPrimary)
                 .frame(width: 10, height: 10)
 
             TextField("Label name", text: $title)
-                .font(VikunjaFont.body)
+                .font(VikuFont.body)
                 .focused($isTitleFocused)
                 .submitLabel(.done)
                 .onSubmit(save)
         }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-        .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+        .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 
     private var colorSection: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             Text("Color")
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .foregroundStyle(VikuColor.textSecondary)
 
-            HStack(spacing: VikunjaSpacing.sm) {
-                ForEach(VikunjaColor.SwatchPalette.swatches, id: \.self) { swatch in
-                    let swatchColor = Color(vikunjaHex: swatch) ?? VikunjaColor.brandPrimary
+            HStack(spacing: VikuSpacing.sm) {
+                ForEach(VikuColor.SwatchPalette.swatches, id: \.self) { swatch in
+                    let swatchColor = Color(vikuHex: swatch) ?? VikuColor.brandPrimary
                     Circle()
                         .fill(swatchColor)
                         .frame(width: 24, height: 24)

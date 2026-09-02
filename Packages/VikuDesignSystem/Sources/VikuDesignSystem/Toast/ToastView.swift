@@ -10,14 +10,14 @@ struct ToastView: View {
     var body: some View {
         Label {
             Text(toast.message)
-                .font(VikunjaFont.subheadline)
+                .font(VikuFont.subheadline)
                 .foregroundStyle(.primary)
         } icon: {
             Image(systemName: symbolName)
                 .foregroundStyle(tint)
         }
-        .padding(.horizontal, VikunjaSpacing.md)
-        .padding(.vertical, VikunjaSpacing.sm)
+        .padding(.horizontal, VikuSpacing.md)
+        .padding(.vertical, VikuSpacing.sm)
         .background(.regularMaterial, in: Capsule())
         .overlay(Capsule().strokeBorder(tint.opacity(0.3)))
         .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 4)
@@ -34,9 +34,9 @@ struct ToastView: View {
 
     private var tint: Color {
         switch toast.style {
-        case .success: VikunjaColor.Semantic.success
-        case .error: VikunjaColor.Semantic.danger
-        case .info: VikunjaColor.brandPrimary
+        case .success: VikuColor.Semantic.success
+        case .error: VikuColor.Semantic.danger
+        case .info: VikuColor.brandPrimary
         }
     }
 }

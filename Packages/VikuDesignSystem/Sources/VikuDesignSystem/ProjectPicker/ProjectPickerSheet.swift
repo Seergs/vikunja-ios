@@ -166,8 +166,8 @@ public struct ProjectPickerIcon: View {
 
     public var body: some View {
         Image(systemName: hasChildren ? "folder.fill" : "list.bullet.rectangle.fill")
-            .font(VikunjaFont.body)
-            .foregroundStyle(Color(vikunjaHex: hexColor) ?? VikunjaColor.brandPrimary)
+            .font(VikuFont.body)
+            .foregroundStyle(Color(vikuHex: hexColor) ?? VikuColor.brandPrimary)
             .frame(width: 24, alignment: .center)
     }
 }
@@ -182,13 +182,13 @@ private struct ProjectRow: View {
     let onSelect: () -> Void
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm) {
+        HStack(spacing: VikuSpacing.sm) {
             if hasChildren {
                 Button(action: onToggleExpand) {
                     Image(systemName: "chevron.right")
-                        .font(VikunjaFont.footnote)
+                        .font(VikuFont.footnote)
                         .fontWeight(.semibold)
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .foregroundStyle(VikuColor.textTertiary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                         .frame(width: 20, height: 28)
                         .contentShape(Rectangle())
@@ -199,28 +199,28 @@ private struct ProjectRow: View {
             }
 
             Button(action: onSelect) {
-                HStack(spacing: VikunjaSpacing.sm) {
+                HStack(spacing: VikuSpacing.sm) {
                     ProjectPickerIcon(hexColor: project.hexColor, hasChildren: hasChildren)
 
                     Text(project.title)
-                        .font(VikunjaFont.body)
+                        .font(VikuFont.body)
                         .foregroundStyle(Color.primary)
                         .lineLimit(1)
 
-                    Spacer(minLength: VikunjaSpacing.sm)
+                    Spacer(minLength: VikuSpacing.sm)
 
                     if isSelected {
                         Image(systemName: "checkmark")
-                            .font(VikunjaFont.body)
+                            .font(VikuFont.body)
                             .fontWeight(.semibold)
-                            .foregroundStyle(VikunjaColor.brandPrimary)
+                            .foregroundStyle(VikuColor.brandPrimary)
                     }
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         }
-        .padding(.leading, CGFloat(depth) * VikunjaSpacing.md)
+        .padding(.leading, CGFloat(depth) * VikuSpacing.md)
     }
 }
 
@@ -229,27 +229,27 @@ private struct NoneRow: View {
     let onSelect: () -> Void
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm) {
+        HStack(spacing: VikuSpacing.sm) {
             Color.clear.frame(width: 20, height: 28)
 
             Button(action: onSelect) {
-                HStack(spacing: VikunjaSpacing.sm) {
+                HStack(spacing: VikuSpacing.sm) {
                     Image(systemName: "folder")
-                        .font(VikunjaFont.body)
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .font(VikuFont.body)
+                        .foregroundStyle(VikuColor.textTertiary)
                         .frame(width: 24, alignment: .center)
 
                     Text("None")
-                        .font(VikunjaFont.body)
+                        .font(VikuFont.body)
                         .foregroundStyle(Color.primary)
 
-                    Spacer(minLength: VikunjaSpacing.sm)
+                    Spacer(minLength: VikuSpacing.sm)
 
                     if isSelected {
                         Image(systemName: "checkmark")
-                            .font(VikunjaFont.body)
+                            .font(VikuFont.body)
                             .fontWeight(.semibold)
-                            .foregroundStyle(VikunjaColor.brandPrimary)
+                            .foregroundStyle(VikuColor.brandPrimary)
                     }
                 }
                 .contentShape(Rectangle())

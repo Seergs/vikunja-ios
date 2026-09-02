@@ -27,20 +27,20 @@ public extension View {
     ///
     /// ```swift
     /// Toggle("Done", isOn: $isDone)
-    ///     .vikunjaHaptic(.success, trigger: isDone)
+    ///     .vikuHaptic(.success, trigger: isDone)
     /// ```
     ///
     /// When the *decision* to tap lives in a ViewModel (e.g. an optimistic
     /// update that may roll back), inject `HapticFeedbackPresenting` there
     /// instead and call `play(_:)`.
-    func vikunjaHaptic(_ style: HapticStyle, trigger: some Equatable) -> some View {
+    func vikuHaptic(_ style: HapticStyle, trigger: some Equatable) -> some View {
         sensoryFeedback(SensoryFeedback(style), trigger: trigger)
     }
 
-    /// As `vikunjaHaptic(_:trigger:)`, but only taps when `condition` returns
+    /// As `vikuHaptic(_:trigger:)`, but only taps when `condition` returns
     /// `true` for the old/new pair — e.g. tap on completing a task but not on
     /// un-completing it.
-    func vikunjaHaptic<T: Equatable>(
+    func vikuHaptic<T: Equatable>(
         _ style: HapticStyle,
         trigger: T,
         condition: @escaping (_ oldValue: T, _ newValue: T) -> Bool,

@@ -26,7 +26,7 @@ struct ConnectionsListView: View {
 
     var body: some View {
         content
-            .background(VikunjaColor.Surface.page)
+            .background(VikuColor.Surface.page)
             .navigationTitle("Connections")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -51,7 +51,7 @@ struct ConnectionsListView: View {
         case .idle, .loading:
             ProgressView()
                 .frame(maxWidth: .infinity)
-                .padding(.top, VikunjaSpacing.xxl)
+                .padding(.top, VikuSpacing.xxl)
         case let .failure(message):
             ConnectionsStatusView(
                 systemImage: "exclamationmark.triangle.fill",
@@ -60,13 +60,13 @@ struct ConnectionsListView: View {
             ) {
                 Task { await viewModel.load() }
             }
-            .padding(.top, VikunjaSpacing.xxl)
+            .padding(.top, VikuSpacing.xxl)
         case .loaded:
             ScrollView {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+                VStack(alignment: .leading, spacing: VikuSpacing.md) {
                     Text("Choose the Vikunja instance you want to sync your tasks with.")
-                        .font(VikunjaFont.footnote)
-                        .foregroundStyle(VikunjaColor.textSecondary)
+                        .font(VikuFont.footnote)
+                        .foregroundStyle(VikuColor.textSecondary)
 
                     VStack(spacing: 0) {
                         ForEach(Array(viewModel.accounts.enumerated()), id: \.element.id) { index, account in
@@ -76,22 +76,22 @@ struct ConnectionsListView: View {
                                 onSelect: { Task { await viewModel.setActive(account) } },
                                 onEdit: { router.push(.connectionForm(.edit(account))) },
                             )
-                            .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
+                            .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
 
                             if index < viewModel.accounts.count - 1 {
                                 Divider()
-                                    .padding(.leading, VikunjaSpacing.md - VikunjaSpacing.xxs + 40 + VikunjaSpacing.sm + VikunjaSpacing.xxs)
+                                    .padding(.leading, VikuSpacing.md - VikuSpacing.xxs + 40 + VikuSpacing.sm + VikuSpacing.xxs)
                             }
                         }
                     }
-                    .padding(.vertical, VikunjaSpacing.xs)
-                    .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+                    .padding(.vertical, VikuSpacing.xs)
+                    .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
 
                     AddConnectionButton {
                         router.push(.connectionForm(.create))
                     }
                 }
-                .padding(VikunjaSpacing.md)
+                .padding(VikuSpacing.md)
             }
         }
     }
@@ -103,25 +103,25 @@ private struct AddConnectionButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 Image(systemName: "plus")
                     .font(.system(size: 14, weight: .semibold))
                 Text("Add Connection")
-                    .font(VikunjaFont.body)
+                    .font(VikuFont.body)
                     .fontWeight(.semibold)
             }
-            .foregroundStyle(VikunjaColor.brandPrimary)
+            .foregroundStyle(VikuColor.brandPrimary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, VikunjaSpacing.md)
+            .padding(.vertical, VikuSpacing.md)
             .background {
                 // Plain `.circular` corners, not `.continuous`: a continuous
                 // (squircle) corner's arc curvature varies along its length,
                 // which throws off how evenly a dash pattern lands — it reads
                 // as the border getting "cut" right where the straight edge
                 // meets the corner. True circular arcs dash evenly.
-                RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .circular)
+                RoundedRectangle(cornerRadius: VikuRadius.md, style: .circular)
                     .strokeBorder(
-                        VikunjaColor.textTertiary.opacity(0.4),
+                        VikuColor.textTertiary.opacity(0.4),
                         style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 5]),
                     )
             }
@@ -141,22 +141,22 @@ private struct ConnectionRow: View {
     let onEdit: () -> Void
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
             Button(action: onSelect) {
-                HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
-                    RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xs, style: .continuous)
-                        .fill(VikunjaColor.brandPrimary.opacity(isActive ? 0.18 : 0.08))
+                HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
+                    RoundedRectangle(cornerRadius: VikuRadius.sm - VikuSpacing.xs, style: .continuous)
+                        .fill(VikuColor.brandPrimary.opacity(isActive ? 0.18 : 0.08))
                         .frame(width: 40, height: 40)
                         .overlay {
                             Image(systemName: "server.rack")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(isActive ? VikunjaColor.brandPrimary : VikunjaColor.textTertiary)
+                                .foregroundStyle(isActive ? VikuColor.brandPrimary : VikuColor.textTertiary)
                         }
 
-                    VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                        HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+                    VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
+                        HStack(spacing: VikuSpacing.xs + VikuSpacing.xxs) {
                             Text(account.displayName)
-                                .font(VikunjaFont.body)
+                                .font(VikuFont.body)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color.primary)
                                 .lineLimit(1)
@@ -164,16 +164,16 @@ private struct ConnectionRow: View {
                             if isActive {
                                 Text("ACTIVE")
                                     .font(.system(size: 11, weight: .bold))
-                                    .foregroundStyle(VikunjaColor.brandPrimary)
-                                    .padding(.horizontal, VikunjaSpacing.xs + VikunjaSpacing.xxs)
-                                    .padding(.vertical, VikunjaSpacing.xxs)
-                                    .background(VikunjaColor.brandPrimary.opacity(0.14), in: Capsule())
+                                    .foregroundStyle(VikuColor.brandPrimary)
+                                    .padding(.horizontal, VikuSpacing.xs + VikuSpacing.xxs)
+                                    .padding(.vertical, VikuSpacing.xxs)
+                                    .background(VikuColor.brandPrimary.opacity(0.14), in: Capsule())
                             }
                         }
 
                         Text(account.baseURL.absoluteString)
-                            .font(VikunjaFont.footnote)
-                            .foregroundStyle(VikunjaColor.textTertiary)
+                            .font(VikuFont.footnote)
+                            .foregroundStyle(VikuColor.textTertiary)
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
@@ -187,14 +187,14 @@ private struct ConnectionRow: View {
             Button(action: onEdit) {
                 Image(systemName: "pencil")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .foregroundStyle(VikuColor.textSecondary)
                     .frame(width: 30, height: 30)
-                    .background(VikunjaColor.Surface.field, in: Circle())
+                    .background(VikuColor.Surface.field, in: Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Edit \(account.displayName)")
         }
-        .padding(.vertical, VikunjaSpacing.xxs)
+        .padding(.vertical, VikuSpacing.xxs)
     }
 }
 
@@ -206,26 +206,26 @@ private struct ConnectionsStatusView: View {
     var retryAction: (() -> Void)?
 
     var body: some View {
-        VStack(spacing: VikunjaSpacing.sm) {
+        VStack(spacing: VikuSpacing.sm) {
             Image(systemName: systemImage)
                 .font(.system(size: 40))
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .foregroundStyle(VikuColor.textTertiary)
 
             Text(title)
-                .font(VikunjaFont.headline)
+                .font(VikuFont.headline)
 
             Text(message)
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textSecondary)
                 .multilineTextAlignment(.center)
 
             if let retryAction {
                 Button("Try Again", action: retryAction)
                     .buttonStyle(.bordered)
-                    .padding(.top, VikunjaSpacing.xs)
+                    .padding(.top, VikuSpacing.xs)
             }
         }
-        .padding(VikunjaSpacing.lg)
+        .padding(VikuSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

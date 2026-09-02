@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Typography tokens. Wraps the system Dynamic Type text styles under our own
 /// names, so a future custom typeface or weight change happens in one place.
-public enum VikunjaFont {
+public enum VikuFont {
     public static let largeTitle = Font.largeTitle
     public static let title = Font.title
     public static let title2 = Font.title2

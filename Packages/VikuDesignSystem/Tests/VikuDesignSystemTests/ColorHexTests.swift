@@ -12,14 +12,14 @@ struct ColorHexTests {
 
     @Test
     func `vikunja hex parses with or without leading hash`() {
-        #expect(Color(vikunjaHex: "196AFF")?.resolve(in: .init()) == Color(hex: 0x196AFF).resolve(in: .init()))
-        #expect(Color(vikunjaHex: "#196AFF")?.resolve(in: .init()) == Color(hex: 0x196AFF).resolve(in: .init()))
+        #expect(Color(vikuHex: "196AFF")?.resolve(in: .init()) == Color(hex: 0x196AFF).resolve(in: .init()))
+        #expect(Color(vikuHex: "#196AFF")?.resolve(in: .init()) == Color(hex: 0x196AFF).resolve(in: .init()))
     }
 
     @Test
     func `vikunja hex returns nil for empty or malformed input`() {
-        #expect(Color(vikunjaHex: "") == nil)
-        #expect(Color(vikunjaHex: "not-a-color") == nil)
-        #expect(Color(vikunjaHex: "FF") == nil)
+        #expect(Color(vikuHex: "") == nil)
+        #expect(Color(vikuHex: "not-a-color") == nil)
+        #expect(Color(vikuHex: "FF") == nil)
     }
 }

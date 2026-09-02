@@ -17,7 +17,7 @@ public struct InstanceSetupView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: VikunjaSpacing.lg) {
+            VStack(spacing: VikuSpacing.lg) {
                 header
                 fields
 
@@ -29,7 +29,7 @@ public struct InstanceSetupView: View {
 
                 saveButton
             }
-            .padding(VikunjaSpacing.lg)
+            .padding(VikuSpacing.lg)
         }
         .scrollDismissesKeyboard(.interactively)
         .hideNavigationBar()
@@ -42,9 +42,9 @@ public struct InstanceSetupView: View {
     }
 
     private var header: some View {
-        VStack(spacing: VikunjaSpacing.md) {
-            RoundedRectangle(cornerRadius: VikunjaRadius.lg, style: .continuous)
-                .fill(VikunjaColor.brandPrimary)
+        VStack(spacing: VikuSpacing.md) {
+            RoundedRectangle(cornerRadius: VikuRadius.lg, style: .continuous)
+                .fill(VikuColor.brandPrimary)
                 .frame(width: 64, height: 64)
                 .overlay {
                     Image(systemName: "checkmark")
@@ -52,23 +52,23 @@ public struct InstanceSetupView: View {
                         .foregroundStyle(.white)
                 }
 
-            VStack(spacing: VikunjaSpacing.xs) {
+            VStack(spacing: VikuSpacing.xs) {
                 Text("Connect your instance")
-                    .font(VikunjaFont.title2)
+                    .font(VikuFont.title2)
                     .fontWeight(.heavy)
 
                 Text("This app connects to your own Vikunja server. Enter your instance's details to get started.")
-                    .font(VikunjaFont.subheadline)
+                    .font(VikuFont.subheadline)
                     .fontWeight(.medium)
-                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .foregroundStyle(VikuColor.textSecondary)
                     .multilineTextAlignment(.center)
             }
         }
-        .padding(.top, VikunjaSpacing.lg)
+        .padding(.top, VikuSpacing.lg)
     }
 
     private var fields: some View {
-        VStack(spacing: VikunjaSpacing.md) {
+        VStack(spacing: VikuSpacing.md) {
             OnboardingField(label: "Connection name", text: $viewModel.displayName, placeholder: "e.g. Office server")
                 .autocapitalized(.words)
 
@@ -95,38 +95,38 @@ public struct InstanceSetupView: View {
         Button {
             Task { await viewModel.testConnection() }
         } label: {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 if viewModel.isSaving {
                     ProgressView()
                 }
                 Text(viewModel.isSaving ? "Testing connection…" : "Test Connection")
-                    .font(VikunjaFont.subheadline)
+                    .font(VikuFont.subheadline)
                     .fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, VikunjaSpacing.md)
+            .padding(.vertical, VikuSpacing.md)
         }
         .buttonStyle(.plain)
         .foregroundStyle(.primary)
-        .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
         .opacity(viewModel.canTestConnection ? 1 : 0.5)
         .disabled(!viewModel.canTestConnection || viewModel.isSaving)
     }
 
     private func statusBanner(text: String, isSuccess: Bool) -> some View {
-        let backgroundTint = isSuccess ? VikunjaColor.Semantic.success : VikunjaColor.Semantic.danger
-        let textTint = isSuccess ? VikunjaColor.Semantic.successText : VikunjaColor.Semantic.dangerText
-        return HStack(spacing: VikunjaSpacing.sm) {
+        let backgroundTint = isSuccess ? VikuColor.Semantic.success : VikuColor.Semantic.danger
+        let textTint = isSuccess ? VikuColor.Semantic.successText : VikuColor.Semantic.dangerText
+        return HStack(spacing: VikuSpacing.sm) {
             Image(systemName: isSuccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
             Text(text)
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
         }
         .foregroundStyle(textTint)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, VikunjaSpacing.md)
-        .padding(.vertical, VikunjaSpacing.sm)
-        .background(backgroundTint.opacity(0.12), in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .padding(.horizontal, VikuSpacing.md)
+        .padding(.vertical, VikuSpacing.sm)
+        .background(backgroundTint.opacity(0.12), in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 
     private var saveButton: some View {
@@ -134,14 +134,14 @@ public struct InstanceSetupView: View {
             Task { await viewModel.saveConnection() }
         } label: {
             Text("Save & Continue")
-                .font(VikunjaFont.body)
+                .font(VikuFont.body)
                 .fontWeight(.bold)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, VikunjaSpacing.md)
+                .padding(.vertical, VikuSpacing.md)
         }
         .buttonStyle(.plain)
         .foregroundStyle(.white)
-        .background(VikunjaColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+        .background(VikuColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
         .opacity(viewModel.canSave ? 1 : 0.4)
         .disabled(!viewModel.canSave || viewModel.isSaving)
     }
@@ -171,13 +171,13 @@ private struct OnboardingField: View {
     var trailingAction: (() -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.xs) {
             Text(label)
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .foregroundStyle(VikuColor.textSecondary)
 
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 Group {
                     if isSecure {
                         SecureField(placeholder, text: $text)
@@ -185,25 +185,25 @@ private struct OnboardingField: View {
                         TextField(placeholder, text: $text)
                     }
                 }
-                .font(VikunjaFont.body)
+                .font(VikuFont.body)
 
                 if let trailingSystemImage, let trailingAction {
                     Button(action: trailingAction) {
                         Image(systemName: trailingSystemImage)
                             .font(.system(size: 14))
-                            .foregroundStyle(VikunjaColor.textTertiary)
+                            .foregroundStyle(VikuColor.textTertiary)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+            .padding(.horizontal, VikuSpacing.md)
+            .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+            .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
 
             if let hint {
                 Text(hint)
-                    .font(VikunjaFont.caption)
-                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .font(VikuFont.caption)
+                    .foregroundStyle(VikuColor.textSecondary)
             }
         }
     }

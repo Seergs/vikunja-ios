@@ -28,7 +28,7 @@ public struct CreateProjectSheetView: View {
 
     public var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+            VStack(alignment: .leading, spacing: VikuSpacing.md) {
                 nameField
 
                 colorSection
@@ -40,8 +40,8 @@ public struct CreateProjectSheetView: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.top, VikunjaSpacing.md)
+            .padding(.horizontal, VikuSpacing.md)
+            .padding(.top, VikuSpacing.md)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
             .navigationTitle("New Project")
@@ -64,7 +64,7 @@ public struct CreateProjectSheetView: View {
             }
         }
         .presentationDetents([.height(detentHeight)])
-        .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
+        .presentationCornerRadius(VikuRadius.lg + VikuSpacing.sm)
         .sheet(isPresented: $isShowingParentPicker) {
             ProjectPickerSheet(
                 title: "Parent Project",
@@ -89,28 +89,28 @@ public struct CreateProjectSheetView: View {
     /// (matching `ProjectRow`'s own color dot in the list) rather than only
     /// showing that choice further down the sheet.
     private var nameField: some View {
-        HStack(spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             Circle()
-                .fill(Color(vikunjaHex: viewModel.hexColor) ?? VikunjaColor.brandPrimary)
+                .fill(Color(vikuHex: viewModel.hexColor) ?? VikuColor.brandPrimary)
                 .frame(width: 10, height: 10)
 
             TextField("Project name", text: $viewModel.title)
-                .font(VikunjaFont.body)
+                .font(VikuFont.body)
                 .focused($isTitleFocused)
                 .submitLabel(.done)
                 .onSubmit(save)
         }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-        .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+        .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 
     private var colorSection: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             FieldLabel("Color")
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 ForEach(Self.colorSwatches, id: \.self) { swatch in
-                    let swatchColor = Color(vikunjaHex: swatch) ?? VikunjaColor.brandPrimary
+                    let swatchColor = Color(vikuHex: swatch) ?? VikuColor.brandPrimary
                     Circle()
                         .fill(swatchColor)
                         .frame(width: 24, height: 24)
@@ -131,7 +131,7 @@ public struct CreateProjectSheetView: View {
     }
 
     private var parentProjectSection: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             FieldLabel("Parent Project")
             ParentProjectField(project: viewModel.selectedParentProject) {
                 isShowingParentPicker = true
@@ -150,7 +150,7 @@ public struct CreateProjectSheetView: View {
 
     private static let compactHeight: CGFloat = 300
     private static let expandedHeight: CGFloat = 366
-    private static let colorSwatches = VikunjaColor.SwatchPalette.swatches
+    private static let colorSwatches = VikuColor.SwatchPalette.swatches
 }
 
 /// Same tinted-card language as `Tasks`' `QuickAddSheetView.SaveErrorBanner` —
@@ -160,20 +160,20 @@ private struct SaveErrorBanner: View {
     let message: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        HStack(alignment: .center, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 13))
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                .foregroundStyle(VikuColor.Semantic.dangerText)
             Text(message)
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                .foregroundStyle(VikuColor.Semantic.dangerText)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm)
+        .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikunjaColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .background(VikuColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 }
 
@@ -186,9 +186,9 @@ private struct FieldLabel: View {
 
     var body: some View {
         Text(title)
-            .font(VikunjaFont.footnote)
+            .font(VikuFont.footnote)
             .fontWeight(.semibold)
-            .foregroundStyle(VikunjaColor.textSecondary)
+            .foregroundStyle(VikuColor.textSecondary)
     }
 }
 
@@ -202,7 +202,7 @@ private struct ParentProjectField: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 if let project {
                     ProjectPickerIcon(hexColor: project.hexColor)
                     Text(project.title)
@@ -218,11 +218,11 @@ private struct ParentProjectField: View {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .foregroundStyle(VikuColor.textTertiary)
             }
-            .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+            .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.sm + VikuSpacing.xs)
+            .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
         }
         .buttonStyle(.plain)
     }
