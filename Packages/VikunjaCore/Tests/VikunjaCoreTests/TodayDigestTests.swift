@@ -5,10 +5,10 @@ import Testing
 struct TodayDigestTests {
     private static let calendar = Calendar.current
     private static let now = Date()
-    private static let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: now)!
-    private static let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
-    private static let laterToday = calendar.date(byAdding: .hour, value: 1, to: now)!
-    private static let nextWeek = calendar.date(byAdding: .day, value: 7, to: now)!
+    private static let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: now) ?? now
+    private static let yesterday = calendar.date(byAdding: .day, value: -1, to: now) ?? now
+    private static let laterToday = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
+    private static let nextWeek = calendar.date(byAdding: .day, value: 7, to: now) ?? now
 
     private func digest(_ tasks: [VikunjaTask]) -> TodayDigest {
         TodayDigest(tasks: tasks, now: Self.now, calendar: Self.calendar)
@@ -52,9 +52,8 @@ struct TodayDigestTests {
     func `sorts each bucket by ascending due date then ID`() throws {
         let overdueOlder = VikunjaTask(id: 1, title: "Older", dueDate: Self.twoDaysAgo, projectID: 1)
         let overdueNewer = VikunjaTask(id: 2, title: "Newer", dueDate: Self.yesterday, projectID: 1)
-        let todayLater = try VikunjaTask(
-            id: 3, title: "Later", dueDate: #require(Self.calendar.date(byAdding: .hour, value: 2, to: Self.now)), projectID: 1,
-        )
+        let twoHoursFromNow = try #require(Self.calendar.date(byAdding: .hour, value: 2, to: Self.now))
+        let todayLater = VikunjaTask(id: 3, title: "Later", dueDate: twoHoursFromNow, projectID: 1)
         let todayEarlier = VikunjaTask(id: 4, title: "Earlier", dueDate: Self.laterToday, projectID: 1)
 
         let result = digest([overdueNewer, overdueOlder, todayLater, todayEarlier])
