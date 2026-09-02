@@ -5,7 +5,7 @@ import Settings
 import SwiftUI
 import Tasks
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 import VikuNavigation
 
 /// The app's main navigation shell once a connection exists: a floating,

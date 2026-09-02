@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 
 /// The "duplicate task" sheet, opened from `TaskDetailView`'s overflow menu.
 /// Same compact bottom-sheet language as `QuickAddSheetView` (shared

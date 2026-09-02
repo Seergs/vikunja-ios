@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 
 /// The compact "new label" / "edit label" sheet: a title field and a row of
 /// preset color swatches from `VikunjaColor.SwatchPalette` — no free-form

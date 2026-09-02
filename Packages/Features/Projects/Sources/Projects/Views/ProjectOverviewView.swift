@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 
 /// A single project's overview: its subprojects (if any), a status filter,
 /// and its own tasks grouped by overdue/pending/completed.

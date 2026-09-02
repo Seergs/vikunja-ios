@@ -1,5 +1,5 @@
 import SwiftUI
-import VikunjaDesignSystem
+import VikuDesignSystem
 import VikuNavigation
 
 /// The Settings tab's landing screen. Real preferences aren't built yet — the

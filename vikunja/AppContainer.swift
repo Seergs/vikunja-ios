@@ -7,7 +7,7 @@ import Settings
 import Tasks
 import VikuAuth
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 import VikuNavigation
 import VikunjaNetworking
 import VikunjaWidgetKit
@@ -24,13 +24,13 @@ final class AppContainer {
     /// The single toast host for the whole app — see `RootView`'s
     /// `.toastHost(_:)`. Pass this as `ToastPresenting` to any ViewModel that
     /// needs to surface a toast (e.g. `toastPresenter:` in a `make...ViewModel`
-    /// factory below); it never needs to import `VikunjaDesignSystem` itself.
+    /// factory below); it never needs to import `VikuDesignSystem` itself.
     let toastCenter = ToastCenter()
     /// The app's single Taptic Engine — see `HapticFeedbackCenter`. Pass this
     /// as `HapticFeedbackPresenting` to any ViewModel that needs to fire a
     /// haptic from its own logic (e.g. add a `hapticPresenter:` parameter to
     /// the relevant `make...ViewModel` factory below, exactly like
-    /// `toastPresenter:`); the ViewModel never imports `VikunjaDesignSystem`.
+    /// `toastPresenter:`); the ViewModel never imports `VikuDesignSystem`.
     /// A purely view-driven tap should use `View.vikunjaHaptic(_:trigger:)`
     /// instead and needs nothing from here.
     let hapticCenter = HapticFeedbackCenter()

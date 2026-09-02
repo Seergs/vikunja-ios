@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 
 /// Edit an existing project's title, color, and parent — the same shape as
 /// `CreateProjectSheetView` (`NavigationStack` + inline title + toolbar

@@ -1,12 +1,12 @@
 /// What a ViewModel needs in order to fire a haptic, without knowing anything
-/// about the Taptic Engine or UIKit. Implemented by `VikunjaDesignSystem`'s
+/// about the Taptic Engine or UIKit. Implemented by `VikuDesignSystem`'s
 /// `HapticFeedbackCenter` and injected via `AppContainer`, the same way
 /// `ToastPresenting` and the repository protocols are — so playing a haptic
-/// from a ViewModel never requires importing `VikunjaDesignSystem` or any
+/// from a ViewModel never requires importing `VikuDesignSystem` or any
 /// UIKit/SwiftUI type.
 ///
 /// A pure SwiftUI view that just wants a haptic when some state changes should
-/// use `View.vikunjaHaptic(_:trigger:)` from `VikunjaDesignSystem` instead —
+/// use `View.vikunjaHaptic(_:trigger:)` from `VikuDesignSystem` instead —
 /// no injection needed. Reach for this protocol when the *decision* to tap
 /// lives in a ViewModel (an optimistic toggle that rolled back, a create that
 /// succeeded).

@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 
 /// The "new project" sheet: title, color, and parent project — matching what
 /// `CreateProjectViewModel` needs to create a project. Same shape as `Tasks`'

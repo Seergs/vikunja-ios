@@ -11,13 +11,13 @@ let package = Package(
         .package(path: "../VikunjaCore"),
         .package(path: "../VikunjaNetworking"),
         .package(path: "../VikuAuth"),
-        .package(path: "../VikunjaDesignSystem"),
+        .package(path: "../VikuDesignSystem"),
         .package(path: "../VikuNavigation"),
     ],
     targets: [
         .target(
             name: "VikunjaWidgetKit",
-            dependencies: ["VikunjaCore", "VikunjaNetworking", "VikuAuth", "VikunjaDesignSystem", "VikuNavigation"],
+            dependencies: ["VikunjaCore", "VikunjaNetworking", "VikuAuth", "VikuDesignSystem", "VikuNavigation"],
         ),
         .testTarget(name: "VikunjaWidgetKitTests", dependencies: ["VikunjaWidgetKit"]),
     ],

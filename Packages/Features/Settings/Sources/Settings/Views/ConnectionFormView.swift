@@ -1,5 +1,5 @@
 import SwiftUI
-import VikunjaDesignSystem
+import VikuDesignSystem
 import VikuNavigation
 
 /// The add/edit connection screen: name, instance URL, API token, a "Test

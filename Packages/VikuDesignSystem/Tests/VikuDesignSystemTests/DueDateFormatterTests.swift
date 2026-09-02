@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import VikunjaDesignSystem
+@testable import VikuDesignSystem
 
 struct DueDateFormatterTests {
     private let calendar = Calendar.current
