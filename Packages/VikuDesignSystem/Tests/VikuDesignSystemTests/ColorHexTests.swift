@@ -7,7 +7,8 @@ struct ColorHexTests {
     func `hex initializer matches components`() {
         let color = Color(hex: 0x196AFF)
 
-        #expect(color.resolve(in: .init()) == Color(.sRGB, red: 0x19 / 255, green: 0x6A / 255, blue: 0xFF / 255).resolve(in: .init()))
+        let expected = Color(.sRGB, red: 0x19 / 255, green: 0x6A / 255, blue: 0xFF / 255)
+        #expect(color.resolve(in: .init()) == expected.resolve(in: .init()))
     }
 
     @Test
