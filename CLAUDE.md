@@ -268,7 +268,9 @@ by the compiler, not just convention:
     instance (`container.hapticCenter`). Wired in so far: completing a task
     (not un-completing it) plays `.success` from every `toggleDone` —
     `TodayViewModel`, `ProjectOverviewViewModel`, `SearchViewModel`,
-    `TaskDetailViewModel`. **Two ways to fire one:**
+    `TaskDetailViewModel` — and switching the active tab plays `.selection`
+    (`MainTabView`, via `.vikunjaHaptic(_:trigger:)` on the `TabView`).
+    **Two ways to fire one:**
     - From a ViewModel's own logic (an optimistic toggle rolled back, a
       create succeeded): take `hapticPresenter: HapticFeedbackPresenting` via
       constructor injection (defaulted to `NoopHapticFeedback()` so tests
