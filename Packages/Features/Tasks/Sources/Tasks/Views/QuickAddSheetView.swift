@@ -47,7 +47,7 @@ public struct QuickAddSheetView: View {
 
                 projectSection
 
-                prioritySection
+                PriorityChipRow(selection: $viewModel.priority)
 
                 if let message = viewModel.saveErrorMessage {
                     SaveErrorBanner(message: message)
@@ -67,7 +67,7 @@ public struct QuickAddSheetView: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
             .navigationTitle("New Task")
             #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -126,22 +126,6 @@ public struct QuickAddSheetView: View {
         }
     }
 
-    private var prioritySection: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
-            FieldLabel("Priority")
-            HStack(spacing: VikunjaSpacing.sm) {
-                ForEach(Self.priorityOptions, id: \.priority) { option in
-                    PriorityChip(
-                        option: option,
-                        isSelected: viewModel.priority == option.priority,
-                    ) {
-                        viewModel.priority = viewModel.priority == option.priority ? .unset : option.priority
-                    }
-                }
-            }
-        }
-    }
-
     /// Fixed, hand-measured heights rather than a live content measurement:
     /// a `.sheet` proposes its current detent's height back to its own
     /// content as a ceiling, so `GeometryReader`/`onGeometryChange`/
@@ -151,119 +135,4 @@ public struct QuickAddSheetView: View {
     /// room for the error banner.
     private static let compactHeight: CGFloat = 300
     private static let expandedHeight: CGFloat = 366
-
-    private static let priorityOptions: [PriorityOption] = [
-        PriorityOption(priority: .low, label: "Low", color: VikunjaColor.Priority.low),
-        PriorityOption(priority: .medium, label: "Medium", color: VikunjaColor.Priority.medium),
-        PriorityOption(priority: .high, label: "High", color: VikunjaColor.Priority.high),
-        PriorityOption(priority: .urgent, label: "Urgent", color: VikunjaColor.Priority.urgent),
-    ]
-}
-
-/// Same tinted-card language as `TaskDetailView`'s `BlockedBanner` — a red
-/// card rather than plain inline text, so a save failure reads as clearly as
-/// every other error state in the app.
-private struct SaveErrorBanner: View {
-    let message: String
-
-    var body: some View {
-        HStack(alignment: .center, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 13))
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
-            Text(message)
-                .font(VikunjaFont.footnote)
-                .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikunjaColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
-    }
-}
-
-private struct FieldLabel: View {
-    let title: String
-
-    init(_ title: String) {
-        self.title = title
-    }
-
-    var body: some View {
-        Text(title)
-            .font(VikunjaFont.footnote)
-            .fontWeight(.semibold)
-            .foregroundStyle(VikunjaColor.textSecondary)
-    }
-}
-
-private struct PriorityOption {
-    let priority: VikunjaTask.Priority
-    let label: String
-    let color: Color
-}
-
-/// The collapsed "Project" row: shows the current selection (or a
-/// placeholder when none is chosen yet) and opens `ProjectPickerView` on tap
-/// — replaces the earlier inline chip row now that the mockup opens a
-/// dedicated picker sheet instead.
-private struct ProjectField: View {
-    let project: Project?
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
-                if let project {
-                    ProjectPickerIcon(hexColor: project.hexColor)
-                    Text(project.title)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.primary)
-                } else {
-                    Text("Choose project")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(VikunjaColor.textTertiary)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
-            }
-            .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct PriorityChip: View {
-    let option: PriorityOption
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: VikunjaSpacing.xs) {
-                Image(systemName: "flag")
-                    .font(.system(size: 11))
-                Text(option.label)
-                    .font(.system(size: 13.5, weight: .semibold))
-            }
-            .foregroundStyle(isSelected ? option.color : VikunjaColor.textTertiary)
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
-            .background(
-                Capsule().fill(isSelected ? option.color.opacity(0.14) : VikunjaColor.Surface.field),
-            )
-            .overlay(
-                Capsule().strokeBorder(isSelected ? option.color : Color.clear, lineWidth: 1.5),
-            )
-        }
-        .buttonStyle(.plain)
-    }
 }
