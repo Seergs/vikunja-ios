@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaDesignSystem
-import VikunjaNavigation
+import VikuNavigation
 
 /// The add/edit connection screen: name, instance URL, API token, a "Test
 /// Connection" probe, and — only in edit mode — a "Delete Connection" action.

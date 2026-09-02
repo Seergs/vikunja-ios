@@ -1,6 +1,6 @@
 #if canImport(AppIntents)
 import AppIntents
-import VikunjaNavigation
+import VikuNavigation
 
 /// Opens the app's quick-add task sheet from the Control Center control
 /// (`QuickAddControl`). Deliberately separate from the app target's

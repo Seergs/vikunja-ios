@@ -1,7 +1,7 @@
 import SwiftUI
 import VikunjaCore
 import VikunjaDesignSystem
-import VikunjaNavigation
+import VikuNavigation
 
 /// Lists every saved instance connection: tap a row to make it the active
 /// one, the pencil to edit it. Deleting a connection only happens from

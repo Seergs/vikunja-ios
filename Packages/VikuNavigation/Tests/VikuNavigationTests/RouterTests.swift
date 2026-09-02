@@ -1,5 +1,5 @@
 import Testing
-@testable import VikunjaNavigation
+@testable import VikuNavigation
 
 private enum TestRoute: Hashable {
     case detail(String)

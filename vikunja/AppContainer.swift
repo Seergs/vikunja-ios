@@ -8,7 +8,7 @@ import Tasks
 import VikunjaAuth
 import VikunjaCore
 import VikunjaDesignSystem
-import VikunjaNavigation
+import VikuNavigation
 import VikunjaNetworking
 import VikunjaWidgetKit
 import WidgetKit

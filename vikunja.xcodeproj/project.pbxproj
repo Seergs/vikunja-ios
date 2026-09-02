@@ -12,7 +12,7 @@
 		3C9B0F98E67BE7DBE14B395C /* Search in Frameworks */ = {isa = PBXBuildFile; productRef = DF94C158DB50FABAA1B462AE /* Search */; };
 		638AD6AC5148FFCCE7C85848 /* VikunjaNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = E2386D937B2547F27D7735C9 /* VikunjaNetworking */; };
 		6ACFD68581C4ED4510656534 /* Tasks in Frameworks */ = {isa = PBXBuildFile; productRef = CB1292EB9627A6D204BBA18B /* Tasks */; };
-		86F840DFA96537DF891EAEB6 /* VikunjaNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = DE514324E51E7BE04FBC43F0 /* VikunjaNavigation */; };
+		86F840DFA96537DF891EAEB6 /* VikuNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = DE514324E51E7BE04FBC43F0 /* VikuNavigation */; };
 		A2C44E7EAB8501F032F94F77 /* VikunjaCore in Frameworks */ = {isa = PBXBuildFile; productRef = C7C86918EA5BF47E31F95689 /* VikunjaCore */; };
 		AF1A9958F7144C64A26AE7DE /* VikunjaAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */; };
 		B89F0AB3411531775B788526 /* vikunja-widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 092ABB4ABC46663D77A4333A /* vikunja-widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -111,7 +111,7 @@
 				AF1A9958F7144C64A26AE7DE /* VikunjaAuth in Frameworks */,
 				EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */,
 				062B1577A762434EAAEEAEAE /* Home in Frameworks */,
-				86F840DFA96537DF891EAEB6 /* VikunjaNavigation in Frameworks */,
+				86F840DFA96537DF891EAEB6 /* VikuNavigation in Frameworks */,
 				0344D01DB80D7B74123FBB44 /* Projects in Frameworks */,
 				3C9B0F98E67BE7DBE14B395C /* Search in Frameworks */,
 				FCBF1C1C7651B3306CAA0FFC /* Settings in Frameworks */,
@@ -209,7 +209,7 @@
 				1EDAB22A2783416BA9F0AC6D /* VikunjaAuth */,
 				691135973B8B496295E14896 /* Onboarding */,
 				166A7A7237924DFA8CF44351 /* Home */,
-				DE514324E51E7BE04FBC43F0 /* VikunjaNavigation */,
+				DE514324E51E7BE04FBC43F0 /* VikuNavigation */,
 				937703EA6DF786A17BC41E96 /* Projects */,
 				DF94C158DB50FABAA1B462AE /* Search */,
 				A6110B94A9B469B91738DBE3 /* Settings */,
@@ -251,7 +251,7 @@
 				06F83FC1F5114AB2B901D1D6 /* XCLocalSwiftPackageReference "Packages/VikunjaAuth" */,
 				F4ED8517F32D4805BA91B284 /* XCLocalSwiftPackageReference "Packages/Features/Onboarding" */,
 				FE450F8737274DC4914D99E8 /* XCLocalSwiftPackageReference "Packages/Features/Home" */,
-				D146E576D31867FAEE64F3E3 /* XCLocalSwiftPackageReference "Packages/VikunjaNavigation" */,
+				D146E576D31867FAEE64F3E3 /* XCLocalSwiftPackageReference "Packages/VikuNavigation" */,
 				FB9B84FD97A6B958D6347015 /* XCLocalSwiftPackageReference "Packages/Features/Projects" */,
 				630BB56C29B87B52911E4F21 /* XCLocalSwiftPackageReference "Packages/Features/Search" */,
 				CF9745CA233B841AB93A4A82 /* XCLocalSwiftPackageReference "Packages/Features/Settings" */,
@@ -644,9 +644,9 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Features/Settings;
 		};
-		D146E576D31867FAEE64F3E3 /* XCLocalSwiftPackageReference "Packages/VikunjaNavigation" */ = {
+		D146E576D31867FAEE64F3E3 /* XCLocalSwiftPackageReference "Packages/VikuNavigation" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/VikunjaNavigation;
+			relativePath = Packages/VikuNavigation;
 		};
 		F4ED8517F32D4805BA91B284 /* XCLocalSwiftPackageReference "Packages/Features/Onboarding" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -708,10 +708,10 @@
 			package = 52D3B6C5FA358E9E99B3F700 /* XCLocalSwiftPackageReference "Packages/Features/Tasks" */;
 			productName = Tasks;
 		};
-		DE514324E51E7BE04FBC43F0 /* VikunjaNavigation */ = {
+		DE514324E51E7BE04FBC43F0 /* VikuNavigation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D146E576D31867FAEE64F3E3 /* XCLocalSwiftPackageReference "Packages/VikunjaNavigation" */;
-			productName = VikunjaNavigation;
+			package = D146E576D31867FAEE64F3E3 /* XCLocalSwiftPackageReference "Packages/VikuNavigation" */;
+			productName = VikuNavigation;
 		};
 		DF94C158DB50FABAA1B462AE /* Search */ = {
 			isa = XCSwiftPackageProductDependency;

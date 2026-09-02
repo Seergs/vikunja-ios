@@ -1,7 +1,7 @@
 import SwiftUI
 import VikunjaCore
 import VikunjaDesignSystem
-import VikunjaNavigation
+import VikuNavigation
 
 /// The Today screen: every project's tasks, grouped by due date into
 /// Overdue/Today/Upcoming. Tasks without a due date never appear here — only

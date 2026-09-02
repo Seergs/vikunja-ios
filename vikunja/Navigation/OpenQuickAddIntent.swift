@@ -1,5 +1,5 @@
 import AppIntents
-import VikunjaNavigation
+import VikuNavigation
 
 /// Opens the quick-add task sheet. Backs the Siri shortcut (`VikunjaShortcuts`)
 /// and shows up in the Shortcuts app and Spotlight on its own.
