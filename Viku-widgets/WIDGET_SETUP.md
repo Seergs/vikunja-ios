@@ -1,11 +1,11 @@
 # Today widget
 
-**Status: fully wired.** The `vikunja-widgets` app-extension target exists,
-embeds `VikunjaWidgetKit`, is embedded into the `vikunja` app, and both share
-the App Group and keychain group. `xcodebuild -scheme vikunja build` produces
-`vikunja.app/PlugIns/vikunja-widgets.appex`.
+**Status: fully wired.** The `Viku-widgets` app-extension target exists,
+embeds `VikuWidgetKit`, is embedded into the `Viku` app, and both share
+the App Group and keychain group. `xcodebuild -scheme Viku build` produces
+`Viku.app/PlugIns/Viku-widgets.appex`.
 
-## Identifiers (kept in sync with `VikunjaWidgetKit/Config/VikunjaWidgetConfig.swift`)
+## Identifiers (kept in sync with `VikuWidgetKit/Config/VikuWidgetConfig.swift`)
 
 Everything is split per build configuration so a Debug ("dev") install and a
 Release install on the same device never share storage. Two project-level build
@@ -13,34 +13,34 @@ settings in `project.pbxproj` drive it (both targets inherit them):
 
 | Build setting | Debug | Release |
 |---|---|---|
-| `VIKUNJA_ID_PREFIX` | `dev.sergiosuarez.vikunja.dev` | `dev.sergiosuarez.vikunja` |
-| `VIKUNJA_URL_SCHEME` | `vikunja-dev` | `vikunja` |
+| `VIKU_ID_PREFIX` | `dev.sergiosuarez.viku.dev` | `dev.sergiosuarez.viku` |
+| `VIKU_URL_SCHEME` | `viku-dev` | `viku` |
 
-Derived from `VIKUNJA_ID_PREFIX`:
+Derived from `VIKU_ID_PREFIX`:
 
 | Thing | Debug | Release |
 |---|---|---|
-| App Group | `group.dev.sergiosuarez.vikunja.dev` | `group.dev.sergiosuarez.vikunja` |
-| Keychain group | `…vikunja.dev.shared` | `…vikunja.shared` |
-| Keychain service | `…vikunja.dev.accounts` | `…vikunja.accounts` |
-| Widget bundle id | `dev.sergiosuarez.vikunja.dev.widgets` | `dev.sergiosuarez.vikunja.widgets` |
+| App Group | `group.dev.sergiosuarez.viku.dev` | `group.dev.sergiosuarez.viku` |
+| Keychain group | `…viku.dev.shared` | `…viku.shared` |
+| Keychain service | `…viku.dev.accounts` | `…viku.accounts` |
+| Widget bundle id | `dev.sergiosuarez.viku.dev.widgets` | `dev.sergiosuarez.viku.widgets` |
 | Widget `kind` | `TodayWidget` | `TodayWidget` |
 
-The Swift side (`VikunjaWidgetConfig`) picks the prefix with `#if DEBUG`; the
-entitlements / `Info.plist` read `$(VIKUNJA_ID_PREFIX)` / `$(VIKUNJA_URL_SCHEME)`.
+The Swift side (`VikuWidgetConfig`) picks the prefix with `#if DEBUG`; the
+entitlements / `Info.plist` read `$(VIKU_ID_PREFIX)` / `$(VIKU_URL_SCHEME)`.
 Keep the two aligned: Debug ↔ `.dev`, Release ↔ prod.
 
-Entitlements: `vikunja/vikunja.entitlements` and
-`vikunja-widgets/vikunja-widgets.entitlements`. Both list, in this order:
+Entitlements: `Viku/Viku.entitlements` and
+`Viku-widgets/Viku-widgets.entitlements`. Both list, in this order:
 
 1. `$(AppIdentifierPrefix)$(CFBundleIdentifier)` — the target's own private
    group. **Must be first** so Keychain queries with no explicit group keep
    defaulting to it (otherwise the pre-widget account becomes invisible and
    `migrateToAccessGroup()` can't find it).
-2. `$(AppIdentifierPrefix)$(VIKUNJA_ID_PREFIX).shared` — the shared group
+2. `$(AppIdentifierPrefix)$(VIKU_ID_PREFIX).shared` — the shared group
    the app writes and the widget reads.
 
-Plus the App Group `group.$(VIKUNJA_ID_PREFIX)`. `CODE_SIGN_ENTITLEMENTS`
+Plus the App Group `group.$(VIKU_ID_PREFIX)`. `CODE_SIGN_ENTITLEMENTS`
 is set on both targets.
 
 `KeychainAccountStore` probes the shared group once on first use and silently
@@ -55,28 +55,28 @@ Keychain Sharing with the portal.
 `project.pbxproj` was edited with the `xcodeproj` Ruby gem (script:
 `scratchpad/add_widget_target.rb` from that session):
 
-1. `XCLocalSwiftPackageReference "Packages/VikunjaWidgetKit"`.
-2. `vikunja-widgets` target (`com.apple.product-type.app-extension`), iOS 26.2,
-   backed by a `PBXFileSystemSynchronizedRootGroup` on `vikunja-widgets/` with
+1. `XCLocalSwiftPackageReference "Packages/VikuWidgetKit"`.
+2. `Viku-widgets` target (`com.apple.product-type.app-extension`), iOS 26.2,
+   backed by a `PBXFileSystemSynchronizedRootGroup` on `Viku-widgets/` with
    membership exceptions for `Info.plist` / `*.entitlements` / `*.md` (they're
    referenced via build settings, not bundled — otherwise `ProcessInfoPlistFile`
    collides).
-3. `VikunjaWidgetKit` linked into both the widget target and the app (the app
-   needs `VikunjaWidgetConfig`).
+3. `VikuWidgetKit` linked into both the widget target and the app (the app
+   needs `VikuWidgetConfig`).
 4. "Embed Foundation Extensions" copy-files phase on the app + a target
    dependency.
 5. `CODE_SIGN_ENTITLEMENTS` on both targets.
-6. `VIKUNJA_ID_PREFIX` / `VIKUNJA_URL_SCHEME` on the two **project-level** build
-   configurations (Debug → `.dev` / `vikunja-dev`, Release → prod / `vikunja`).
+6. `VIKU_ID_PREFIX` / `VIKU_URL_SCHEME` on the two **project-level** build
+   configurations (Debug → `.dev` / `viku-dev`, Release → prod / `viku`).
 
 If you ever regenerate the project, re-run that script.
 
 ## Verify
 
 ```sh
-xcodebuild -project vikunja.xcodeproj -scheme vikunja \
+xcodebuild -project Viku.xcodeproj -scheme Viku \
   -destination 'generic/platform=iOS Simulator' build
-# → BUILD SUCCEEDED, and vikunja.app/PlugIns/vikunja-widgets.appex exists
+# → BUILD SUCCEEDED, and Viku.app/PlugIns/Viku-widgets.appex exists
 ```
 
 Run the app once (writes the account into the shared keychain group / app
@@ -89,8 +89,8 @@ refreshes ~every 30 min, on app-backgrounding, and after the toggle intent.
   `VikunjaCore` (same shape as `ToastPresenting`), implemented in the app with
   `WidgetCenter`, injected into `TodayViewModel` / `TaskDetailViewModel` /
   `QuickAddTaskViewModel` / `ProjectOverviewViewModel`.
-- `vikunja://task/<id>` deep links into `TaskDetailView` (the URL scheme is
-  registered — `$(VIKUNJA_URL_SCHEME)`; add the `task` host to
+- `viku://task/<id>` deep links into `TaskDetailView` (the URL scheme is
+  registered — `$(VIKU_URL_SCHEME)`; add the `task` host to
   `DeepLink(url:)` and handle it in `RootView`/`MainTabView`).
 - `.accessoryRectangular` / `.accessoryCircular` lock-screen widgets.
 - `AppIntentConfiguration` for a filter (All / Overdue / Today) and, with
