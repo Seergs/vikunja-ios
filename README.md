@@ -1,10 +1,10 @@
-# Vikunja iOS Client
+# Viku
 
 **This is not an official Vikunja Client app**
 
 ## Description
 
-This is a native iOS client for Vikunja with beautiful design and great user experience.
+Viku is a native iOS client for Vikunja with beautiful design and great user experience.
 
 ## How to Use
 

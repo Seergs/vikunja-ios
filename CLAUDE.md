@@ -19,15 +19,15 @@ simulator boot required):
 ```sh
 cd Packages/VikunjaCore && swift build && swift test
 cd Packages/VikunjaNetworking && swift build && swift test
-cd Packages/VikunjaAuth && swift build && swift test
-cd Packages/VikunjaNavigation && swift build && swift test
-cd Packages/VikunjaDesignSystem && swift build && swift test
+cd Packages/VikuAuth && swift build && swift test
+cd Packages/VikuNavigation && swift build && swift test
+cd Packages/VikuDesignSystem && swift build && swift test
 cd Packages/Features/Onboarding && swift build && swift test
 cd Packages/Features/Home && swift build && swift test
 cd Packages/Features/Projects && swift build && swift test
 cd Packages/Features/Tasks && swift build && swift test
 cd Packages/Features/Settings && swift build && swift test
-cd Packages/VikunjaWidgetKit && swift build && swift test
+cd Packages/VikuWidgetKit && swift build && swift test
 ```
 
 Run a single test (packages use swift-testing, not XCTest):
@@ -40,13 +40,13 @@ swift test --filter <SuiteName>/<testName>
 Build the full app target (compiles both local packages and links them in):
 
 ```sh
-xcodebuild -project vikunja.xcodeproj -scheme vikunja -destination 'generic/platform=iOS Simulator' build
+xcodebuild -project Viku.xcodeproj -scheme Viku -destination 'generic/platform=iOS Simulator' build
 ```
 
 List targets/schemes:
 
 ```sh
-xcodebuild -list -project vikunja.xcodeproj
+xcodebuild -list -project Viku.xcodeproj
 ```
 
 ## Architecture
@@ -56,7 +56,7 @@ own "Next steps") lives in `ARCHITECTURE.md`. This section is the current,
 code-derived summary.
 
 MVVM with protocol-oriented layering, split across local Swift Packages under
-`Packages/` and linked into the `vikunja` Xcode app target as local package
+`Packages/` and linked into the `Viku` Xcode app target as local package
 dependencies (added via `XCLocalSwiftPackageReference` in `project.pbxproj`, the
 same thing Xcode's "Add Local Package" does). The dependency direction is enforced
 by the compiler, not just convention:
@@ -176,7 +176,7 @@ by the compiler, not just convention:
     screen call — see `InstanceClientFactoryProtocol` — from a `baseURL` plus
     a `tokenProvider` closure; there's no long-lived per-account client.
 
-- **`VikunjaAuth`** — multi-account/instance storage. Depends on `VikunjaCore`.
+- **`VikuAuth`** — multi-account/instance storage. Depends on `VikunjaCore`.
   - `KeychainAccountStore` — implements `AccountStoreProtocol`: the account list,
     each account's bearer token (keyed by account id, in its own Keychain item so
     removing one account never touches another's secret), and the active-account
@@ -186,7 +186,7 @@ by the compiler, not just convention:
   - `Keychain` — internal `Security`-framework wrapper (generic password items);
     not part of the module's public API.
 
-- **`VikunjaNavigation`** — pure SwiftUI/Observation, no networking, no
+- **`VikuNavigation`** — pure SwiftUI/Observation, no networking, no
   dependencies. The shared navigation primitive every Feature's `Navigation/`
   folder builds on.
   - `Router<Route: Hashable>` — `@Observable`, `@MainActor`. Wraps a
@@ -194,12 +194,12 @@ by the compiler, not just convention:
     instantiates its own `Router<FeatureRoute>` typed to a private route enum,
     so navigation state stays local to that feature.
 
-- **`VikunjaDesignSystem`** — pure SwiftUI, depends only on `VikunjaCore` (for
+- **`VikuDesignSystem`** — pure SwiftUI, depends only on `VikunjaCore` (for
   `ToastStyle`/`ToastPresenting` — see `ToastCenter` below; every other token
   is dependency-free). The shared design tokens and views every Feature should
   build on (colors, typography, spacing; more token categories and shared
   views land here over time).
-  - `VikunjaColor` — `brandPrimary`; `VikunjaColor.Priority` (`urgent`/`high`/
+  - `VikuColor` — `brandPrimary`; `VikuColor.Priority` (`urgent`/`high`/
     `medium`/`low`); `Surface` (`card`/`field`/`page` grouped-content
     backgrounds, backed by adaptive iOS system colors — see
     `Color+Platform.swift`); `textSecondary`/`textTertiary` (a darker, more
@@ -209,13 +209,13 @@ by the compiler, not just convention:
     picking a color for a label or project the user is creating). Values that
     originate as `oklch(...)` in the design source are pre-converted to sRGB
     hex once (via a private `Color(hex:)` initializer) rather than converted at
-    runtime. `Color(vikunjaHex:)` (public) parses an API `hex_color` string
+    runtime. `Color(vikuHex:)` (public) parses an API `hex_color` string
     off a `Project`/`Label`, returning `nil` for unset/malformed so callers
     fall back to a token.
-  - `VikunjaFont` — wraps the system Dynamic Type text styles under our own
+  - `VikuFont` — wraps the system Dynamic Type text styles under our own
     names, so a future custom typeface or weight change happens in one place.
-  - `VikunjaSpacing` — spacing scale on a 4pt grid (`xxs` through `xxl`).
-  - `VikunjaRadius` — corner-radius scale (`sm`/`md`/`lg`) for fields, cards,
+  - `VikuSpacing` — spacing scale on a 4pt grid (`xxs` through `xxl`).
+  - `VikuRadius` — corner-radius scale (`sm`/`md`/`lg`) for fields, cards,
     buttons, sheet corners.
   - `DueDateFormatter` (`Date/`) — `compact(_:relativeTo:)`, the shared
     one-token due-date phrasing (`Today`/`Tomorrow`/`Yesterday` →
@@ -245,7 +245,7 @@ by the compiler, not just convention:
     rendering, attached once via `View.toastHost(_:)`. The split exists so a
     ViewModel can depend on the plain `ToastPresenting` protocol (constructor
     injection, like a repository) without ever importing
-    `VikunjaDesignSystem` or SwiftUI — the same relationship
+    `VikuDesignSystem` or SwiftUI — the same relationship
     `VikunjaNetworking` has to `VikunjaCore`, just for a UI-facing protocol
     instead of a data one. `AppContainer` owns the single `ToastCenter`
     instance (`container.toastCenter`); `RootView` attaches
@@ -262,14 +262,14 @@ by the compiler, not just convention:
     `.light`/`.medium`/`.heavy`/`.soft`/`.rigid` impacts) and the
     `HapticFeedbackPresenting` protocol (`play(_:)` + an optional
     `prepare(_:)` warm-up), plus `NoopHapticFeedback` for previews/tests.
-    `VikunjaDesignSystem`'s `HapticFeedbackCenter` implements it over UIKit's
+    `VikuDesignSystem`'s `HapticFeedbackCenter` implements it over UIKit's
     feedback generators (kept alive between calls so `prepare` actually helps;
     inert no-op where UIKit is unavailable). `AppContainer` owns the single
     instance (`container.hapticCenter`). Wired in so far: completing a task
     (not un-completing it) plays `.success` from every `toggleDone` —
     `TodayViewModel`, `ProjectOverviewViewModel`, `SearchViewModel`,
     `TaskDetailViewModel` — and switching the active tab plays `.selection`
-    (`MainTabView`, via `.vikunjaHaptic(_:trigger:)` on the `TabView`).
+    (`MainTabView`, via `.vikuHaptic(_:trigger:)` on the `TabView`).
     **Two ways to fire one:**
     - From a ViewModel's own logic (an optimistic toggle rolled back, a
       create succeeded): take `hapticPresenter: HapticFeedbackPresenting` via
@@ -277,19 +277,19 @@ by the compiler, not just convention:
       needn't pass it), pass `container.hapticCenter` from the relevant
       `make...ViewModel` factory (exactly like `toastPresenter:`), call
       `hapticPresenter.play(.success)`.
-    - From a pure SwiftUI view reacting to state: `View.vikunjaHaptic(_:trigger:)`
+    - From a pure SwiftUI view reacting to state: `View.vikuHaptic(_:trigger:)`
       (or the `condition:` overload), a thin wrapper over `.sensoryFeedback`
       that reuses `HapticStyle` — no injection needed.
 
 - **`Features/Onboarding`** — the "connect to your instance" screen. Depends on
-  `VikunjaCore` + `VikunjaDesignSystem`.
+  `VikunjaCore` + `VikuDesignSystem`.
   - `ViewModels/InstanceSetupViewModel.swift` — `@Observable`, `@MainActor`.
     Normalizes the typed URL via `InstanceURL`, probes it via
     `InstanceClientFactoryProtocol.makeCapabilityProvider(baseURL:).serverInfo()`
     (confirms it's a real Vikunja instance; the API token itself isn't validated
     against the server yet), then persists via `AccountStoreProtocol`. Takes both
     protocols by constructor injection — no concrete `VikunjaNetworking`/
-    `VikunjaAuth` types.
+    `VikuAuth` types.
   - `Models/InstanceSetupValidationState.swift` — view-specific state
     (`idle`/`validating`/`success`/`failure(message)`), not a domain model.
   - `Views/InstanceSetupView.swift` — the onboarding form; reports the saved
@@ -297,10 +297,10 @@ by the compiler, not just convention:
     happens next.
 
 - **`Features/Home`, `Features/Projects`, `Features/Search`, `Features/Settings`**
-  — one per main tab. `Search` still depends only on `VikunjaNavigation`
+  — one per main tab. `Search` still depends only on `VikuNavigation`
   (bare placeholder — takes no domain types); `Home`, `Projects`, and
-  `Settings` all depend on `VikunjaCore` + `VikunjaNavigation` +
-  `VikunjaDesignSystem`, with real content behind each. Each follows the same
+  `Settings` all depend on `VikunjaCore` + `VikuNavigation` +
+  `VikuDesignSystem`, with real content behind each. Each follows the same
   shape: `Views/<Name>View.swift`, `Views/<Name>RootView.swift` (public entry
   point — owns a `NavigationStack` bound to its own `Router<FeatureRoute>`),
   and `Navigation/<Name>Route.swift` (an empty route enum until the feature has
@@ -349,7 +349,7 @@ by the compiler, not just convention:
     `confirmationDialog` (`deleteLabel` — optimistic removal with rollback),
     and create / rename+recolor through `LabelEditorSheet` — a compact
     `.sheet` (not a route) in `.create`/`.edit(Label)` mode
-    (`LabelEditorMode`) with a title field and preset `VikunjaColor.SwatchPalette`
+    (`LabelEditorMode`) with a title field and preset `VikuColor.SwatchPalette`
     swatches only, no free-form picker. `createLabel`/`updateLabel` surface a
     toast; `updateLabel` is optimistic with rollback. This is label
     management only — nothing here attaches a label to a task (that's
@@ -390,7 +390,7 @@ by the compiler, not just convention:
   (`TaskDetailView`/`TaskDetailViewModel`), the quick-add task flow
   (`QuickAddSheetView`/`QuickAddTaskViewModel`), and the duplicate-task sheet
   (`DuplicateTaskSheetView`/`DuplicateTaskViewModel`). Depends on `VikunjaCore` +
-  `VikunjaDesignSystem` only — no `VikunjaNavigation` of its own, since none of
+  `VikuDesignSystem` only — no `VikuNavigation` of its own, since none of
   these views own push navigation: `TaskDetailView` is always pushed as a leaf
   screen onto whichever feature's stack opened it (`Home` or `Projects`, today),
   and both sheets are `.sheet`s (quick-add from whoever owns the FAB —
@@ -503,11 +503,11 @@ by the compiler, not just convention:
     down the same `.navigationDestination(item:)` a tapped relation row uses
     (`relatedTaskDestination`). Success plays a `.success` haptic + toast.
 
-Features should only ever import `VikunjaCore`/`VikunjaNavigation`/
-`VikunjaDesignSystem` and depend on `VikunjaCore`'s protocols — never import
-`VikunjaNetworking` or `VikunjaAuth` directly. The `AppContainer` composition
-root (`vikunja/AppContainer.swift`) is the only place expected to know about
-concrete `VikunjaNetworking`/`VikunjaAuth` types and wire them into the
+Features should only ever import `VikunjaCore`/`VikuNavigation`/
+`VikuDesignSystem` and depend on `VikunjaCore`'s protocols — never import
+`VikunjaNetworking` or `VikuAuth` directly. The `AppContainer` composition
+root (`Viku/AppContainer.swift`) is the only place expected to know about
+concrete `VikunjaNetworking`/`VikuAuth` types and wire them into the
 protocol-typed dependencies Features receive. It exposes one `make…ViewModel`
 factory per screen; a screen scoped to one instance takes `account:` and each
 factory builds its repositories through `InstanceClientFactoryProtocol` with a
@@ -520,21 +520,21 @@ Every factory passes the single `container.toastCenter` wherever a
 `ToastPresenting` is needed. This is what keeps a Vikunja API change contained
 to `VikunjaNetworking` instead of rippling into UI code.
 
-- **`VikunjaWidgetKit`** — the Today home-screen widget. Not a `Feature`: it's
+- **`VikuWidgetKit`** — the Today home-screen widget. Not a `Feature`: it's
   the widget extension's own composition root, so it's the one other module
-  besides `AppContainer` allowed to import `VikunjaNetworking`/`VikunjaAuth`.
-  Depends on `VikunjaCore` + `VikunjaNetworking` + `VikunjaAuth` +
-  `VikunjaDesignSystem`.
-  - `Config/VikunjaWidgetConfig` — the identifiers the app target and the
+  besides `AppContainer` allowed to import `VikunjaNetworking`/`VikuAuth`.
+  Depends on `VikunjaCore` + `VikunjaNetworking` + `VikuAuth` +
+  `VikuDesignSystem`.
+  - `Config/VikuWidgetConfig` — the identifiers the app target and the
     extension must agree on (App Group, `keychain-access-group`,
     `KeychainAccountStore` service, widget `kind`, URL scheme, refresh
     interval). Mirrored in the two targets' entitlements. The App Group,
     keychain group, keychain service, and URL scheme are all derived from
     `bundleIDPrefix`, which is split per build configuration (`#if DEBUG` →
-    `…vikunja.dev`, else `…vikunja`) so a Debug ("dev") and a Release install
-    on the same device never share storage or claim the same `vikunja://`
+    `…viku.dev`, else `…viku`) so a Debug ("dev") and a Release install
+    on the same device never share storage or claim the same `viku://`
     scheme. The entitlements / `Info.plist` get the matching value from the
-    project-level `VIKUNJA_ID_PREFIX` / `VIKUNJA_URL_SCHEME` build settings via
+    project-level `VIKU_ID_PREFIX` / `VIKU_URL_SCHEME` build settings via
     `$(…)` expansion — keep those aligned with the `#if DEBUG` branch.
   - `Data/TodaySnapshotLoader` — one refresh: resolve the active account +
     token, fetch every project's tasks concurrently (dropping a project whose
@@ -547,26 +547,26 @@ to `VikunjaNetworking` instead of rippling into UI code.
     when the widget process can't read the shared keychain (the iOS Simulator,
     an un-provisioned build) it renders that cache instead of
     `.notConnected`. Takes `VikunjaCore` protocols for testing;
-    `VikunjaWidgetEnvironment` wires the concrete types.
+    `VikuWidgetEnvironment` wires the concrete types.
   - `Data/TodaySnapshotCache` — best-effort JSON in the App Group container;
     every op degrades to `nil`/no-op.
   - `Model/TodayWidgetContent` — flat, `Codable`, capped at
-    `VikunjaWidgetConfig.taskLimit`; deliberately not `VikunjaTask`.
+    `VikuWidgetConfig.taskLimit`; deliberately not `VikunjaTask`.
   - `WidgetKit/` (guarded `#if canImport(WidgetKit)`) — `TodayTimelineProvider`
     (`.after(30 min)` reload policy), `TodayWidget` (`StaticConfiguration`,
     small/medium/large), `TodayWidgetView` (design-system tokens only),
     `ToggleTaskDoneIntent` (`AppIntent` — complete a task from the widget).
   - The `@main WidgetBundle`, Info.plist and entitlements live in
-    `vikunja-widgets/` (a `PBXFileSystemSynchronizedRootGroup`, like `vikunja/`).
-    The `vikunja-widgets` app-extension target embeds `VikunjaWidgetKit`, is
-    embedded into the `vikunja` app, and shares its App Group + keychain group
-    (`vikunja/vikunja.entitlements` ↔ `vikunja-widgets/vikunja-widgets.entitlements`).
+    `Viku-widgets/` (a `PBXFileSystemSynchronizedRootGroup`, like `Viku/`).
+    The `Viku-widgets` app-extension target embeds `VikuWidgetKit`, is
+    embedded into the `Viku` app, and shares its App Group + keychain group
+    (`Viku/Viku.entitlements` ↔ `Viku-widgets/Viku-widgets.entitlements`).
     `AppContainer` builds its `KeychainAccountStore` with
-    `accessGroup: VikunjaWidgetConfig.keychainAccessGroup` and runs
+    `accessGroup: VikuWidgetConfig.keychainAccessGroup` and runs
     `migrateToAccessGroup()` from `RootView`'s `.task` (via
     `AppContainer.bootstrap()`). The app nudges the widget via
     `WidgetCenter.shared.reloadAllTimelines()` on `scenePhase == .background`
-    (`vikunjaApp.swift`). Background/history: `vikunja-widgets/WIDGET_SETUP.md`.
+    (`VikuApp.swift`). Background/history: `Viku-widgets/WIDGET_SETUP.md`.
 
 `VikunjaCore.TodayDigest`/`TaskDueBucket` is the shared due-date bucketing rule
 — `Features/Home`'s `TodaySection.sections` and the widget both build on it, so
@@ -579,11 +579,11 @@ in a shared `keychain-access-group` so the widget process can read them;
 app's private group (safe to call every launch). Passing `accessGroup: nil`
 keeps the single-process behavior. That shared group (and the App Group and
 `service`) is per-build-config — Debug and Release use disjoint
-`…vikunja.dev.*` / `…vikunja.*` identifiers, so dev and prod installs on one
+`…viku.dev.*` / `…viku.*` identifiers, so dev and prod installs on one
 device don't see each other's accounts. No migration between the two: switching
 config starts from an empty account list.
 
-**Top-level navigation** (`vikunja/RootView.swift`, `vikunja/Navigation/`): `RootView`
+**Top-level navigation** (`Viku/RootView.swift`, `Viku/Navigation/`): `RootView`
 switches between `InstanceSetupView` (no saved account yet) and `MainTabView`
 (the active account, once one exists). It re-reads the active account from
 `AccountStoreProtocol` on launch and again whenever `Settings`' connection
@@ -630,23 +630,23 @@ hits `GET /api/v1/info` once per session, caches the result, and exposes
 `supports(_:)`. Code should branch on capabilities rather than hardcoding server
 version comparisons.
 
-`vikunja/` is the composition root: `vikunjaApp.swift` builds the `AppContainer`,
+`Viku/` is the composition root: `VikuApp.swift` builds the `AppContainer`,
 `RootView.swift` switches between onboarding and the main tab bar, and
 `Navigation/` holds `AppTab` and `MainTabView` (see above).
 
 ## Rules for new code
 
-These are binding for anything added under `Features/`, `VikunjaAuth`, or
+These are binding for anything added under `Features/`, `VikuAuth`, or
 `AppContainer` — not just aspirational. See `ARCHITECTURE.md` for the "why"
 behind each one.
 
 - **Never import `VikunjaNetworking` from a Feature.** Features depend only on
   `VikunjaCore` protocols and models. Only the composition root (`AppContainer`)
-  is allowed to know about concrete `VikunjaNetworking`/`VikunjaAuth` types and
+  is allowed to know about concrete `VikunjaNetworking`/`VikuAuth` types and
   wire them in.
-- **Views use `VikunjaDesignSystem` tokens, not hardcoded values.** Colors go
-  through `VikunjaColor`, fonts through `VikunjaFont`, spacing through
-  `VikunjaSpacing`, corner radii through `VikunjaRadius` — no raw
+- **Views use `VikuDesignSystem` tokens, not hardcoded values.** Colors go
+  through `VikuColor`, fonts through `VikuFont`, spacing through
+  `VikuSpacing`, corner radii through `VikuRadius` — no raw
   `Color(...)`/`Font(...)` literals or magic-number padding in `Features/*`
   views. Add a new token there first if the one you need doesn't exist yet,
   rather than inlining a one-off value.
@@ -658,7 +658,7 @@ behind each one.
   knowledge.
 - **Each `Features/<Name>` module follows the same internal shape**:
   `Models/` (view-specific state only), `ViewModels/`, `Views/`, `Navigation/`
-  (a per-feature `Router<Route>` from `VikunjaNavigation`, typed to a private
+  (a per-feature `Router<Route>` from `VikuNavigation`, typed to a private
   route enum — no direct cross-feature `NavigationLink(destination:)`). The
   package's only public view is `<Name>RootView`, which owns the
   `NavigationStack`/`Router` pair; the app target never touches a feature's

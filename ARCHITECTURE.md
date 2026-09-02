@@ -22,12 +22,12 @@ Decisions locked in from the start: **SwiftUI only**, **Swift Package Manager,
 multi-module**, **no local persistence for now** (everything is re-fetched from the
 server; offline support is a later phase).
 
-**Implementation status**: `VikunjaCore`, `VikunjaNetworking`, `VikunjaAuth`,
-`VikunjaNavigation`, `VikunjaDesignSystem` (colors — brand/priority/surface/
+**Implementation status**: `VikunjaCore`, `VikunjaNetworking`, `VikuAuth`,
+`VikuNavigation`, `VikuDesignSystem` (colors — brand/priority/surface/
 semantic/swatch — plus typography, spacing, radius, and the toast system),
 `Features/Onboarding`, the `AppContainer` composition root, and the top-level
 navigation shell (onboarding → floating tab bar, one `NavigationStack` per tab)
-are built (see `Packages/` and `vikunja/`). `Features/Projects` is built end to
+are built (see `Packages/` and `Viku/`). `Features/Projects` is built end to
 end: a collapsible parent/child project tree with a per-row task-completion
 tally, project creation (title + color + parent), a project overview
 (subprojects + tasks grouped by status), task completion toggle, and task
@@ -57,9 +57,9 @@ if `Features/Tasks` tries to import `VikunjaNetworking` directly, it won't build
 
 ```
 vikunja-ios/
-├── vikunja.xcodeproj          # shell: app entry point + composition root
-├── vikunja/
-│   ├── vikunjaApp.swift       # @main, builds the AppContainer and injects it
+├── Viku.xcodeproj          # shell: app entry point + composition root
+├── Viku/
+│   ├── VikuApp.swift       # @main, builds the AppContainer and injects it
 │   ├── AppContainer.swift     # composition root: builds concrete implementations
 │   │                           # and injects them as protocols into each feature
 │   ├── RootView.swift         # onboarding vs. main tab bar
@@ -92,20 +92,20 @@ vikunja-ios/
     │       └── Repositories/      # implement VikunjaCore's protocols
     │                              # (incl. VikunjaInstanceClientFactory)
     │
-    ├── VikunjaAuth/               # multi-account/instance + Keychain
-    │   └── Sources/VikunjaAuth/
+    ├── VikuAuth/               # multi-account/instance + Keychain
+    │   └── Sources/VikuAuth/
     │       ├── KeychainAccountStore.swift   # implements Core's AccountStoreProtocol
     │       └── Keychain.swift               # internal Keychain Services wrapper
     │
-    ├── VikunjaNavigation/         # pure SwiftUI/Observation, no networking, no deps
-    │   └── Sources/VikunjaNavigation/
+    ├── VikuNavigation/         # pure SwiftUI/Observation, no networking, no deps
+    │   └── Sources/VikuNavigation/
     │       ├── Router.swift       # generic Router<Route: Hashable>, wraps NavigationPath
     │       └── DeepLink.swift     # DeepLink enum + DeepLinkRouter (external entry points — §2c)
     │
-    ├── VikunjaDesignSystem/       # color/typography/spacing/radius tokens; toast + haptics systems (growing set)
-    │   └── Sources/VikunjaDesignSystem/
+    ├── VikuDesignSystem/       # color/typography/spacing/radius tokens; toast + haptics systems (growing set)
+    │   └── Sources/VikuDesignSystem/
     │       ├── Toast/             # ToastCenter (implements Core's ToastPresenting), ToastView, toastHost(_:)
-    │       └── Haptics/           # HapticFeedbackCenter (implements Core's HapticFeedbackPresenting), View.vikunjaHaptic(_:trigger:)
+    │       └── Haptics/           # HapticFeedbackCenter (implements Core's HapticFeedbackPresenting), View.vikuHaptic(_:trigger:)
     │
     └── Features/
         ├── Onboarding/            # "connect to your instance" — built end to end
@@ -122,26 +122,26 @@ vikunja-ios/
 This is what protects the app when Vikunja's API changes:
 
 - `VikunjaCore` → depends on nothing.
-- `VikunjaNavigation` → depends on nothing (pure SwiftUI/Observation).
-- `VikunjaNetworking` and `VikunjaAuth` → depend on `VikunjaCore` (they implement
+- `VikuNavigation` → depends on nothing (pure SwiftUI/Observation).
+- `VikunjaNetworking` and `VikuAuth` → depend on `VikunjaCore` (they implement
   its protocols), but **nothing else depends on them except the composition root**.
-- `VikunjaDesignSystem` → depends on `VikunjaCore` too, for the same reason:
+- `VikuDesignSystem` → depends on `VikunjaCore` too, for the same reason:
   `ToastCenter` implements Core's `ToastPresenting` protocol (and
   `HapticFeedbackCenter` implements `HapticFeedbackPresenting`), so a ViewModel
   can take a toast or haptic dependency via constructor injection without
-  importing `VikunjaDesignSystem` or SwiftUI. Every other token in the package
+  importing `VikuDesignSystem` or SwiftUI. Every other token in the package
   stays dependency-free.
-- `Features/*` → depend on `VikunjaCore` (protocols + models), `VikunjaNavigation`,
-  and `VikunjaDesignSystem` as each needs — every feature with real content
+- `Features/*` → depend on `VikunjaCore` (protocols + models), `VikuNavigation`,
+  and `VikuDesignSystem` as each needs — every feature with real content
   (`Onboarding`, `Home`, `Projects`, `Settings`, `Tasks`) pulls `VikunjaCore` +
-  `VikunjaDesignSystem`; the still-placeholder `Search` depends only on
-  `VikunjaNavigation`. None **ever** import `VikunjaNetworking` directly.
-  Views use `VikunjaDesignSystem` tokens (`VikunjaColor`, `VikunjaFont`,
-  `VikunjaSpacing`, `VikunjaRadius`) instead of hardcoding colors, fonts,
+  `VikuDesignSystem`; the still-placeholder `Search` depends only on
+  `VikuNavigation`. None **ever** import `VikunjaNetworking` directly.
+  Views use `VikuDesignSystem` tokens (`VikuColor`, `VikuFont`,
+  `VikuSpacing`, `VikuRadius`) instead of hardcoding colors, fonts,
   spacing, or corner radii — that's what keeps the app visually consistent as
-  `VikunjaDesignSystem` grows.
+  `VikuDesignSystem` grows.
 - The app / composition root → the only place that knows both `VikunjaCore`'s
-  protocols and `VikunjaNetworking`/`VikunjaAuth`'s concrete implementations, and
+  protocols and `VikunjaNetworking`/`VikuAuth`'s concrete implementations, and
   wires them together. It's also the only place that knows about every Feature's
   root view at once (to build the tab bar) — Features never reference each other.
 
@@ -196,7 +196,7 @@ Features/Tasks/Sources/Tasks/
 
 - **View**: pure SwiftUI, only reads state from the ViewModel and sends it
   intents. Zero business logic, zero networking knowledge.
-- **Navigation**: `VikunjaNavigation.Router<Route>` — a generic
+- **Navigation**: `VikuNavigation.Router<Route>` — a generic
   `@Observable`/`@MainActor` wrapper around `NavigationPath`
   (`push`/`pop`/`popToRoot`) — typed to a private `Route` enum per feature. The
   feature's only public view, `<Name>RootView`, owns one `@State` `Router`
@@ -227,7 +227,7 @@ itself for a tapped relation — intra-feature, onto the host stack, so still no
 
 ## 2b. Top-level navigation: onboarding → floating tab bar
 
-`vikunja/RootView.swift` is the only place that switches between the two
+`Viku/RootView.swift` is the only place that switches between the two
 top-level app states: no saved account (`InstanceSetupView`, from
 `Features/Onboarding`) and an active account (`MainTabView`). It holds this as
 plain `@State private var connectedAccount: InstanceAccount?` — two states don't
@@ -243,7 +243,7 @@ were constructed against the old account's `baseURL` and don't observe
 changes to it. Deleting the last saved account surfaces here too: the re-read
 comes back `nil` and `RootView` falls back to onboarding.
 
-`MainTabView` (`vikunja/Navigation/MainTabView.swift`) is the floating, Liquid
+`MainTabView` (`Viku/Navigation/MainTabView.swift`) is the floating, Liquid
 Glass bottom tab bar — the default rendering for `TabView` built with the modern
 `Tab(value:)` API on iOS 26+, no extra styling code required. One `Tab` per
 `AppTab` case, each hosting a different Feature's `<Name>RootView`, so every tab
@@ -333,12 +333,12 @@ sheet: the Today widget's "add" button, a Lock Screen accessory widget, a Siri
 phrase / the Shortcuts app, and a Control Center control. Rather than each one
 knowing how to drive navigation, they all converge on one small primitive.
 
-**`DeepLink` + `DeepLinkRouter` (`VikunjaNavigation`).** `DeepLink` is a
+**`DeepLink` + `DeepLinkRouter` (`VikuNavigation`).** `DeepLink` is a
 dependency-free enum of external destinations (`.quickAdd(projectID:)` today).
 `DeepLinkRouter` is an `@Observable`/`@MainActor` box holding one pending
 `DeepLink` — set by whoever received the external trigger, drained by the screen
-that acts on it. It lives in `VikunjaNavigation` (next to `Router<Route>`) for
-two reasons: it's a navigation primitive, and `VikunjaWidgetKit` has to import
+that acts on it. It lives in `VikuNavigation` (next to `Router<Route>`) for
+two reasons: it's a navigation primitive, and `VikuWidgetKit` has to import
 it so a widget-side App Intent can construct a `DeepLink` without depending on
 the app target.
 
@@ -346,11 +346,11 @@ the app target.
 
 - **URL scheme.** The app registers its scheme (an `Info.plist`
   `CFBundleURLTypes` entry — the one reason the otherwise-generated Info.plist
-  is checked in — set from the `$(VIKUNJA_URL_SCHEME)` build setting, so it's
-  `vikunja` in Release and `vikunja-dev` in Debug to keep a dev and a prod
+  is checked in — set from the `$(VIKU_URL_SCHEME)` build setting, so it's
+  `viku` in Release and `viku-dev` in Debug to keep a dev and a prod
   install from clashing). `RootView`'s `.onOpenURL` parses `<scheme>://quick-add`
   into a `DeepLink` (parsing stays in the app target, since the scheme string is
-  `VikunjaWidgetKit`'s `VikunjaWidgetConfig.urlScheme`) and calls
+  `VikuWidgetKit`'s `VikuWidgetConfig.urlScheme`) and calls
   `router.open(_:)`. Both widgets reach it via `.widgetURL` — the same mechanism
   the Today widget already used for `<scheme>://today`.
 - **App Intents.** `OpenQuickAddIntent` (`openAppWhenRun = true`) calls
@@ -372,11 +372,11 @@ than `MainTabView` for the same reason the FAB state does: reading the router in
   in practice. `AppContainer` holds `DeepLinkRouter.shared`, so the intent
   (whose `perform()` runs in the app's process) and the UI observe one instance.
 - **The Siri-facing `OpenQuickAddIntent` lives in the app target; the Control
-  Center control uses a separate `QuickAddControlIntent` in `VikunjaWidgetKit`.**
+  Center control uses a separate `QuickAddControlIntent` in `VikuWidgetKit`.**
   An App Intent type registered in *both* the app and the widget extension (via
   a shared framework) breaks Siri's App Shortcut dispatch — Siri matches the
   phrase, then can't launch the app. So the intent behind the
-  `AppShortcutsProvider` (`VikunjaShortcuts`, which has to be in the app target
+  `AppShortcutsProvider` (`VikuShortcuts`, which has to be in the app target
   anyway) stays app-only, and the control gets its own hidden
   (`isDiscoverable = false`) intent. Both do the same one line against
   `DeepLinkRouter.shared`.
@@ -496,7 +496,7 @@ public protocol CapabilityProvider {
 
 Each user can have 1+ configured instances (their own self-hosted one, a work
 instance, the public Vikunja instance, etc). `InstanceAccount` and
-`AccountStoreProtocol` live in `VikunjaCore` — not `VikunjaAuth` as originally
+`AccountStoreProtocol` live in `VikunjaCore` — not `VikuAuth` as originally
 sketched here — because `AccountStoreProtocol` needs to reference
 `InstanceAccount` in its signature, and `VikunjaCore` depends on nothing:
 
@@ -514,7 +514,7 @@ public struct InstanceAccount: Identifiable, Codable {
   not the password/JWT flow) — no `authMethod` field on `InstanceAccount` until a
   second auth method actually needs one.
 - `AccountStoreProtocol` (`VikunjaCore`) is implemented by `KeychainAccountStore`
-  in `VikunjaAuth`: it stores the account list, each account's bearer token
+  in `VikuAuth`: it stores the account list, each account's bearer token
   (keyed by account id, so removing one account never touches another's secret),
   and which account is active — all in the Keychain, never `UserDefaults`. The
   protocol is full CRUD, not just add-on-connect: `fetchAccounts`,
@@ -591,7 +591,7 @@ the same `VikunjaCore` protocols), and reinforces the central idea: anything
 - `VikunjaNetworking` is tested with **real JSON fixtures** captured from Vikunja
   instances on different versions (contract tests) — this is what gives an early
   warning if a new server version broke a DTO.
-- `VikunjaNavigation`'s `Router` is tested directly (push/pop/popToRoot against a
+- `VikuNavigation`'s `Router` is tested directly (push/pop/popToRoot against a
   private test route enum), independent of any Feature that uses it.
 - `Features/*` test their ViewModels against fake implementations of `Core`'s
   protocols (no need to spin up networking or mock HTTP).
