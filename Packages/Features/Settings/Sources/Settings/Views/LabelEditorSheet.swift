@@ -4,8 +4,10 @@ import VikunjaDesignSystem
 
 /// The compact "new label" / "edit label" sheet: a title field and a row of
 /// preset color swatches from `VikunjaColor.SwatchPalette` — no free-form
-/// color picker, matching how projects choose their color. A plain bottom
-/// sheet with no `NavigationStack`, following `Projects`' `CreateProjectSheetView`.
+/// color picker, matching how projects choose their color. Same shape as
+/// `Projects`' `CreateProjectSheetView`: a `NavigationStack` carrying an
+/// inline title and `Cancel`/`Save` in the toolbar, on a single detent sized
+/// to its content so the keyboard doesn't stretch it.
 struct LabelEditorSheet: View {
     let mode: LabelEditorMode
     /// Passed the trimmed title and the picked hex; the caller performs the
@@ -36,42 +38,36 @@ struct LabelEditorSheet: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
-            header
-            nameField
-            colorSection
-        }
-        .padding(.horizontal, VikunjaSpacing.md)
-        .padding(.top, VikunjaSpacing.sm)
-        .padding(.bottom, VikunjaSpacing.lg)
-        .presentationDetents([.height(260)])
-        .presentationDragIndicator(.visible)
-        .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
-        .task { isTitleFocused = true }
-    }
-
-    private var header: some View {
-        ZStack {
-            Text(mode.isEdit ? "Edit Label" : "New Label")
-                .font(VikunjaFont.subheadline)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.primary)
-
-            HStack {
-                Button("Cancel") { dismiss() }
-                    .foregroundStyle(VikunjaColor.textSecondary)
-
-                Spacer()
-
-                if isSaving {
-                    ProgressView()
-                } else {
-                    Button("Save", action: save)
-                        .fontWeight(.bold)
-                        .disabled(!canSave)
+        NavigationStack {
+            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+                nameField
+                colorSection
+            }
+            .padding(.horizontal, VikunjaSpacing.md)
+            .padding(.top, VikunjaSpacing.md)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .navigationTitle(mode.isEdit ? "Edit Label" : "New Label")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Button("Save", action: save)
+                            .fontWeight(.bold)
+                            .disabled(!canSave)
+                    }
                 }
             }
         }
+        .presentationDetents([.height(Self.detentHeight)])
+        .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
+        .task { isTitleFocused = true }
     }
 
     private var nameField: some View {
@@ -128,6 +124,11 @@ struct LabelEditorSheet: View {
             dismiss()
         }
     }
+
+    /// Shorter than `CreateProjectSheetView`'s 300: this sheet has one fewer
+    /// row (no parent-project field), so 300 left a dead gap between the color
+    /// swatches and the keyboard.
+    private static let detentHeight: CGFloat = 236
 }
 
 private extension LabelEditorMode {
