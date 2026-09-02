@@ -6,7 +6,7 @@ import VikunjaCore
 @MainActor
 struct ConnectionFormViewModelTests {
     private func makeAccount(displayName: String = "Home", url: String = "https://tasks.example.com") -> InstanceAccount {
-        InstanceAccount(displayName: displayName, baseURL: URL(string: url)!)
+        InstanceAccount(displayName: displayName, baseURL: URL(string: url) ?? URL(filePath: "/"))
     }
 
     private func makeViewModel(
@@ -43,7 +43,12 @@ struct ConnectionFormViewModelTests {
         let store = FakeAccountStore()
         var notifiedCount = 0
         let toastPresenter = FakeToastPresenter()
-        let viewModel = makeViewModel(mode: .create, store: store, toastPresenter: toastPresenter, onActiveAccountChanged: { notifiedCount += 1 })
+        let viewModel = makeViewModel(
+            mode: .create,
+            store: store,
+            toastPresenter: toastPresenter,
+            onActiveAccountChanged: { notifiedCount += 1 },
+        )
         viewModel.displayName = "Home"
         viewModel.urlText = "tasks.example.com"
         viewModel.apiToken = "secret"
@@ -69,7 +74,9 @@ struct ConnectionFormViewModelTests {
 
         await viewModel.save()
 
-        #expect(viewModel.validationState == .failure("Couldn't reach that server. Check the address and your connection."))
+        #expect(
+            viewModel.validationState == .failure("Couldn't reach that server. Check the address and your connection."),
+        )
         #expect(viewModel.savedAccount == nil)
     }
 

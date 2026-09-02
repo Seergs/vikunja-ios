@@ -14,7 +14,11 @@ struct ConnectionsListViewModelTests {
         toastPresenter: FakeToastPresenter = FakeToastPresenter(),
         onActiveAccountChanged: @escaping () -> Void = {},
     ) -> ConnectionsListViewModel {
-        ConnectionsListViewModel(accountStore: store, toastPresenter: toastPresenter, onActiveAccountChanged: onActiveAccountChanged)
+        ConnectionsListViewModel(
+            accountStore: store,
+            toastPresenter: toastPresenter,
+            onActiveAccountChanged: onActiveAccountChanged,
+        )
     }
 
     @Test
