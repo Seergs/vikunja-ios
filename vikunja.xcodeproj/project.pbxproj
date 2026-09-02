@@ -15,7 +15,7 @@
 		86F840DFA96537DF891EAEB6 /* VikuNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = DE514324E51E7BE04FBC43F0 /* VikuNavigation */; };
 		A2C44E7EAB8501F032F94F77 /* VikunjaCore in Frameworks */ = {isa = PBXBuildFile; productRef = C7C86918EA5BF47E31F95689 /* VikunjaCore */; };
 		AF1A9958F7144C64A26AE7DE /* VikuAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1EDAB22A2783416BA9F0AC6D /* VikuAuth */; };
-		B89F0AB3411531775B788526 /* vikunja-widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 092ABB4ABC46663D77A4333A /* vikunja-widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B89F0AB3411531775B788526 /* Viku-widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 092ABB4ABC46663D77A4333A /* Viku-widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C0A0235CF7A4953CBF6775E2 /* VikuDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 887DB5E3A518911BD1897E4B /* VikuDesignSystem */; };
 		CFBB516F15E3030F653FBDC1 /* VikuWidgetKit in Frameworks */ = {isa = PBXBuildFile; productRef = E436BCA8C1BEFFBB4869643D /* VikuWidgetKit */; };
 		EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 691135973B8B496295E14896 /* Onboarding */; };
@@ -30,7 +30,7 @@
 			containerPortal = EC3BB45E303D1EF6002753FC /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 9F1A298945A4417C5C239F1C;
-			remoteInfo = "vikunja-widgets";
+			remoteInfo = "Viku-widgets";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -41,7 +41,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				B89F0AB3411531775B788526 /* vikunja-widgets.appex in Embed Foundation Extensions */,
+				B89F0AB3411531775B788526 /* Viku-widgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,45 +49,45 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		092ABB4ABC46663D77A4333A /* vikunja-widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "vikunja-widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		092ABB4ABC46663D77A4333A /* Viku-widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Viku-widgets.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3FEBFEFA7653B73106F763DB /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		EC3BB466303D1EF6002753FC /* vikunja.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vikunja.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EC3BB466303D1EF6002753FC /* Viku.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Viku.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1D5CA3FE38DF6E41C00D7DB1 /* Exceptions for "vikunja-widgets" folder in "vikunja-widgets" target */ = {
+		1D5CA3FE38DF6E41C00D7DB1 /* Exceptions for "Viku-widgets" folder in "Viku-widgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				add_widget_target.rb,
 				Info.plist,
 				WIDGET_SETUP.md,
 			);
-			target = 9F1A298945A4417C5C239F1C /* vikunja-widgets */;
+			target = 9F1A298945A4417C5C239F1C /* Viku-widgets */;
 		};
-		1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "vikunja" folder in "vikunja" target */ = {
+		1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "Viku" folder in "Viku" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = EC3BB465303D1EF6002753FC /* vikunja */;
+			target = EC3BB465303D1EF6002753FC /* Viku */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B92C853A6FE7E809CD2F2E95 /* vikunja-widgets */ = {
+		B92C853A6FE7E809CD2F2E95 /* Viku-widgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1D5CA3FE38DF6E41C00D7DB1 /* Exceptions for "vikunja-widgets" folder in "vikunja-widgets" target */,
+				1D5CA3FE38DF6E41C00D7DB1 /* Exceptions for "Viku-widgets" folder in "Viku-widgets" target */,
 			);
-			path = "vikunja-widgets";
+			path = "Viku-widgets";
 			sourceTree = "<group>";
 		};
-		EC3BB468303D1EF6002753FC /* vikunja */ = {
+		EC3BB468303D1EF6002753FC /* Viku */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "vikunja" folder in "vikunja" target */,
+				1D5CA3FE38DF6E41C00D7DB2 /* Exceptions for "Viku" folder in "Viku" target */,
 			);
-			path = vikunja;
+			path = Viku;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -143,18 +143,18 @@
 		EC3BB45D303D1EF6002753FC = {
 			isa = PBXGroup;
 			children = (
-				EC3BB468303D1EF6002753FC /* vikunja */,
+				EC3BB468303D1EF6002753FC /* Viku */,
 				EC3BB467303D1EF6002753FC /* Products */,
 				A03D783F2F3D3EDE08C934C1 /* Frameworks */,
-				B92C853A6FE7E809CD2F2E95 /* vikunja-widgets */,
+				B92C853A6FE7E809CD2F2E95 /* Viku-widgets */,
 			);
 			sourceTree = "<group>";
 		};
 		EC3BB467303D1EF6002753FC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				EC3BB466303D1EF6002753FC /* vikunja.app */,
-				092ABB4ABC46663D77A4333A /* vikunja-widgets.appex */,
+				EC3BB466303D1EF6002753FC /* Viku.app */,
+				092ABB4ABC46663D77A4333A /* Viku-widgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -162,9 +162,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9F1A298945A4417C5C239F1C /* vikunja-widgets */ = {
+		9F1A298945A4417C5C239F1C /* Viku-widgets */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 95411CB902BFD3888D862C9F /* Build configuration list for PBXNativeTarget "vikunja-widgets" */;
+			buildConfigurationList = 95411CB902BFD3888D862C9F /* Build configuration list for PBXNativeTarget "Viku-widgets" */;
 			buildPhases = (
 				0A7EEA59A88DF82285A6F08C /* Sources */,
 				A0D09ABC714AF4C3755DA0BF /* Frameworks */,
@@ -175,19 +175,19 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				B92C853A6FE7E809CD2F2E95 /* vikunja-widgets */,
+				B92C853A6FE7E809CD2F2E95 /* Viku-widgets */,
 			);
-			name = "vikunja-widgets";
+			name = "Viku-widgets";
 			packageProductDependencies = (
 				E436BCA8C1BEFFBB4869643D /* VikuWidgetKit */,
 			);
-			productName = "vikunja-widgets";
-			productReference = 092ABB4ABC46663D77A4333A /* vikunja-widgets.appex */;
+			productName = "Viku-widgets";
+			productReference = 092ABB4ABC46663D77A4333A /* Viku-widgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		EC3BB465303D1EF6002753FC /* vikunja */ = {
+		EC3BB465303D1EF6002753FC /* Viku */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = EC3BB471303D1EF7002753FC /* Build configuration list for PBXNativeTarget "vikunja" */;
+			buildConfigurationList = EC3BB471303D1EF7002753FC /* Build configuration list for PBXNativeTarget "Viku" */;
 			buildPhases = (
 				EC3BB462303D1EF6002753FC /* Sources */,
 				EC3BB463303D1EF6002753FC /* Frameworks */,
@@ -200,9 +200,9 @@
 				B0828B72E3A08C6DCE1B59B3 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				EC3BB468303D1EF6002753FC /* vikunja */,
+				EC3BB468303D1EF6002753FC /* Viku */,
 			);
-			name = vikunja;
+			name = Viku;
 			packageProductDependencies = (
 				C7C86918EA5BF47E31F95689 /* VikunjaCore */,
 				E2386D937B2547F27D7735C9 /* VikunjaNetworking */,
@@ -217,8 +217,8 @@
 				887DB5E3A518911BD1897E4B /* VikuDesignSystem */,
 				8A10F10FDD4DC2CAF301F579 /* VikuWidgetKit */,
 			);
-			productName = vikunja;
-			productReference = EC3BB466303D1EF6002753FC /* vikunja.app */;
+			productName = Viku;
+			productReference = EC3BB466303D1EF6002753FC /* Viku.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -236,7 +236,7 @@
 					};
 				};
 			};
-			buildConfigurationList = EC3BB461303D1EF6002753FC /* Build configuration list for PBXProject "vikunja" */;
+			buildConfigurationList = EC3BB461303D1EF6002753FC /* Build configuration list for PBXProject "Viku" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -264,8 +264,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				EC3BB465303D1EF6002753FC /* vikunja */,
-				9F1A298945A4417C5C239F1C /* vikunja-widgets */,
+				EC3BB465303D1EF6002753FC /* Viku */,
+				9F1A298945A4417C5C239F1C /* Viku-widgets */,
 			);
 		};
 /* End PBXProject section */
@@ -307,8 +307,8 @@
 /* Begin PBXTargetDependency section */
 		B0828B72E3A08C6DCE1B59B3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = "vikunja-widgets";
-			target = 9F1A298945A4417C5C239F1C /* vikunja-widgets */;
+			name = "Viku-widgets";
+			target = 9F1A298945A4417C5C239F1C /* Viku-widgets */;
 			targetProxy = ADD55E76D68AF850B4557276 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -318,13 +318,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = "vikunja-widgets/vikunja-widgets.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Viku-widgets/Viku-widgets.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CM24MBKSG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "vikunja-widgets/Info.plist";
+				INFOPLIST_FILE = "Viku-widgets/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Viku;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
@@ -353,13 +353,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_ENTITLEMENTS = "vikunja-widgets/vikunja-widgets.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Viku-widgets/Viku-widgets.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CM24MBKSG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "vikunja-widgets/Info.plist";
+				INFOPLIST_FILE = "Viku-widgets/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Viku;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
@@ -514,13 +514,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Dev";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = vikunja/vikunja.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Viku/Viku.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CM24MBKSG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = vikunja/Info.plist;
+				INFOPLIST_FILE = Viku/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Viku;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -549,13 +549,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = vikunja/vikunja.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Viku/Viku.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5CM24MBKSG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = vikunja/Info.plist;
+				INFOPLIST_FILE = Viku/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Viku;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -582,7 +582,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		95411CB902BFD3888D862C9F /* Build configuration list for PBXNativeTarget "vikunja-widgets" */ = {
+		95411CB902BFD3888D862C9F /* Build configuration list for PBXNativeTarget "Viku-widgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				243F271EDA1347E4E230F01A /* Release */,
@@ -591,7 +591,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EC3BB461303D1EF6002753FC /* Build configuration list for PBXProject "vikunja" */ = {
+		EC3BB461303D1EF6002753FC /* Build configuration list for PBXProject "Viku" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EC3BB46F303D1EF7002753FC /* Debug */,
@@ -600,7 +600,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EC3BB471303D1EF7002753FC /* Build configuration list for PBXNativeTarget "vikunja" */ = {
+		EC3BB471303D1EF7002753FC /* Build configuration list for PBXNativeTarget "Viku" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EC3BB472303D1EF7002753FC /* Debug */,
