@@ -386,14 +386,15 @@ by the compiler, not just convention:
     way networking is. `Home` reuses this exact same closure pattern for its
     own push into `TaskDetailView`.
 
-- **`Features/Tasks`** — two things: a single task's detail screen
-  (`TaskDetailView`/`TaskDetailViewModel`) and the quick-add task flow
-  (`QuickAddSheetView`/`QuickAddTaskViewModel`). Depends on `VikunjaCore` +
-  `VikunjaDesignSystem` only — no `VikunjaNavigation` of its own, since neither
-  view owns push navigation: `TaskDetailView` is always pushed as a leaf screen
-  onto whichever feature's stack opened it (`Home` or `Projects`, today), and
-  `QuickAddSheetView` is a `.sheet` presented by whoever owns the FAB
-  (`MainTabView`).
+- **`Features/Tasks`** — a single task's detail screen
+  (`TaskDetailView`/`TaskDetailViewModel`), the quick-add task flow
+  (`QuickAddSheetView`/`QuickAddTaskViewModel`), and the duplicate-task sheet
+  (`DuplicateTaskSheetView`/`DuplicateTaskViewModel`). Depends on `VikunjaCore` +
+  `VikunjaDesignSystem` only — no `VikunjaNavigation` of its own, since none of
+  these views own push navigation: `TaskDetailView` is always pushed as a leaf
+  screen onto whichever feature's stack opened it (`Home` or `Projects`, today),
+  and both sheets are `.sheet`s (quick-add from whoever owns the FAB —
+  `MainTabView`; duplicate from `TaskDetailView`'s own menu).
   - **Detail screen**: an inline-editable title and description (see below),
     completion toggle, due date, priority, labels, subtasks (read-only
     checklist), a combined "Relations" section covering `dependsOn`/`blocks`
@@ -477,6 +478,30 @@ by the compiler, not just convention:
     loaded, non-archived projects. `UserRepositoryProtocol` is now used by
     `AppContainer` (the launch refresh), not by this view model. Creates via
     `TaskRepositoryProtocol.create` and shows a success toast.
+  - **Duplicate** (`DuplicateTaskViewModel`/`DuplicateTaskSheetView`): a
+    client-side task copy, opened from `TaskDetailView`'s overflow menu.
+    Deliberately *not* Vikunja's own server-side duplicate (2.2.0+ only, and
+    clones verbatim with no chance to edit first). The sheet is the same
+    compact bottom-sheet as quick-add (shared controls in
+    `Views/TaskFormControls.swift` — `FieldLabel`/`ProjectField`/
+    `PriorityChipRow`/`SaveErrorBanner`), pre-filled from the source task:
+    editable title (defaulting to `"… (copy)"`), project, priority, plus
+    "Copy labels"/"Copy relations" toggles shown only when the source has
+    either. `duplicate()` calls `TaskRepositoryProtocol.create` (carrying
+    over description + due date silently), then best-effort replays the
+    source's labels (`LabelRepositoryProtocol.addLabel`) and its
+    "Relations"-section relations — `dependsOn`/`blocks`/`otherRelations`,
+    **not** subtasks — via `TaskRelationRepositoryProtocol.addRelation`;
+    comments and attachments aren't copied. Built by
+    `TaskDetailViewModel.makeDuplicateTaskViewModel()`, which reuses the
+    detail view model's own repositories (same pattern as
+    `makeDetailViewModel(task:project:)`), so `AppContainer` needs no factory
+    for it. `duplicate()` returns the created task **and its project** (from
+    the loaded list, falling back to the source task's own project);
+    `DuplicateTaskSheetView`'s `onDuplicated` callback hands that back to the
+    host, and `TaskDetailView` pushes the new task's own `TaskDetailView`
+    down the same `.navigationDestination(item:)` a tapped relation row uses
+    (`relatedTaskDestination`). Success plays a `.success` haptic + toast.
 
 Features should only ever import `VikunjaCore`/`VikunjaNavigation`/
 `VikunjaDesignSystem` and depend on `VikunjaCore`'s protocols — never import
