@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 import VikuNavigation
 
 /// Lists every saved instance connection: tap a row to make it the active

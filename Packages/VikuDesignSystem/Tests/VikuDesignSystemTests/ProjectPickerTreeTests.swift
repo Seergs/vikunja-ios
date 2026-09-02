@@ -1,6 +1,6 @@
 import Testing
 import VikunjaCore
-@testable import VikunjaDesignSystem
+@testable import VikuDesignSystem
 
 @Suite("ProjectPickerTree")
 struct ProjectPickerTreeTests {

@@ -1,6 +1,6 @@
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 import VikuNavigation
 
 /// The Projects tab's list screen: a flattened, indented rendering of

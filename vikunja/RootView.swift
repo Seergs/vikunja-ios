@@ -1,7 +1,7 @@
 import Onboarding
 import SwiftUI
 import VikunjaCore
-import VikunjaDesignSystem
+import VikuDesignSystem
 import VikuNavigation
 
 /// Top-level navigation between Features. Features never reference each other

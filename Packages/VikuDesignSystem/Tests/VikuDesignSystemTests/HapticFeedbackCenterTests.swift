@@ -1,7 +1,7 @@
 import SwiftUI
 import Testing
 import VikunjaCore
-@testable import VikunjaDesignSystem
+@testable import VikuDesignSystem
 
 @MainActor
 struct HapticFeedbackCenterTests {

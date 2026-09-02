@@ -1,5 +1,5 @@
 import SwiftUI
-import VikunjaDesignSystem
+import VikuDesignSystem
 
 /// Floating action button for quick task creation, matching the design
 /// mockup's FAB: an opaque, brand-colored circle with a layered shadow,

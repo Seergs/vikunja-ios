@@ -1,6 +1,6 @@
 import SwiftUI
 import Testing
-@testable import VikunjaDesignSystem
+@testable import VikuDesignSystem
 
 struct ColorHexTests {
     @Test
