@@ -27,7 +27,7 @@ struct ProjectOverviewView: View {
         content
             .projectsListStyle()
             .scrollContentBackground(.hidden)
-            .background(VikunjaColor.Surface.page)
+            .background(VikuColor.Surface.page)
             .refreshable { await viewModel.load() }
             .navigationTitle(viewModel.project.title)
             .toolbar {
@@ -79,7 +79,7 @@ struct ProjectOverviewView: View {
             case .idle, .loading:
                 ProgressView()
                     .frame(maxWidth: .infinity)
-                    .padding(.top, VikunjaSpacing.xxl)
+                    .padding(.top, VikuSpacing.xxl)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
             case let .failure(message):
@@ -90,7 +90,7 @@ struct ProjectOverviewView: View {
                 ) {
                     Task { await viewModel.load() }
                 }
-                .padding(.top, VikunjaSpacing.xxl)
+                .padding(.top, VikuSpacing.xxl)
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             case .loaded:
@@ -104,23 +104,23 @@ struct ProjectOverviewView: View {
         // `.plain` list style (see `projectsListStyle()`) so every row here
         // is flush with `.navigationTitle` by default, with `EdgeInsets()`
         // to strip even the small residual default `.plain` gives rows —
-        // our own `.padding(.horizontal, VikunjaSpacing.md)` inside each
+        // our own `.padding(.horizontal, VikuSpacing.md)` inside each
         // piece below is the only horizontal offset left, so it can't stack
         // with a system default the way it did under `.insetGrouped`.
-        VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+        VStack(alignment: .leading, spacing: VikuSpacing.md) {
             ProjectProgressHeader(project: viewModel.project, tasks: viewModel.tasks)
-                .padding(.horizontal, VikunjaSpacing.md)
+                .padding(.horizontal, VikuSpacing.md)
 
             if !viewModel.subprojects.isEmpty {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
-                    HStack(spacing: VikunjaSpacing.xs) {
+                VStack(alignment: .leading, spacing: VikuSpacing.sm) {
+                    HStack(spacing: VikuSpacing.xs) {
                         Text("Subprojects")
                             .fontWeight(.bold)
                         Text("\(viewModel.subprojects.count)")
                             .fontWeight(.regular)
                     }
                     .overviewSectionLabelStyle()
-                    .padding(.horizontal, VikunjaSpacing.md)
+                    .padding(.horizontal, VikuSpacing.md)
 
                     SubprojectScrollRow(
                         subprojects: viewModel.subprojects,
@@ -128,17 +128,17 @@ struct ProjectOverviewView: View {
                     ) { subproject in
                         onSelectSubproject(subproject)
                     }
-                    .padding(.horizontal, VikunjaSpacing.md)
+                    .padding(.horizontal, VikuSpacing.md)
                 }
                 // A bit more than the parent `VStack`'s own spacing, just
                 // for the gap after "X/Y tasks completed" specifically.
-                .padding(.top, VikunjaSpacing.xs)
+                .padding(.top, VikuSpacing.xs)
             }
 
             ProjectTaskFilterRow(selection: $filter)
-                .padding(.horizontal, VikunjaSpacing.md)
+                .padding(.horizontal, VikuSpacing.md)
         }
-        .padding(.vertical, VikunjaSpacing.xs)
+        .padding(.vertical, VikuSpacing.xs)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
@@ -153,22 +153,22 @@ struct ProjectOverviewView: View {
                     : "No tasks match this filter.",
                 iconSize: 28,
             )
-            .padding(.top, VikunjaSpacing.lg)
+            .padding(.top, VikuSpacing.lg)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
         } else {
             ForEach(visible) { section in
-                HStack(spacing: VikunjaSpacing.xs) {
+                HStack(spacing: VikuSpacing.xs) {
                     Text(section.title)
                         .fontWeight(.bold)
                     Text("\(section.tasks.count)")
                         .fontWeight(.regular)
                 }
                 .overviewSectionLabelStyle()
-                .padding(.horizontal, VikunjaSpacing.md)
-                .padding(.top, VikunjaSpacing.md + VikunjaSpacing.xs)
-                .padding(.bottom, VikunjaSpacing.sm)
+                .padding(.horizontal, VikuSpacing.md)
+                .padding(.top, VikuSpacing.md + VikuSpacing.xs)
+                .padding(.bottom, VikuSpacing.sm)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
@@ -193,27 +193,27 @@ struct ProjectOverviewView: View {
                     } onDelete: {
                         taskPendingDelete = task
                     }
-                    .padding(.horizontal, VikunjaSpacing.md)
-                    .padding(.vertical, VikunjaSpacing.sm)
-                    .background(VikunjaColor.Surface.card)
+                    .padding(.horizontal, VikuSpacing.md)
+                    .padding(.vertical, VikuSpacing.sm)
+                    .background(VikuColor.Surface.card)
                     .overlay(alignment: .bottom) {
                         if index < section.tasks.count - 1 {
-                            Divider().padding(.leading, VikunjaSpacing.md)
+                            Divider().padding(.leading, VikuSpacing.md)
                         }
                     }
                     .clipShape(
                         UnevenRoundedRectangle(
-                            topLeadingRadius: index == 0 ? VikunjaRadius.lg : 0,
-                            bottomLeadingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
-                            bottomTrailingRadius: index == section.tasks.count - 1 ? VikunjaRadius.lg : 0,
-                            topTrailingRadius: index == 0 ? VikunjaRadius.lg : 0,
+                            topLeadingRadius: index == 0 ? VikuRadius.lg : 0,
+                            bottomLeadingRadius: index == section.tasks.count - 1 ? VikuRadius.lg : 0,
+                            bottomTrailingRadius: index == section.tasks.count - 1 ? VikuRadius.lg : 0,
+                            topTrailingRadius: index == 0 ? VikuRadius.lg : 0,
                             style: .continuous,
                         ),
                     )
                     // Only the card itself gets breathing room from the
                     // screen edges — the label above it stays flush with
                     // the title, matching everything else on this screen.
-                    .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
+                    .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xs)
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
@@ -223,7 +223,7 @@ struct ProjectOverviewView: View {
     }
 
     private var swatchColor: Color {
-        Color(vikunjaHex: viewModel.project.hexColor) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: viewModel.project.hexColor) ?? VikuColor.brandPrimary
     }
 }
 
@@ -235,19 +235,19 @@ private struct ProjectProgressHeader: View {
     let tasks: [VikunjaTask]
 
     private var swatchColor: Color {
-        Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: project.hexColor) ?? VikuColor.brandPrimary
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .fill(swatchColor)
                 .frame(width: 10, height: 10)
 
             Text(subtitle)
-                .font(VikunjaFont.subheadline)
+                .font(VikuFont.subheadline)
                 .fontWeight(.medium)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .foregroundStyle(VikuColor.textSecondary)
         }
     }
 
@@ -268,7 +268,7 @@ private struct SubprojectScrollRow: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 ForEach(subprojects) { node in
                     SubprojectCard(node: node, taskSummary: taskSummaries[node.id]) { onSelect(node) }
                 }
@@ -288,7 +288,7 @@ private struct SubprojectCard: View {
     let onSelect: () -> Void
 
     private var swatchColor: Color {
-        Color(vikunjaHex: node.project.hexColor) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: node.project.hexColor) ?? VikuColor.brandPrimary
     }
 
     private var summaryText: String {
@@ -298,8 +298,8 @@ private struct SubprojectCard: View {
 
     var body: some View {
         Button(action: onSelect) {
-            HStack(spacing: VikunjaSpacing.sm) {
-                RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous)
+            HStack(spacing: VikuSpacing.sm) {
+                RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous)
                     .fill(swatchColor.opacity(0.16))
                     .frame(width: 36, height: 36)
                     .overlay {
@@ -308,31 +308,31 @@ private struct SubprojectCard: View {
                             .frame(width: 12, height: 12)
                     }
 
-                VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
                     Text(node.project.title)
-                        .font(VikunjaFont.subheadline)
+                        .font(VikuFont.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
 
                     Text(summaryText)
-                        .font(VikunjaFont.caption)
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .font(VikuFont.caption)
+                        .foregroundStyle(VikuColor.textTertiary)
                 }
 
-                Spacer(minLength: VikunjaSpacing.xs)
+                Spacer(minLength: VikuSpacing.xs)
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .foregroundStyle(VikuColor.textTertiary)
             }
-            .padding(VikunjaSpacing.sm + VikunjaSpacing.xxs)
+            .padding(VikuSpacing.sm + VikuSpacing.xxs)
             // Fixed (not just minimum) width: the `Spacer` above needs a
             // bounded frame to expand into so the chevron reaches the card's
             // trailing edge — inside a horizontal `ScrollView`, a `Spacer`
             // under only a `minWidth` would try to grow unbounded instead.
             .frame(width: 220, alignment: .leading)
-            .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+            .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -360,7 +360,7 @@ private struct ProjectTaskFilterRow: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 ForEach(ProjectTaskFilter.allCases, id: \.self) { option in
                     FilterChip(title: option.title, isSelected: selection == option) {
                         selection = option
@@ -382,13 +382,13 @@ private struct FilterChip: View {
     var body: some View {
         Button(action: onSelect) {
             Text(title)
-                .font(VikunjaFont.subheadline)
+                .font(VikuFont.subheadline)
                 .fontWeight(.semibold)
-                .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-                .padding(.vertical, VikunjaSpacing.sm - VikunjaSpacing.xxs)
-                .foregroundStyle(isSelected ? Color.white : VikunjaColor.textSecondary)
+                .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+                .padding(.vertical, VikuSpacing.sm - VikuSpacing.xxs)
+                .foregroundStyle(isSelected ? Color.white : VikuColor.textSecondary)
                 .background(
-                    Capsule().fill(isSelected ? VikunjaColor.brandPrimary : VikunjaColor.Surface.field),
+                    Capsule().fill(isSelected ? VikuColor.brandPrimary : VikuColor.Surface.field),
                 )
         }
         .buttonStyle(.plain)
@@ -467,15 +467,15 @@ private struct ProjectTaskRow: View {
     private var priorityColor: Color? {
         switch task.priority {
         case .unset: nil
-        case .low: VikunjaColor.Priority.low
-        case .medium: VikunjaColor.Priority.medium
-        case .high: VikunjaColor.Priority.high
-        case .urgent, .doNow: VikunjaColor.Priority.urgent
+        case .low: VikuColor.Priority.low
+        case .medium: VikuColor.Priority.medium
+        case .high: VikuColor.Priority.high
+        case .urgent, .doNow: VikuColor.Priority.urgent
         }
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+        HStack(alignment: .top, spacing: VikuSpacing.sm + VikuSpacing.xxs) {
             Button(action: onToggle) {
                 Circle()
                     .strokeBorder(task.isDone ? Color.clear : projectColor, lineWidth: 2)
@@ -492,40 +492,40 @@ private struct ProjectTaskRow: View {
             .buttonStyle(.plain)
             .padding(.top, 1)
 
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+            VStack(alignment: .leading, spacing: VikuSpacing.xs + VikuSpacing.xxs) {
                 Text(task.title)
-                    .font(VikunjaFont.body)
+                    .font(VikuFont.body)
                     .fontWeight(.medium)
                     .strikethrough(task.isDone)
-                    .foregroundStyle(task.isDone ? VikunjaColor.textTertiary : Color.primary)
+                    .foregroundStyle(task.isDone ? VikuColor.textTertiary : Color.primary)
 
-                HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+                HStack(spacing: VikuSpacing.xs + VikuSpacing.xxs) {
                     if let dueDate = task.dueDate {
                         Text(DueDateFormatter.compact(dueDate))
                             .font(.system(size: 12.5, weight: .regular))
-                            .foregroundStyle(isOverdue ? VikunjaColor.Semantic.dangerText : VikunjaColor.textSecondary)
+                            .foregroundStyle(isOverdue ? VikuColor.Semantic.dangerText : VikuColor.textSecondary)
                     }
 
                     if task.hasRelations {
                         if task.dueDate == nil {
-                            HStack(spacing: VikunjaSpacing.xxs) {
+                            HStack(spacing: VikuSpacing.xxs) {
                                 Image(systemName: "link")
                                     .font(.system(size: 11, weight: .regular))
                                 Text("Related tasks")
                                     .font(.system(size: 12.5, weight: .regular))
                             }
-                            .foregroundStyle(VikunjaColor.textTertiary)
+                            .foregroundStyle(VikuColor.textTertiary)
                         } else {
                             Image(systemName: "link")
                                 .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(VikunjaColor.textTertiary)
+                                .foregroundStyle(VikuColor.textTertiary)
                         }
                     }
                 }
                 .lineLimit(1)
 
                 if !task.labels.isEmpty {
-                    HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+                    HStack(spacing: VikuSpacing.xs + VikuSpacing.xxs) {
                         ForEach(task.labels.prefix(Self.labelDisplayLimit)) { label in
                             LabelPill(label: label)
                         }
@@ -538,13 +538,13 @@ private struct ProjectTaskRow: View {
                 }
             }
 
-            Spacer(minLength: VikunjaSpacing.sm)
+            Spacer(minLength: VikuSpacing.sm)
 
             if let priorityColor {
                 Circle()
                     .fill(priorityColor)
                     .frame(width: 8, height: 8)
-                    .padding(.top, VikunjaSpacing.xs)
+                    .padding(.top, VikuSpacing.xs)
             }
         }
         // The checkbox is its own `Button` above, so a tap landing on it is
@@ -555,10 +555,10 @@ private struct ProjectTaskRow: View {
         .contextMenu {
             Button("Move to Project", systemImage: "folder", action: onMove)
             // `role: .destructive` alone renders blue here, not red: the tab
-            // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
+            // bar's `.tint(VikuColor.brandPrimary)` leaks into the context
             // menu and overrides the role's tint. Pin it back to danger.
             Button("Delete Task", systemImage: "trash", role: .destructive, action: onDelete)
-                .tint(VikunjaColor.Semantic.danger)
+                .tint(VikuColor.Semantic.danger)
         }
     }
 }
@@ -567,15 +567,15 @@ private struct LabelPill: View {
     let label: VikunjaCore.Label
 
     private var color: Color {
-        Color(vikunjaHex: label.hexColor) ?? VikunjaColor.textSecondary
+        Color(vikuHex: label.hexColor) ?? VikuColor.textSecondary
     }
 
     var body: some View {
         Text(label.title)
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(color)
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.xxs)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.xxs)
             .background(Capsule().fill(color.opacity(0.14)))
     }
 }
@@ -586,10 +586,10 @@ private struct ExtraLabelsPill: View {
     var body: some View {
         Text("+\(count)")
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(VikunjaColor.textTertiary)
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.xxs)
-            .background(Capsule().fill(VikunjaColor.textSecondary.opacity(0.14)))
+            .foregroundStyle(VikuColor.textTertiary)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.xxs)
+            .background(Capsule().fill(VikuColor.textSecondary.opacity(0.14)))
     }
 }
 
@@ -609,12 +609,12 @@ private extension View {
 
 /// Shared look for the "Subprojects" label and the Overdue/Pending/Completed
 /// task-status headers: small, bold, uppercase, and legible against
-/// `VikunjaColor.textSecondary` rather than the system header's faint gray.
+/// `VikuColor.textSecondary` rather than the system header's faint gray.
 private extension View {
     func overviewSectionLabelStyle() -> some View {
-        font(VikunjaFont.footnote)
+        font(VikuFont.footnote)
             .fontWeight(.bold)
-            .foregroundStyle(VikunjaColor.textSecondary)
+            .foregroundStyle(VikuColor.textSecondary)
             .textCase(.uppercase)
             .kerning(0.3)
     }
@@ -629,26 +629,26 @@ private struct ProjectOverviewStatusView: View {
     var retryAction: (() -> Void)?
 
     var body: some View {
-        VStack(spacing: VikunjaSpacing.sm) {
+        VStack(spacing: VikuSpacing.sm) {
             Image(systemName: systemImage)
                 .font(.system(size: iconSize))
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .foregroundStyle(VikuColor.textTertiary)
 
             Text(title)
-                .font(VikunjaFont.headline)
+                .font(VikuFont.headline)
 
             Text(message)
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textSecondary)
                 .multilineTextAlignment(.center)
 
             if let retryAction {
                 Button("Try Again", action: retryAction)
                     .buttonStyle(.bordered)
-                    .padding(.top, VikunjaSpacing.xs)
+                    .padding(.top, VikuSpacing.xs)
             }
         }
-        .padding(VikunjaSpacing.lg)
+        .padding(VikuSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

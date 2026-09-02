@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Color tokens. Values that originate as `oklch(...)` in the design source are
 /// pre-converted to sRGB hex once here, rather than converting at runtime.
-public enum VikunjaColor {
+public enum VikuColor {
     public static let brandPrimary = Color(hex: 0x196AFF)
 
     public enum Priority {

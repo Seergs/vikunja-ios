@@ -6,7 +6,7 @@
 /// UIKit/SwiftUI type.
 ///
 /// A pure SwiftUI view that just wants a haptic when some state changes should
-/// use `View.vikunjaHaptic(_:trigger:)` from `VikuDesignSystem` instead —
+/// use `View.vikuHaptic(_:trigger:)` from `VikuDesignSystem` instead —
 /// no injection needed. Reach for this protocol when the *decision* to tap
 /// lives in a ViewModel (an optimistic toggle that rolled back, a create that
 /// succeeded).

@@ -8,7 +8,7 @@ private struct ToastHostModifier: ViewModifier {
             .overlay(alignment: .top) {
                 if let toast = center.current {
                     ToastView(toast: toast)
-                        .padding(.horizontal, VikunjaSpacing.md)
+                        .padding(.horizontal, VikuSpacing.md)
                         .transition(.move(edge: .top).combined(with: .opacity))
                         .onTapGesture { center.dismissCurrent() }
                         .accessibilityAddTraits(.updatesFrequently)

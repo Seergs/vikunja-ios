@@ -45,14 +45,14 @@ public struct DuplicateTaskSheetView: View {
 
     public var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+            VStack(alignment: .leading, spacing: VikuSpacing.md) {
                 TextField("Task title", text: $viewModel.title)
-                    .font(VikunjaFont.body)
+                    .font(VikuFont.body)
                     .focused($isTitleFocused)
                     .submitLabel(.done)
-                    .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-                    .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-                    .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+                    .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+                    .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+                    .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
 
                 projectSection
 
@@ -60,11 +60,11 @@ public struct DuplicateTaskSheetView: View {
 
                 if viewModel.hasLabelsToCopy {
                     Toggle("Copy labels", isOn: $viewModel.copyLabels)
-                        .font(VikunjaFont.subheadline)
+                        .font(VikuFont.subheadline)
                 }
                 if viewModel.hasRelationsToCopy {
                     Toggle("Copy relations", isOn: $viewModel.copyRelations)
-                        .font(VikunjaFont.subheadline)
+                        .font(VikuFont.subheadline)
                 }
 
                 if let message = viewModel.saveErrorMessage {
@@ -72,9 +72,9 @@ public struct DuplicateTaskSheetView: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
-            .tint(VikunjaColor.brandPrimary)
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.top, VikunjaSpacing.md)
+            .tint(VikuColor.brandPrimary)
+            .padding(.horizontal, VikuSpacing.md)
+            .padding(.top, VikuSpacing.md)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.saveErrorMessage)
             .navigationTitle("Duplicate Task")
@@ -104,7 +104,7 @@ public struct DuplicateTaskSheetView: View {
             }
         }
         .presentationDetents([.height(detentHeight)])
-        .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
+        .presentationCornerRadius(VikuRadius.lg + VikuSpacing.sm)
         .sheet(isPresented: $isShowingProjectPicker) {
             ProjectPickerSheet(
                 title: "Choose Project",
@@ -125,12 +125,12 @@ public struct DuplicateTaskSheetView: View {
         switch viewModel.loadState {
         case let .failure(message):
             Text(message)
-                .font(VikunjaFont.footnote)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.footnote)
+                .foregroundStyle(VikuColor.textSecondary)
         case .loading, .idle:
             ProgressView()
         case .loaded:
-            VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+            VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
                 FieldLabel("Project")
                 ProjectField(project: viewModel.selectedProject) {
                     isShowingProjectPicker = true

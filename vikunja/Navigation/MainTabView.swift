@@ -98,12 +98,12 @@ struct MainTabView: View {
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
-        .tint(VikunjaColor.brandPrimary)
+        .tint(VikuColor.brandPrimary)
         // A light selection tick whenever the active tab changes — including a
         // programmatic switch from a `viku://` deep link. Doesn't fire on
         // first render, or on re-tapping the current tab (which pops to root
         // rather than changing `selection`). Reading `selection` here (like the
-        // old `.vikunjaHaptic(trigger:)`) makes `body` re-run on every tab
+        // old `.vikuHaptic(trigger:)`) makes `body` re-run on every tab
         // switch; that's only cheap because the tab view models are now held in
         // `@State` rather than rebuilt inside `body`.
         .onChange(of: selection) { _, _ in
@@ -117,13 +117,13 @@ struct MainTabView: View {
                     .foregroundStyle(.white)
                     .frame(width: 32, height: 32)
                     .background(Color.orange, in: Circle())
-                    .padding(VikunjaSpacing.md)
+                    .padding(VikuSpacing.md)
             }
         }
         .overlay(alignment: .bottomTrailing) {
             QuickAddOverlay(container: container, account: account)
-                .padding(.trailing, VikunjaSpacing.md)
-                .padding(.bottom, VikunjaSpacing.xxl + VikunjaSpacing.lg)
+                .padding(.trailing, VikuSpacing.md)
+                .padding(.bottom, VikuSpacing.xxl + VikuSpacing.lg)
         }
     }
 

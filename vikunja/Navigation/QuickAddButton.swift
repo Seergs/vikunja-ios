@@ -21,9 +21,9 @@ struct QuickAddButton: View {
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: diameter, height: diameter)
-                .background(VikunjaColor.brandPrimary, in: Circle())
-                .shadow(color: VikunjaColor.brandPrimary.opacity(0.4), radius: 10, x: 0, y: 6)
-                .shadow(color: VikunjaColor.brandPrimary.opacity(0.3), radius: 3, x: 0, y: 2)
+                .background(VikuColor.brandPrimary, in: Circle())
+                .shadow(color: VikuColor.brandPrimary.opacity(0.4), radius: 10, x: 0, y: 6)
+                .shadow(color: VikuColor.brandPrimary.opacity(0.3), radius: 3, x: 0, y: 2)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Quick Add")

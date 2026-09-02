@@ -18,9 +18,9 @@ struct FieldLabel: View {
 
     var body: some View {
         Text(title)
-            .font(VikunjaFont.footnote)
+            .font(VikuFont.footnote)
             .fontWeight(.semibold)
-            .foregroundStyle(VikunjaColor.textSecondary)
+            .foregroundStyle(VikuColor.textSecondary)
     }
 }
 
@@ -33,7 +33,7 @@ struct ProjectField: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 if let project {
                     ProjectPickerIcon(hexColor: project.hexColor)
                     Text(project.title)
@@ -42,18 +42,18 @@ struct ProjectField: View {
                 } else {
                     Text("Choose project")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .foregroundStyle(VikuColor.textTertiary)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .foregroundStyle(VikuColor.textTertiary)
             }
-            .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+            .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.sm + VikuSpacing.xs)
+            .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -71,10 +71,10 @@ struct PriorityOption: Identifiable {
     /// The four pickable priorities shown as chips (the sheets don't offer
     /// `.unset`/`.doNow`).
     static let all: [PriorityOption] = [
-        PriorityOption(priority: .low, label: "Low", color: VikunjaColor.Priority.low),
-        PriorityOption(priority: .medium, label: "Medium", color: VikunjaColor.Priority.medium),
-        PriorityOption(priority: .high, label: "High", color: VikunjaColor.Priority.high),
-        PriorityOption(priority: .urgent, label: "Urgent", color: VikunjaColor.Priority.urgent),
+        PriorityOption(priority: .low, label: "Low", color: VikuColor.Priority.low),
+        PriorityOption(priority: .medium, label: "Medium", color: VikuColor.Priority.medium),
+        PriorityOption(priority: .high, label: "High", color: VikuColor.Priority.high),
+        PriorityOption(priority: .urgent, label: "Urgent", color: VikuColor.Priority.urgent),
     ]
 }
 
@@ -84,9 +84,9 @@ struct PriorityChipRow: View {
     @Binding var selection: VikunjaTask.Priority
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             FieldLabel("Priority")
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 ForEach(PriorityOption.all) { option in
                     PriorityChip(option: option, isSelected: selection == option.priority) {
                         selection = selection == option.priority ? .unset : option.priority
@@ -104,17 +104,17 @@ private struct PriorityChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.xs) {
+            HStack(spacing: VikuSpacing.xs) {
                 Image(systemName: "flag")
                     .font(.system(size: 11))
                 Text(option.label)
                     .font(.system(size: 13.5, weight: .semibold))
             }
-            .foregroundStyle(isSelected ? option.color : VikunjaColor.textTertiary)
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xs)
-            .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+            .foregroundStyle(isSelected ? option.color : VikuColor.textTertiary)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xs)
+            .padding(.vertical, VikuSpacing.xs + VikuSpacing.xxs)
             .background(
-                Capsule().fill(isSelected ? option.color.opacity(0.14) : VikunjaColor.Surface.field),
+                Capsule().fill(isSelected ? option.color.opacity(0.14) : VikuColor.Surface.field),
             )
             .overlay(
                 Capsule().strokeBorder(isSelected ? option.color : Color.clear, lineWidth: 1.5),
@@ -131,19 +131,19 @@ struct SaveErrorBanner: View {
     let message: String
 
     var body: some View {
-        HStack(alignment: .center, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        HStack(alignment: .center, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 13))
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                .foregroundStyle(VikuColor.Semantic.dangerText)
             Text(message)
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                .foregroundStyle(VikuColor.Semantic.dangerText)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm)
+        .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikunjaColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .background(VikuColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 }

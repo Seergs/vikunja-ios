@@ -22,7 +22,7 @@ struct ManageLabelsView: View {
 
     var body: some View {
         content
-            .background(VikunjaColor.Surface.page)
+            .background(VikuColor.Surface.page)
             .navigationTitle("Manage Labels")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -76,7 +76,7 @@ struct ManageLabelsView: View {
         case .idle, .loading:
             ProgressView()
                 .frame(maxWidth: .infinity)
-                .padding(.top, VikunjaSpacing.xxl)
+                .padding(.top, VikuSpacing.xxl)
         case let .failure(message):
             LabelsStatusView(
                 systemImage: "exclamationmark.triangle.fill",
@@ -85,7 +85,7 @@ struct ManageLabelsView: View {
             ) {
                 Task { await viewModel.load() }
             }
-            .padding(.top, VikunjaSpacing.xxl)
+            .padding(.top, VikuSpacing.xxl)
         case .loaded:
             if viewModel.labels.isEmpty {
                 LabelsStatusView(
@@ -93,7 +93,7 @@ struct ManageLabelsView: View {
                     title: "No labels yet",
                     message: "Create a label to organize tasks across every project.",
                 )
-                .padding(.top, VikunjaSpacing.xxl)
+                .padding(.top, VikuSpacing.xxl)
             } else {
                 List {
                     ForEach(viewModel.labels) { label in
@@ -105,12 +105,12 @@ struct ManageLabelsView: View {
                         .buttonStyle(.plain)
                         .swipeActions(edge: .trailing) {
                             // `role: .destructive` alone renders blue here, not
-                            // red: the tab bar's `.tint(VikunjaColor.brandPrimary)`
+                            // red: the tab bar's `.tint(VikuColor.brandPrimary)`
                             // leaks into the swipe action, so tint it explicitly.
                             Button("Delete", systemImage: "trash", role: .destructive) {
                                 pendingDeletion = label
                             }
-                            .tint(VikunjaColor.Semantic.danger)
+                            .tint(VikuColor.Semantic.danger)
                         }
                     }
                 }
@@ -124,23 +124,23 @@ private struct LabelRow: View {
     let label: VikunjaCore.Label
 
     private var color: Color {
-        Color(vikunjaHex: label.hexColor) ?? VikunjaColor.textSecondary
+        Color(vikuHex: label.hexColor) ?? VikuColor.textSecondary
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
             Circle()
                 .fill(color)
                 .frame(width: 12, height: 12)
             Text(label.title)
-                .font(VikunjaFont.body)
+                .font(VikuFont.body)
                 .foregroundStyle(Color.primary)
             Spacer(minLength: 0)
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .foregroundStyle(VikuColor.textTertiary)
         }
-        .padding(.vertical, VikunjaSpacing.xxs)
+        .padding(.vertical, VikuSpacing.xxs)
         .contentShape(Rectangle())
     }
 }
@@ -154,26 +154,26 @@ private struct LabelsStatusView: View {
     var retryAction: (() -> Void)?
 
     var body: some View {
-        VStack(spacing: VikunjaSpacing.sm) {
+        VStack(spacing: VikuSpacing.sm) {
             Image(systemName: systemImage)
                 .font(.system(size: 40))
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .foregroundStyle(VikuColor.textTertiary)
 
             Text(title)
-                .font(VikunjaFont.headline)
+                .font(VikuFont.headline)
 
             Text(message)
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textSecondary)
                 .multilineTextAlignment(.center)
 
             if let retryAction {
                 Button("Try Again", action: retryAction)
                     .buttonStyle(.bordered)
-                    .padding(.top, VikunjaSpacing.xs)
+                    .padding(.top, VikuSpacing.xs)
             }
         }
-        .padding(VikunjaSpacing.lg)
+        .padding(VikuSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

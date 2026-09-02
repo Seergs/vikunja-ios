@@ -13,7 +13,7 @@ extension Color {
     /// leading `#`) as it comes back on `Project`/`Label`. Returns `nil` for
     /// the empty string (no color set server-side) or anything malformed,
     /// so callers can fall back to a design-system default.
-    public init?(vikunjaHex hexString: String) {
+    public init?(vikuHex hexString: String) {
         var hex = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
         if hex.hasPrefix("#") {
             hex.removeFirst()

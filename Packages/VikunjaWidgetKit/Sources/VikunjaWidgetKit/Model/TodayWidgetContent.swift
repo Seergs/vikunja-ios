@@ -12,7 +12,7 @@ public struct TodayWidgetTask: Sendable, Hashable, Codable, Identifiable {
     public let bucket: TaskDueBucket
     public let projectName: String
     /// Raw `hex_color` off the task's project, or `""` when unset — the view
-    /// resolves it through `Color(vikunjaHex:)` with a token fallback.
+    /// resolves it through `Color(vikuHex:)` with a token fallback.
     public let projectColorHex: String
 
     public init(

@@ -1,7 +1,7 @@
 import CoreGraphics
 
 /// Spacing tokens on a 4pt grid.
-public enum VikunjaSpacing {
+public enum VikuSpacing {
     public static let xxs: CGFloat = 2
     public static let xs: CGFloat = 4
     public static let sm: CGFloat = 8

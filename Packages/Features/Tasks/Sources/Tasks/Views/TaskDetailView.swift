@@ -53,16 +53,16 @@ public struct TaskDetailView: View {
                     TaskDetailStatusView(message: message) {
                         Task { await viewModel.load() }
                     }
-                    .padding(.top, VikunjaSpacing.xxl)
+                    .padding(.top, VikuSpacing.xxl)
                 default:
                     loadedContent
                 }
             }
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.bottom, VikunjaSpacing.xl)
+            .padding(.horizontal, VikuSpacing.md)
+            .padding(.bottom, VikuSpacing.xl)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(VikunjaColor.Surface.page)
+        .background(VikuColor.Surface.page)
         .contentShape(Rectangle())
         .onTapGesture { focusedField = nil }
         .scrollDismissesKeyboard(.interactively)
@@ -93,13 +93,13 @@ public struct TaskDetailView: View {
                         isShowingMovePicker = true
                     }
                     // `role: .destructive` alone renders blue here, not red:
-                    // the tab bar's `.tint(VikunjaColor.brandPrimary)` leaks
+                    // the tab bar's `.tint(VikuColor.brandPrimary)` leaks
                     // into this menu and overrides the role's tint — mirrors
                     // `ProjectTaskRow`'s context menu in `Features/Projects`.
                     Button("Delete Task", systemImage: "trash", role: .destructive) {
                         isShowingDeleteConfirmation = true
                     }
-                    .tint(VikunjaColor.Semantic.danger)
+                    .tint(VikuColor.Semantic.danger)
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
@@ -284,16 +284,16 @@ public struct TaskDetailView: View {
             ProjectPill(project: project)
         }
         .buttonStyle(.plain)
-        .padding(.top, VikunjaSpacing.sm)
+        .padding(.top, VikuSpacing.sm)
 
-        HStack(alignment: .top, spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+        HStack(alignment: .top, spacing: VikuSpacing.sm + VikuSpacing.xxs) {
             Button {
                 Task { await viewModel.toggleDone() }
             } label: {
                 TaskDetailCheckbox(isDone: task.isDone, color: swatchColor(project))
             }
             .buttonStyle(.plain)
-            .padding(.top, VikunjaSpacing.xxs)
+            .padding(.top, VikuSpacing.xxs)
 
             if isEditingTitle {
                 TextField("Task title", text: $titleDraft, axis: .vertical)
@@ -309,11 +309,11 @@ public struct TaskDetailView: View {
                     .onTapGesture { beginEditingTitle() }
             }
         }
-        .padding(.top, VikunjaSpacing.sm)
+        .padding(.top, VikuSpacing.sm)
 
         if task.isBlocked {
             BlockedBanner(waitingOn: task.dependsOn.filter { !$0.isDone }.count)
-                .padding(.top, VikunjaSpacing.md)
+                .padding(.top, VikuSpacing.md)
         }
 
         if isEditingDescription {
@@ -324,36 +324,36 @@ public struct TaskDetailView: View {
             // happens via the nav bar checkmark below, or by tapping
             // elsewhere (see `focusedField`'s `onChange` above).
             TextField("Add description...", text: $descriptionDraft, axis: .vertical)
-                .font(VikunjaFont.callout)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.callout)
+                .foregroundStyle(VikuColor.textSecondary)
                 .focused($focusedField, equals: .description)
-                .padding(.top, VikunjaSpacing.md)
+                .padding(.top, VikuSpacing.md)
         } else if let description = task.description, !description.isEmpty {
             Text(description)
-                .font(VikunjaFont.callout)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.callout)
+                .foregroundStyle(VikuColor.textSecondary)
                 .contentShape(Rectangle())
                 .onTapGesture { beginEditingDescription() }
-                .padding(.top, VikunjaSpacing.md)
+                .padding(.top, VikuSpacing.md)
         } else {
             Text("Add description...")
-                .font(VikunjaFont.callout)
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .font(VikuFont.callout)
+                .foregroundStyle(VikuColor.textTertiary)
                 .contentShape(Rectangle())
                 .onTapGesture { beginEditingDescription() }
-                .padding(.top, VikunjaSpacing.md)
+                .padding(.top, VikuSpacing.md)
         }
 
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm) {
             Button {
                 isShowingDueDatePicker = true
             } label: {
                 InfoRow(
                     systemImage: "calendar",
-                    iconColor: task.dueDate == nil ? VikunjaColor.textTertiary : VikunjaColor.textSecondary,
+                    iconColor: task.dueDate == nil ? VikuColor.textTertiary : VikuColor.textSecondary,
                     title: "Due",
                     value: task.dueDate.map(TaskDueDateFormatter.string(for:)) ?? "Set due date",
-                    valueColor: task.dueDate == nil ? VikunjaColor.textTertiary : (isOverdue(task) ? VikunjaColor.Semantic.dangerText : nil),
+                    valueColor: task.dueDate == nil ? VikuColor.textTertiary : (isOverdue(task) ? VikuColor.Semantic.dangerText : nil),
                     showsChevron: true,
                 )
             }
@@ -375,16 +375,16 @@ public struct TaskDetailView: View {
             } label: {
                 InfoRow(
                     systemImage: "flag",
-                    iconColor: priorityDisplay(task.priority)?.color ?? VikunjaColor.textTertiary,
+                    iconColor: priorityDisplay(task.priority)?.color ?? VikuColor.textTertiary,
                     title: "Priority",
                     value: priorityDisplay(task.priority)?.label ?? "Set priority",
-                    valueColor: priorityDisplay(task.priority)?.color ?? VikunjaColor.textTertiary,
+                    valueColor: priorityDisplay(task.priority)?.color ?? VikuColor.textTertiary,
                     showsChevron: true,
                 )
             }
             .buttonStyle(.plain)
         }
-        .padding(.top, VikunjaSpacing.lg)
+        .padding(.top, VikuSpacing.lg)
 
         SectionBlock(title: "Labels", trailing: AnyView(EditLabelsButton { isShowingLabelPicker = true })) {
             if task.labels.isEmpty {
@@ -392,8 +392,8 @@ public struct TaskDetailView: View {
                     isShowingLabelPicker = true
                 }
                 .buttonStyle(.plain)
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textTertiary)
             } else {
                 LabelsWrap(labels: task.labels)
             }
@@ -409,10 +409,10 @@ public struct TaskDetailView: View {
             let groups = relationGroups(for: task)
             if groups.isEmpty {
                 Text("No relations with other tasks.")
-                    .font(VikunjaFont.subheadline)
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .font(VikuFont.subheadline)
+                    .foregroundStyle(VikuColor.textTertiary)
             } else {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+                VStack(alignment: .leading, spacing: VikuSpacing.md) {
                     ForEach(groups, id: \.kind) { group in
                         RelationGroupView(
                             kind: group.kind,
@@ -501,7 +501,7 @@ public struct TaskDetailView: View {
     }
 
     private func swatchColor(_ project: Project) -> Color {
-        Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: project.hexColor) ?? VikuColor.brandPrimary
     }
 
     private struct PriorityDisplay {
@@ -512,10 +512,10 @@ public struct TaskDetailView: View {
     private func priorityDisplay(_ priority: VikunjaTask.Priority) -> PriorityDisplay? {
         switch priority {
         case .unset: nil
-        case .low: PriorityDisplay(label: "Low", color: VikunjaColor.Priority.low)
-        case .medium: PriorityDisplay(label: "Medium", color: VikunjaColor.Priority.medium)
-        case .high: PriorityDisplay(label: "High", color: VikunjaColor.Priority.high)
-        case .urgent, .doNow: PriorityDisplay(label: "Urgent", color: VikunjaColor.Priority.urgent)
+        case .low: PriorityDisplay(label: "Low", color: VikuColor.Priority.low)
+        case .medium: PriorityDisplay(label: "Medium", color: VikuColor.Priority.medium)
+        case .high: PriorityDisplay(label: "High", color: VikuColor.Priority.high)
+        case .urgent, .doNow: PriorityDisplay(label: "Urgent", color: VikuColor.Priority.urgent)
         }
     }
 
@@ -528,18 +528,18 @@ private struct ProjectPill: View {
     let project: Project
 
     private var swatchColor: Color {
-        Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: project.hexColor) ?? VikuColor.brandPrimary
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.xs + VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.xs + VikuSpacing.xxs) {
             RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .fill(swatchColor)
                 .frame(width: 10, height: 10)
             Text(project.title)
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .foregroundStyle(VikuColor.textSecondary)
         }
     }
 }
@@ -568,20 +568,20 @@ private struct BlockedBanner: View {
     let waitingOn: Int
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             Image(systemName: "link")
                 .font(.system(size: 11))
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                .foregroundStyle(VikuColor.Semantic.dangerText)
             Text("Blocked · waiting on \(waitingOn) task\(waitingOn == 1 ? "" : "s")")
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.bold)
-                .foregroundStyle(VikunjaColor.Semantic.dangerText)
+                .foregroundStyle(VikuColor.Semantic.dangerText)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm)
+        .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikunjaColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .background(VikuColor.Semantic.danger.opacity(0.12), in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 }
 
@@ -594,28 +594,28 @@ private struct InfoRow: View {
     var showsChevron: Bool = false
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
+        HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
             Image(systemName: systemImage)
                 .font(.system(size: 14))
                 .foregroundStyle(iconColor)
                 .frame(width: 18)
             Text(title)
-                .font(VikunjaFont.subheadline)
+                .font(VikuFont.subheadline)
                 .foregroundStyle(Color.primary)
             Spacer()
             Text(value)
-                .font(VikunjaFont.subheadline)
+                .font(VikuFont.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(valueColor ?? Color.primary)
             if showsChevron {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .foregroundStyle(VikuColor.textTertiary)
             }
         }
-        .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+        .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 }
 
@@ -626,8 +626,8 @@ private struct SectionBlock<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
-            HStack(spacing: VikunjaSpacing.xs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm) {
+            HStack(spacing: VikuSpacing.xs) {
                 Text(title)
                     .fontWeight(.bold)
                 if let count {
@@ -637,14 +637,14 @@ private struct SectionBlock<Content: View>: View {
                 Spacer(minLength: 0)
                 trailing
             }
-            .font(VikunjaFont.footnote)
-            .foregroundStyle(VikunjaColor.textSecondary)
+            .font(VikuFont.footnote)
+            .foregroundStyle(VikuColor.textSecondary)
             .textCase(.uppercase)
             .kerning(0.3)
 
             content
         }
-        .padding(.top, VikunjaSpacing.xl)
+        .padding(.top, VikuSpacing.xl)
     }
 }
 
@@ -655,12 +655,12 @@ private struct EditLabelsButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.xxs) {
+            HStack(spacing: VikuSpacing.xxs) {
                 Image(systemName: "plus")
                     .font(.system(size: 11, weight: .semibold))
                 Text("Edit")
             }
-            .foregroundStyle(VikunjaColor.brandPrimary)
+            .foregroundStyle(VikuColor.brandPrimary)
         }
         .buttonStyle(.plain)
         .textCase(nil)
@@ -671,7 +671,7 @@ private struct LabelsWrap: View {
     let labels: [VikunjaCore.Label]
 
     var body: some View {
-        FlowLayout(spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+        FlowLayout(spacing: VikuSpacing.sm - VikuSpacing.xxs) {
             ForEach(labels) { label in
                 LabelPill(label: label)
             }
@@ -683,15 +683,15 @@ private struct LabelPill: View {
     let label: VikunjaCore.Label
 
     private var color: Color {
-        Color(vikunjaHex: label.hexColor) ?? VikunjaColor.textSecondary
+        Color(vikuHex: label.hexColor) ?? VikuColor.textSecondary
     }
 
     var body: some View {
         Text(label.title)
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(color)
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.xxs)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.xxs)
             .background(Capsule().fill(color.opacity(0.14)))
     }
 }
@@ -753,21 +753,21 @@ private struct SubtasksCard: View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(subtasks.enumerated()), id: \.element.id) { index, subtask in
                 if index > 0 {
-                    Divider().padding(.leading, VikunjaSpacing.md - VikunjaSpacing.xxs)
+                    Divider().padding(.leading, VikuSpacing.md - VikuSpacing.xxs)
                 }
-                HStack(spacing: VikunjaSpacing.sm) {
+                HStack(spacing: VikuSpacing.sm) {
                     TaskDetailCheckbox(isDone: subtask.isDone, color: color, size: 20)
                     Text(subtask.title)
-                        .font(VikunjaFont.subheadline)
-                        .foregroundStyle(subtask.isDone ? VikunjaColor.textTertiary : Color.primary)
+                        .font(VikuFont.subheadline)
+                        .foregroundStyle(subtask.isDone ? VikuColor.textTertiary : Color.primary)
                         .strikethrough(subtask.isDone)
                     Spacer()
                 }
-                .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-                .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
+                .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+                .padding(.vertical, VikuSpacing.sm + VikuSpacing.xs)
             }
         }
-        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 }
 
@@ -795,12 +795,12 @@ private struct RelationGroupView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.xs) {
             Text(kind.displayName)
-                .font(VikunjaFont.caption)
+                .font(VikuFont.caption)
                 .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.textTertiary)
-            VStack(spacing: VikunjaSpacing.sm) {
+                .foregroundStyle(VikuColor.textTertiary)
+            VStack(spacing: VikuSpacing.sm) {
                 ForEach(visibleRelations) { relation in
                     DependencyRow(
                         relation: relation,
@@ -814,19 +814,19 @@ private struct RelationGroupView: View {
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
                 } label: {
-                    HStack(spacing: VikunjaSpacing.xxs) {
+                    HStack(spacing: VikuSpacing.xxs) {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .font(.system(size: 10, weight: .semibold))
                         Text(isExpanded
                             ? "Show less"
                             : "Show \(relations.count - Self.collapseThreshold) more")
                     }
-                    .font(VikunjaFont.caption)
+                    .font(VikuFont.caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(VikunjaColor.brandPrimary)
+                    .foregroundStyle(VikuColor.brandPrimary)
                 }
                 .buttonStyle(.plain)
-                .padding(.top, VikunjaSpacing.xxs)
+                .padding(.top, VikuSpacing.xxs)
             }
         }
     }
@@ -839,12 +839,12 @@ private struct DependencyRow: View {
     let onRemove: () -> Void
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm) {
+        HStack(spacing: VikuSpacing.sm) {
             Button(action: onTap) {
-                HStack(spacing: VikunjaSpacing.sm) {
+                HStack(spacing: VikuSpacing.sm) {
                     Circle()
-                        .strokeBorder(relation.isDone ? Color.clear : VikunjaColor.textTertiary, lineWidth: 2)
-                        .background(Circle().fill(relation.isDone ? VikunjaColor.Semantic.success : Color.clear))
+                        .strokeBorder(relation.isDone ? Color.clear : VikuColor.textTertiary, lineWidth: 2)
+                        .background(Circle().fill(relation.isDone ? VikuColor.Semantic.success : Color.clear))
                         .frame(width: 20, height: 20)
                         .overlay {
                             if relation.isDone {
@@ -854,15 +854,15 @@ private struct DependencyRow: View {
                             }
                         }
 
-                    VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                    VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
                         Text(relation.title)
                             .font(.system(size: 14.5, weight: .medium))
                             .foregroundStyle(Color.primary)
                             .strikethrough(relation.isDone)
                         if let projectTitle {
                             Text(projectTitle)
-                                .font(VikunjaFont.caption)
-                                .foregroundStyle(VikunjaColor.textTertiary)
+                                .font(VikuFont.caption)
+                                .foregroundStyle(VikuColor.textTertiary)
                         }
                     }
 
@@ -875,15 +875,15 @@ private struct DependencyRow: View {
             Button(action: onRemove) {
                 Image(systemName: "xmark")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .foregroundStyle(VikuColor.textSecondary)
                     .frame(width: 26, height: 26)
-                    .background(VikunjaColor.Surface.field, in: Circle())
+                    .background(VikuColor.Surface.field, in: Circle())
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.sm)
-        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+        .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm)
+        .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
     }
 }
 
@@ -934,12 +934,12 @@ private struct AddRelationButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.xxs) {
+            HStack(spacing: VikuSpacing.xxs) {
                 Image(systemName: "plus")
                     .font(.system(size: 11, weight: .semibold))
                 Text("Add")
             }
-            .foregroundStyle(VikunjaColor.brandPrimary)
+            .foregroundStyle(VikuColor.brandPrimary)
         }
         .buttonStyle(.plain)
         .textCase(nil)
@@ -1003,12 +1003,12 @@ private struct AddAttachmentButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.xxs) {
+            HStack(spacing: VikuSpacing.xxs) {
                 Image(systemName: "plus")
                     .font(.system(size: 11, weight: .semibold))
                 Text("Add")
             }
-            .foregroundStyle(VikunjaColor.brandPrimary)
+            .foregroundStyle(VikuColor.brandPrimary)
         }
         .buttonStyle(.plain)
         .textCase(nil)
@@ -1074,16 +1074,16 @@ private struct RelationKindPickerSheet: View {
                 Button {
                     onPick(kind)
                 } label: {
-                    HStack(spacing: VikunjaSpacing.sm) {
+                    HStack(spacing: VikuSpacing.sm) {
                         Image(systemName: "link")
                             .font(.system(size: 15))
-                            .foregroundStyle(VikunjaColor.brandPrimary)
+                            .foregroundStyle(VikuColor.brandPrimary)
                         Text(kind.displayName)
                             .foregroundStyle(Color.primary)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(VikunjaColor.textTertiary)
+                            .foregroundStyle(VikuColor.textTertiary)
                     }
                 }
                 .buttonStyle(.plain)
@@ -1124,8 +1124,8 @@ private struct RelationTaskPickerSheet: View {
                     VStack {
                         Spacer()
                         Text(isSearching ? "No results" : "No other tasks in this project")
-                            .font(VikunjaFont.subheadline)
-                            .foregroundStyle(VikunjaColor.textTertiary)
+                            .font(VikuFont.subheadline)
+                            .foregroundStyle(VikuColor.textTertiary)
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1170,34 +1170,34 @@ private struct RelationCandidateRow: View {
     private var priorityColor: Color? {
         switch task.priority {
         case .unset: nil
-        case .low: VikunjaColor.Priority.low
-        case .medium: VikunjaColor.Priority.medium
-        case .high: VikunjaColor.Priority.high
-        case .urgent, .doNow: VikunjaColor.Priority.urgent
+        case .low: VikuColor.Priority.low
+        case .medium: VikuColor.Priority.medium
+        case .high: VikuColor.Priority.high
+        case .urgent, .doNow: VikuColor.Priority.urgent
         }
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm) {
+        HStack(spacing: VikuSpacing.sm) {
             if let priorityColor {
                 Circle()
                     .fill(priorityColor)
                     .frame(width: 8, height: 8)
             }
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+            VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
                 Text(task.title)
                     .font(.system(size: 15))
                     .foregroundStyle(Color.primary)
                 if let projectTitle {
                     Text(projectTitle)
-                        .font(VikunjaFont.caption)
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .font(VikuFont.caption)
+                        .foregroundStyle(VikuColor.textTertiary)
                 }
             }
             Spacer()
             Image(systemName: "plus")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(VikunjaColor.brandPrimary)
+                .foregroundStyle(VikuColor.brandPrimary)
         }
     }
 }
@@ -1207,21 +1207,21 @@ private struct TaskDetailStatusView: View {
     let retryAction: () -> Void
 
     var body: some View {
-        VStack(spacing: VikunjaSpacing.sm) {
+        VStack(spacing: VikuSpacing.sm) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .foregroundStyle(VikuColor.textTertiary)
             Text("Couldn't load this task")
-                .font(VikunjaFont.headline)
+                .font(VikuFont.headline)
             Text(message)
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textSecondary)
                 .multilineTextAlignment(.center)
             Button("Try Again", action: retryAction)
                 .buttonStyle(.bordered)
-                .padding(.top, VikunjaSpacing.xs)
+                .padding(.top, VikuSpacing.xs)
         }
-        .padding(VikunjaSpacing.lg)
+        .padding(VikuSpacing.lg)
         .frame(maxWidth: .infinity)
     }
 }
@@ -1255,11 +1255,11 @@ private struct DueDatePickerSheet: View {
                             onSave(nil)
                             dismiss()
                         }
-                        .padding(.top, VikunjaSpacing.sm)
+                        .padding(.top, VikuSpacing.sm)
                     }
                 }
-                .padding(.horizontal, VikunjaSpacing.md)
-                .padding(.top, VikunjaSpacing.sm)
+                .padding(.horizontal, VikuSpacing.md)
+                .padding(.top, VikuSpacing.sm)
             }
             .navigationTitle("Due Date")
             #if os(iOS)
@@ -1296,7 +1296,7 @@ private struct LabelPickerSheet: View {
     @Bindable var viewModel: TaskDetailViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
-    @State private var pickedColor = VikunjaColor.SwatchPalette.swatches[0]
+    @State private var pickedColor = VikuColor.SwatchPalette.swatches[0]
 
     private var trimmedQuery: String {
         query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1314,7 +1314,7 @@ private struct LabelPickerSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+                VStack(alignment: .leading, spacing: VikuSpacing.xs) {
                     ForEach(filteredLabels) { label in
                         LabelPickerRow(label: label, isSelected: viewModel.task.labels.contains(label)) {
                             Task { await viewModel.toggleLabel(label) }
@@ -1330,7 +1330,7 @@ private struct LabelPickerSheet: View {
                         }
                     }
                 }
-                .padding(.vertical, VikunjaSpacing.sm)
+                .padding(.vertical, VikuSpacing.sm)
             }
             .searchable(text: $query, prompt: "Search or create label...")
             .navigationTitle("Labels")
@@ -1356,12 +1356,12 @@ private struct LabelPickerRow: View {
     let action: () -> Void
 
     private var color: Color {
-        Color(vikunjaHex: label.hexColor) ?? VikunjaColor.textSecondary
+        Color(vikuHex: label.hexColor) ?? VikuColor.textSecondary
     }
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 Circle()
                     .fill(color)
                     .frame(width: 10, height: 10)
@@ -1374,15 +1374,15 @@ private struct LabelPickerRow: View {
                 // up front that rows are multi-select, not "pick one".
                 LabelSelectionIndicator(isSelected: isSelected)
             }
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xs)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.sm + VikuSpacing.xs)
             .background(
-                isSelected ? VikunjaColor.Surface.field : Color.clear,
-                in: RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xxs, style: .continuous),
+                isSelected ? VikuColor.Surface.field : Color.clear,
+                in: RoundedRectangle(cornerRadius: VikuRadius.sm - VikuSpacing.xxs, style: .continuous),
             )
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, VikunjaSpacing.sm)
+        .padding(.horizontal, VikuSpacing.sm)
     }
 }
 
@@ -1396,21 +1396,21 @@ private struct LabelSelectionIndicator: View {
 
     var body: some View {
         Circle()
-            .strokeBorder(VikunjaColor.textTertiary.opacity(isSelected ? 0 : 0.4), lineWidth: 1.5)
-            .background(Circle().fill(VikunjaColor.textTertiary.opacity(isSelected ? 0.22 : 0)))
+            .strokeBorder(VikuColor.textTertiary.opacity(isSelected ? 0 : 0.4), lineWidth: 1.5)
+            .background(Circle().fill(VikuColor.textTertiary.opacity(isSelected ? 0.22 : 0)))
             .frame(width: size, height: size)
             .overlay {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.system(size: size * 0.46, weight: .bold))
-                        .foregroundStyle(VikunjaColor.textSecondary)
+                        .foregroundStyle(VikuColor.textSecondary)
                 }
             }
     }
 }
 
 /// Offered only once the search query doesn't match any existing label
-/// exactly — lets the user pick a swatch from `VikunjaColor.SwatchPalette`
+/// exactly — lets the user pick a swatch from `VikuColor.SwatchPalette`
 /// and create+attach the label in one tap.
 private struct CreateLabelCard: View {
     let title: String
@@ -1418,25 +1418,25 @@ private struct CreateLabelCard: View {
     let action: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.sm) {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm) {
             Text("Create New Label")
-                .font(VikunjaFont.footnote)
+                .font(VikuFont.footnote)
                 .fontWeight(.semibold)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .foregroundStyle(VikuColor.textSecondary)
 
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 Circle()
-                    .fill(Color(vikunjaHex: pickedColor) ?? VikunjaColor.brandPrimary)
+                    .fill(Color(vikuHex: pickedColor) ?? VikuColor.brandPrimary)
                     .frame(width: 12, height: 12)
                 Text("\"\(title)\"")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Color.primary)
             }
 
-            HStack(spacing: VikunjaSpacing.sm) {
-                ForEach(VikunjaColor.SwatchPalette.swatches, id: \.self) { swatch in
+            HStack(spacing: VikuSpacing.sm) {
+                ForEach(VikuColor.SwatchPalette.swatches, id: \.self) { swatch in
                     Circle()
-                        .fill(Color(vikunjaHex: swatch) ?? VikunjaColor.brandPrimary)
+                        .fill(Color(vikuHex: swatch) ?? VikuColor.brandPrimary)
                         .frame(width: 24, height: 24)
                         .overlay {
                             if swatch == pickedColor {
@@ -1452,15 +1452,15 @@ private struct CreateLabelCard: View {
                     .font(.system(size: 14.5, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, VikunjaSpacing.sm)
-                    .background(VikunjaColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+                    .padding(.vertical, VikuSpacing.sm)
+                    .background(VikuColor.brandPrimary, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
             }
             .buttonStyle(.plain)
         }
-        .padding(VikunjaSpacing.md - VikunjaSpacing.xxs)
-        .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
-        .padding(.horizontal, VikunjaSpacing.sm)
-        .padding(.top, VikunjaSpacing.xs)
+        .padding(VikuSpacing.md - VikuSpacing.xxs)
+        .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+        .padding(.horizontal, VikuSpacing.sm)
+        .padding(.top, VikuSpacing.xs)
     }
 }
 
@@ -1484,11 +1484,11 @@ private struct AttachmentsSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.xs) {
             if attachments.isEmpty, !isUploading {
                 Text(emptyStateMessage)
-                    .font(VikunjaFont.subheadline)
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .font(VikuFont.subheadline)
+                    .foregroundStyle(VikuColor.textTertiary)
             } else {
                 ForEach(attachments) { attachment in
                     AttachmentRow(
@@ -1508,18 +1508,18 @@ private struct AttachmentsSection: View {
 
 private struct AttachmentUploadingRow: View {
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm) {
+        HStack(spacing: VikuSpacing.sm) {
             ProgressView()
                 .frame(width: 28)
             Text("Uploading…")
                 .font(.system(size: 14.5, weight: .medium))
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .foregroundStyle(VikuColor.textSecondary)
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+        .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.xs + VikuSpacing.xxs)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+        .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
     }
 }
 
@@ -1536,13 +1536,13 @@ private struct AttachmentRow: View {
 
     var body: some View {
         Button(action: onOpen) {
-            HStack(spacing: VikunjaSpacing.sm) {
+            HStack(spacing: VikuSpacing.sm) {
                 Image(systemName: AttachmentIcon.systemName(forMimeType: attachment.mimeType))
                     .font(.system(size: 17))
-                    .foregroundStyle(VikunjaColor.brandPrimary)
+                    .foregroundStyle(VikuColor.brandPrimary)
                     .frame(width: 28)
 
-                VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
                     Text(attachment.fileName)
                         .font(.system(size: 14.5, weight: .medium))
                         .foregroundStyle(Color.primary)
@@ -1550,26 +1550,26 @@ private struct AttachmentRow: View {
                         .truncationMode(.middle)
                     Text(subtitle)
                         .font(.system(size: 12))
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .foregroundStyle(VikuColor.textTertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Image(systemName: "arrow.down.circle")
                     .font(.system(size: 15))
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .foregroundStyle(VikuColor.textTertiary)
             }
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.xs + VikuSpacing.xxs)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+            .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
         }
         .buttonStyle(.plain)
         .contextMenu {
             // `role: .destructive` alone renders blue here — the tab bar's
-            // `.tint(VikunjaColor.brandPrimary)` leaks in, same as
+            // `.tint(VikuColor.brandPrimary)` leaks in, same as
             // `CommentRow`'s context menu.
             Button("Delete Attachment", systemImage: "trash", role: .destructive, action: onDelete)
-                .tint(VikunjaColor.Semantic.danger)
+                .tint(VikuColor.Semantic.danger)
         }
     }
 }
@@ -1643,13 +1643,13 @@ private struct CommentsSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: VikunjaSpacing.md - VikunjaSpacing.xxs) {
+        VStack(alignment: .leading, spacing: VikuSpacing.md - VikuSpacing.xxs) {
             if comments.isEmpty {
                 Text(emptyStateMessage)
-                    .font(VikunjaFont.subheadline)
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .font(VikuFont.subheadline)
+                    .foregroundStyle(VikuColor.textTertiary)
             } else {
-                VStack(alignment: .leading, spacing: VikunjaSpacing.md - VikunjaSpacing.xxs) {
+                VStack(alignment: .leading, spacing: VikuSpacing.md - VikuSpacing.xxs) {
                     ForEach(comments) { comment in
                         CommentRow(
                             comment: comment,
@@ -1686,43 +1686,43 @@ private struct CommentRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: VikunjaSpacing.sm) {
+        HStack(alignment: .top, spacing: VikuSpacing.sm) {
             Circle()
-                .fill(VikunjaColor.Surface.field)
+                .fill(VikuColor.Surface.field)
                 .frame(width: 30, height: 30)
                 .overlay {
                     Text(initials)
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(VikunjaColor.textSecondary)
+                        .foregroundStyle(VikuColor.textSecondary)
                 }
 
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
-                HStack(alignment: .firstTextBaseline, spacing: VikunjaSpacing.xs) {
+            VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
+                HStack(alignment: .firstTextBaseline, spacing: VikuSpacing.xs) {
                     Text(displayName)
                         .font(.system(size: 13.5, weight: .bold))
                         .foregroundStyle(Color.primary)
                     Text(CommentTimeFormatter.string(for: comment.created))
                         .font(.system(size: 12))
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .foregroundStyle(VikuColor.textTertiary)
                 }
                 Text(CommentTextFormatter.plainText(from: comment.comment))
                     .font(.system(size: 14.5))
-                    .foregroundStyle(VikunjaColor.textSecondary)
+                    .foregroundStyle(VikuColor.textSecondary)
             }
-            .padding(.horizontal, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-            .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+            .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.xs + VikuSpacing.xxs)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.md, style: .continuous))
+            .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.md, style: .continuous))
         }
         .contentShape(Rectangle())
         .contextMenu {
             Button("Edit Comment", systemImage: "pencil", action: onEdit)
             // `role: .destructive` alone renders blue here, not red: the tab
-            // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
+            // bar's `.tint(VikuColor.brandPrimary)` leaks into the context
             // menu — an explicit `.tint` is what forces the red, mirroring
             // `ProjectTaskRow`'s context menu in `Features/Projects`.
             Button("Delete Comment", systemImage: "trash", role: .destructive, action: onDelete)
-                .tint(VikunjaColor.Semantic.danger)
+                .tint(VikuColor.Semantic.danger)
         }
     }
 }
@@ -1736,28 +1736,28 @@ private struct CommentComposer: View {
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.xs) {
+        HStack(spacing: VikuSpacing.xs) {
             TextField("Write a comment...", text: $draft)
                 .font(.system(size: 15))
                 .foregroundStyle(Color.primary)
                 .submitLabel(.send)
                 .onSubmit(onSubmit)
-                .padding(.leading, VikunjaSpacing.sm)
-                .padding(.vertical, VikunjaSpacing.xs + VikunjaSpacing.xxs)
+                .padding(.leading, VikuSpacing.sm)
+                .padding(.vertical, VikuSpacing.xs + VikuSpacing.xxs)
 
             Button(action: onSubmit) {
                 Image(systemName: "paperplane.fill")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(canSubmit ? .white : VikunjaColor.textTertiary)
+                    .foregroundStyle(canSubmit ? .white : VikuColor.textTertiary)
                     .frame(width: 34, height: 34)
-                    .background(canSubmit ? VikunjaColor.brandPrimary : VikunjaColor.Surface.field, in: Circle())
+                    .background(canSubmit ? VikuColor.brandPrimary : VikuColor.Surface.field, in: Circle())
             }
             .buttonStyle(.plain)
             .disabled(!canSubmit)
         }
-        .padding(.trailing, VikunjaSpacing.xxs)
-        .padding(.vertical, VikunjaSpacing.xxs)
-        .background(VikunjaColor.Surface.card, in: Capsule())
+        .padding(.trailing, VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.xxs)
+        .background(VikuColor.Surface.card, in: Capsule())
     }
 }
 
@@ -1791,10 +1791,10 @@ private struct EditCommentSheet: View {
                 TextField("Comment", text: $draft, axis: .vertical)
                     .font(.system(size: 15))
                     .foregroundStyle(Color.primary)
-                    .padding(VikunjaSpacing.sm)
-                    .background(VikunjaColor.Surface.card, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
-                    .padding(.horizontal, VikunjaSpacing.md)
-                    .padding(.top, VikunjaSpacing.md)
+                    .padding(VikuSpacing.sm)
+                    .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
+                    .padding(.horizontal, VikuSpacing.md)
+                    .padding(.top, VikuSpacing.md)
             }
             .navigationTitle("Edit Comment")
             #if os(iOS)

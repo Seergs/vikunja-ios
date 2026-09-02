@@ -36,14 +36,14 @@ public struct QuickAddSheetView: View {
 
     public var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: VikunjaSpacing.md) {
+            VStack(alignment: .leading, spacing: VikuSpacing.md) {
                 TextField("Task title", text: $viewModel.title)
-                    .font(VikunjaFont.body)
+                    .font(VikuFont.body)
                     .focused($isTitleFocused)
                     .submitLabel(.done)
-                    .padding(.horizontal, VikunjaSpacing.md - VikunjaSpacing.xxs)
-                    .padding(.vertical, VikunjaSpacing.sm + VikunjaSpacing.xxs)
-                    .background(VikunjaColor.Surface.field, in: RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous))
+                    .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+                    .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+                    .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
 
                 projectSection
 
@@ -54,8 +54,8 @@ public struct QuickAddSheetView: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
-            .padding(.horizontal, VikunjaSpacing.md)
-            .padding(.top, VikunjaSpacing.md)
+            .padding(.horizontal, VikuSpacing.md)
+            .padding(.top, VikuSpacing.md)
             // Anchored to the top: when the keyboard nudges the sheet up to
             // its taller detent, the slack falls below the priority chips
             // instead of being split above and below a vertically-centered
@@ -91,7 +91,7 @@ public struct QuickAddSheetView: View {
             }
         }
         .presentationDetents([.height(detentHeight)])
-        .presentationCornerRadius(VikunjaRadius.lg + VikunjaSpacing.sm)
+        .presentationCornerRadius(VikuRadius.lg + VikuSpacing.sm)
         .sheet(isPresented: $isShowingProjectPicker) {
             ProjectPickerSheet(
                 title: "Choose Project",
@@ -112,12 +112,12 @@ public struct QuickAddSheetView: View {
         switch viewModel.loadState {
         case let .failure(message):
             Text(message)
-                .font(VikunjaFont.footnote)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.footnote)
+                .foregroundStyle(VikuColor.textSecondary)
         case .loading, .idle:
             ProgressView()
         case .loaded:
-            VStack(alignment: .leading, spacing: VikunjaSpacing.sm - VikunjaSpacing.xxs) {
+            VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
                 FieldLabel("Project")
                 ProjectField(project: viewModel.selectedProject) {
                     isShowingProjectPicker = true

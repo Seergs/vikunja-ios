@@ -77,7 +77,7 @@ struct ProjectsView: View {
             case .idle, .loading:
                 ProgressView()
                     .frame(maxWidth: .infinity)
-                    .padding(.top, VikunjaSpacing.xxl)
+                    .padding(.top, VikuSpacing.xxl)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
             case let .failure(message):
@@ -88,7 +88,7 @@ struct ProjectsView: View {
                 ) {
                     Task { await viewModel.load() }
                 }
-                .padding(.top, VikunjaSpacing.xxl)
+                .padding(.top, VikuSpacing.xxl)
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             case .loaded where viewModel.rootNodes.isEmpty:
@@ -97,7 +97,7 @@ struct ProjectsView: View {
                     title: "No projects yet",
                     message: "Projects you create on your Vikunja instance will show up here.",
                 )
-                .padding(.top, VikunjaSpacing.xxl)
+                .padding(.top, VikuSpacing.xxl)
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             case .loaded:
@@ -117,8 +117,8 @@ struct ProjectsView: View {
                     }
                 } header: {
                     Text(Self.countText(for: viewModel.rootNodes))
-                        .font(VikunjaFont.subheadline)
-                        .foregroundStyle(VikunjaColor.textSecondary)
+                        .font(VikuFont.subheadline)
+                        .foregroundStyle(VikuColor.textSecondary)
                         .textCase(nil)
                 }
             }
@@ -193,12 +193,12 @@ private struct ProjectRow: View {
     let onDelete: () -> Void
 
     private var swatchColor: Color {
-        Color(vikunjaHex: project.hexColor) ?? VikunjaColor.brandPrimary
+        Color(vikuHex: project.hexColor) ?? VikuColor.brandPrimary
     }
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
-            RoundedRectangle(cornerRadius: VikunjaRadius.sm, style: .continuous)
+        HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
+            RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous)
                 .fill(swatchColor.opacity(0.16))
                 .frame(width: 34, height: 34)
                 .overlay {
@@ -207,9 +207,9 @@ private struct ProjectRow: View {
                         .frame(width: 12, height: 12)
                 }
 
-            VStack(alignment: .leading, spacing: VikunjaSpacing.xs) {
+            VStack(alignment: .leading, spacing: VikuSpacing.xs) {
                 Text(project.title)
-                    .font(VikunjaFont.body)
+                    .font(VikuFont.body)
                     .fontWeight(.semibold)
                     .lineLimit(1)
 
@@ -226,8 +226,8 @@ private struct ProjectRow: View {
                             ProjectProgressCount(summary: taskSummary, color: swatchColor)
                         } else {
                             Text("No tasks")
-                                .font(VikunjaFont.caption)
-                                .foregroundStyle(VikunjaColor.textTertiary)
+                                .font(VikuFont.caption)
+                                .foregroundStyle(VikuColor.textTertiary)
                         }
                     } else {
                         ProjectProgressCount(
@@ -240,13 +240,13 @@ private struct ProjectRow: View {
                 .animation(.easeInOut(duration: 0.2), value: taskSummary)
             }
 
-            Spacer(minLength: VikunjaSpacing.sm)
+            Spacer(minLength: VikuSpacing.sm)
 
             if hasChildren {
                 Button(action: onToggleExpand) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .foregroundStyle(VikuColor.textTertiary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                         .frame(width: 32, height: 32)
                         .contentShape(Rectangle())
@@ -255,16 +255,16 @@ private struct ProjectRow: View {
                 .accessibilityLabel(isExpanded ? "Collapse" : "Expand")
             }
         }
-        .padding(.leading, CGFloat(level) * VikunjaSpacing.lg)
+        .padding(.leading, CGFloat(level) * VikuSpacing.lg)
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
         .contextMenu {
             Button("Edit Project", systemImage: "pencil", action: { onEdit(project) })
             // `role: .destructive` alone renders blue here, not red: the tab
-            // bar's `.tint(VikunjaColor.brandPrimary)` leaks into the context
+            // bar's `.tint(VikuColor.brandPrimary)` leaks into the context
             // menu and overrides the role's tint. Pin it back to danger.
             Button("Delete Project", systemImage: "trash", role: .destructive, action: onDelete)
-                .tint(VikunjaColor.Semantic.danger)
+                .tint(VikuColor.Semantic.danger)
         }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isButton)
@@ -279,11 +279,11 @@ private struct ProjectProgressCount: View {
     let color: Color
 
     var body: some View {
-        HStack(spacing: VikunjaSpacing.sm) {
+        HStack(spacing: VikuSpacing.sm) {
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(VikunjaColor.Surface.field)
+                        .fill(VikuColor.Surface.field)
                     Capsule()
                         .fill(color)
                         .frame(width: proxy.size.width * summary.fraction)
@@ -292,8 +292,8 @@ private struct ProjectProgressCount: View {
             .frame(width: 120, height: 4)
 
             Text("\(summary.done)/\(summary.total)")
-                .font(VikunjaFont.caption)
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .font(VikuFont.caption)
+                .foregroundStyle(VikuColor.textTertiary)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(summary.done) of \(summary.total) tasks completed")
@@ -321,26 +321,26 @@ private struct ProjectsStatusView: View {
     var retryAction: (() -> Void)?
 
     var body: some View {
-        VStack(spacing: VikunjaSpacing.sm) {
+        VStack(spacing: VikuSpacing.sm) {
             Image(systemName: systemImage)
                 .font(.system(size: 40))
-                .foregroundStyle(VikunjaColor.textTertiary)
+                .foregroundStyle(VikuColor.textTertiary)
 
             Text(title)
-                .font(VikunjaFont.headline)
+                .font(VikuFont.headline)
 
             Text(message)
-                .font(VikunjaFont.subheadline)
-                .foregroundStyle(VikunjaColor.textSecondary)
+                .font(VikuFont.subheadline)
+                .foregroundStyle(VikuColor.textSecondary)
                 .multilineTextAlignment(.center)
 
             if let retryAction {
                 Button("Try Again", action: retryAction)
                     .buttonStyle(.bordered)
-                    .padding(.top, VikunjaSpacing.xs)
+                    .padding(.top, VikuSpacing.xs)
             }
         }
-        .padding(VikunjaSpacing.lg)
+        .padding(VikuSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Platform-adaptive backgrounds backing `VikunjaColor.Surface`. Wrapped here so
+/// Platform-adaptive backgrounds backing `VikuColor.Surface`. Wrapped here so
 /// the token file itself stays free of `#if os(...)` branching — this package
 /// also builds for macOS to run its tests, where `UIColor` doesn't exist.
 extension Color {

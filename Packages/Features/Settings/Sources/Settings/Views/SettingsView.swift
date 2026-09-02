@@ -45,23 +45,23 @@ private struct SettingsNavigationRow: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: VikunjaSpacing.sm + VikunjaSpacing.xxs) {
-                RoundedRectangle(cornerRadius: VikunjaRadius.sm - VikunjaSpacing.xs, style: .continuous)
-                    .fill(VikunjaColor.brandPrimary.opacity(0.14))
+            HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
+                RoundedRectangle(cornerRadius: VikuRadius.sm - VikuSpacing.xs, style: .continuous)
+                    .fill(VikuColor.brandPrimary.opacity(0.14))
                     .frame(width: 34, height: 34)
                     .overlay {
                         Image(systemName: icon)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(VikunjaColor.brandPrimary)
+                            .foregroundStyle(VikuColor.brandPrimary)
                     }
 
-                VStack(alignment: .leading, spacing: VikunjaSpacing.xxs) {
+                VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
                     Text(title)
-                        .font(VikunjaFont.body)
+                        .font(VikuFont.body)
                         .foregroundStyle(Color.primary)
                     Text(subtitle)
-                        .font(VikunjaFont.footnote)
-                        .foregroundStyle(VikunjaColor.textTertiary)
+                        .font(VikuFont.footnote)
+                        .foregroundStyle(VikuColor.textTertiary)
                         .lineLimit(1)
                 }
 
@@ -69,7 +69,7 @@ private struct SettingsNavigationRow: View {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(VikunjaColor.textTertiary)
+                    .foregroundStyle(VikuColor.textTertiary)
             }
             // Without this, `.buttonStyle(.plain)` only treats the
             // icon/text/chevron themselves as tappable, not the transparent
