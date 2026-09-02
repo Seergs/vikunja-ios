@@ -133,7 +133,9 @@ struct InstanceSetupViewModelTests {
 
         await viewModel.saveConnection()
 
-        #expect(viewModel.validationState == .failure("Couldn't reach that server. Check the address and your connection."))
+        #expect(
+            viewModel.validationState == .failure("Couldn't reach that server. Check the address and your connection."),
+        )
         #expect(accountStore.addAccountCallCount == 0)
     }
 
@@ -187,7 +189,9 @@ struct InstanceSetupViewModelTests {
 
         await viewModel.testConnection()
 
-        #expect(viewModel.validationState == .failure("Couldn't reach that server. Check the address and your connection."))
+        #expect(
+            viewModel.validationState == .failure("Couldn't reach that server. Check the address and your connection."),
+        )
     }
 
     @Test
