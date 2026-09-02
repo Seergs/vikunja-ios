@@ -11,7 +11,7 @@ struct DueDateFormatterTests {
         components.month = 6
         components.day = 15
         components.hour = 9
-        return Calendar.current.date(from: components)!
+        return Calendar.current.date(from: components) ?? .distantPast
     }()
 
     @Test
