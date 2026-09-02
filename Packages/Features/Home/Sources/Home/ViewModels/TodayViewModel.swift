@@ -26,15 +26,18 @@ public final class TodayViewModel {
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
+    private let hapticPresenter: HapticFeedbackPresenting
 
     public init(
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting,
+        hapticPresenter: HapticFeedbackPresenting = NoopHapticFeedback(),
     ) {
         self.taskRepository = taskRepository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
+        self.hapticPresenter = hapticPresenter
     }
 
     /// Skips the `.loading` transition when there's already loaded content
@@ -86,6 +89,9 @@ public final class TodayViewModel {
         var updated = task
         updated.isDone.toggle()
         tasks[index] = updated
+        if updated.isDone {
+            hapticPresenter.play(.success)
+        }
         do {
             tasks[index] = try await taskRepository.update(updated)
         } catch {

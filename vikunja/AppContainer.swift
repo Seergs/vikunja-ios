@@ -109,6 +109,7 @@ final class AppContainer {
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             toastPresenter: toastCenter,
+            hapticPresenter: hapticCenter,
         )
     }
 
@@ -151,6 +152,7 @@ final class AppContainer {
             repository: repository,
             projectRepository: projectRepository,
             toastPresenter: toastCenter,
+            hapticPresenter: hapticCenter,
             quickAddContext: quickAddContext,
         )
     }
@@ -184,6 +186,7 @@ final class AppContainer {
             attachmentRepository: attachmentRepository,
             projectRepository: projectRepository,
             toastPresenter: toastCenter,
+            hapticPresenter: hapticCenter,
             quickAddContext: quickAddContext,
         )
     }
@@ -243,6 +246,7 @@ final class AppContainer {
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             toastPresenter: toastCenter,
+            hapticPresenter: hapticCenter,
         )
     }
 }

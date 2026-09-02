@@ -107,4 +107,26 @@ struct TodayViewModelTests {
 
         #expect(viewModel.tasks[0].isDone == false)
     }
+
+    @Test
+    func `completing a task plays a success haptic but un-completing does not`() async {
+        let projectRepository = FakeProjectRepository()
+        projectRepository.projects = [Project(id: 1, title: "Work")]
+        let taskRepository = FakeTaskRepository()
+        taskRepository.tasks = [VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1)]
+        let haptics = FakeHapticPresenter()
+        let viewModel = TodayViewModel(
+            taskRepository: taskRepository,
+            projectRepository: projectRepository,
+            toastPresenter: FakeToastPresenter(),
+            hapticPresenter: haptics,
+        )
+        await viewModel.load()
+
+        await viewModel.toggleDone(viewModel.tasks[0])
+        #expect(haptics.played == [.success])
+
+        await viewModel.toggleDone(viewModel.tasks[0])
+        #expect(haptics.played == [.success])
+    }
 }

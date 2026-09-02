@@ -31,6 +31,7 @@ public final class ProjectOverviewViewModel {
     private let repository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
+    private let hapticPresenter: HapticFeedbackPresenting
     /// Set by `AppContainer` so this screen can tell the globally-presented
     /// quick-add sheet which project to default to while it's on screen.
     /// Optional so tests and any caller that doesn't care can skip it.
@@ -42,6 +43,7 @@ public final class ProjectOverviewViewModel {
         repository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting,
+        hapticPresenter: HapticFeedbackPresenting = NoopHapticFeedback(),
         quickAddContext: QuickAddContextTracking? = nil,
     ) {
         self.project = project
@@ -49,6 +51,7 @@ public final class ProjectOverviewViewModel {
         self.repository = repository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
+        self.hapticPresenter = hapticPresenter
         self.quickAddContext = quickAddContext
     }
 
@@ -120,6 +123,9 @@ public final class ProjectOverviewViewModel {
         var updated = task
         updated.isDone.toggle()
         tasks[index] = updated
+        if updated.isDone {
+            hapticPresenter.play(.success)
+        }
         do {
             tasks[index] = try await repository.update(updated)
         } catch {

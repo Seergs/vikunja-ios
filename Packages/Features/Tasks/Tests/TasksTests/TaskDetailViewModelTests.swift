@@ -169,6 +169,29 @@ struct TaskDetailViewModelTests {
     }
 
     @Test
+    func `completing a task plays a success haptic but un-completing does not`() async {
+        let haptics = FakeHapticPresenter()
+        let viewModel = TaskDetailViewModel(
+            task: VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1),
+            project: Project(id: 1, title: "Work"),
+            repository: FakeTaskRepository(),
+            labelRepository: FakeLabelRepository(),
+            relationRepository: FakeTaskRelationRepository(),
+            commentRepository: FakeTaskCommentRepository(),
+            attachmentRepository: FakeTaskAttachmentRepository(),
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+            hapticPresenter: haptics,
+        )
+
+        await viewModel.toggleDone()
+        #expect(haptics.played == [.success])
+
+        await viewModel.toggleDone()
+        #expect(haptics.played == [.success])
+    }
+
+    @Test
     func `set due date persists the chosen date`() async {
         let repository = FakeTaskRepository()
         let viewModel = TaskDetailViewModel(

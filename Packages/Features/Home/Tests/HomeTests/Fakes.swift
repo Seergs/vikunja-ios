@@ -85,3 +85,11 @@ final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
         shownMessages.append((message, style))
     }
 }
+
+final class FakeHapticPresenter: HapticFeedbackPresenting, @unchecked Sendable {
+    private(set) var played: [HapticStyle] = []
+
+    func play(_ style: HapticStyle) {
+        played.append(style)
+    }
+}

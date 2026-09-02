@@ -49,6 +49,7 @@ public final class TaskDetailViewModel {
     private let attachmentRepository: TaskAttachmentRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
+    private let hapticPresenter: HapticFeedbackPresenting
     /// Set by `AppContainer` so a quick-add opened while this task is on
     /// screen defaults to the task's project. Optional so tests and any
     /// caller that doesn't care can skip it.
@@ -64,6 +65,7 @@ public final class TaskDetailViewModel {
         attachmentRepository: TaskAttachmentRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting,
+        hapticPresenter: HapticFeedbackPresenting = NoopHapticFeedback(),
         quickAddContext: QuickAddContextTracking? = nil,
     ) {
         self.task = task
@@ -75,6 +77,7 @@ public final class TaskDetailViewModel {
         self.attachmentRepository = attachmentRepository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
+        self.hapticPresenter = hapticPresenter
         self.quickAddContext = quickAddContext
     }
 
@@ -109,6 +112,9 @@ public final class TaskDetailViewModel {
     public func toggleDone() async {
         let previous = task
         task.isDone.toggle()
+        if task.isDone {
+            hapticPresenter.play(.success)
+        }
         await persist(previous: previous)
     }
 

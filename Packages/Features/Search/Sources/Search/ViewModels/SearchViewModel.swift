@@ -12,6 +12,7 @@ public final class SearchViewModel {
     private let taskRepository: TaskRepositoryProtocol
     private let projectRepository: ProjectRepositoryProtocol
     private let toastPresenter: ToastPresenting
+    private let hapticPresenter: HapticFeedbackPresenting
 
     var query = ""
     var state = ScreenLoadState<[VikunjaTask]>.idle
@@ -24,10 +25,12 @@ public final class SearchViewModel {
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
         toastPresenter: ToastPresenting,
+        hapticPresenter: HapticFeedbackPresenting = NoopHapticFeedback(),
     ) {
         self.taskRepository = taskRepository
         self.projectRepository = projectRepository
         self.toastPresenter = toastPresenter
+        self.hapticPresenter = hapticPresenter
     }
 
     /// Called on every change to `query`. Debounces, then searches.
@@ -78,6 +81,9 @@ public final class SearchViewModel {
     public func toggleDone(_ task: VikunjaTask) async {
         var updated = task
         updated.isDone.toggle()
+        if updated.isDone {
+            hapticPresenter.play(.success)
+        }
 
         do {
             let response = try await taskRepository.update(updated)

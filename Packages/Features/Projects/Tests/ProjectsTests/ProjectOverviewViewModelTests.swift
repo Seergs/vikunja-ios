@@ -179,6 +179,27 @@ struct ProjectOverviewViewModelTests {
     }
 
     @Test
+    func `completing a task plays a success haptic but un-completing does not`() async {
+        let repository = FakeTaskRepository()
+        repository.tasks = [VikunjaTask(id: 1, title: "Write report", isDone: false, projectID: 1)]
+        let haptics = FakeHapticPresenter()
+        let viewModel = ProjectOverviewViewModel(
+            project: Project(id: 1, title: "Work"),
+            repository: repository,
+            projectRepository: FakeProjectRepository(),
+            toastPresenter: FakeToastPresenter(),
+            hapticPresenter: haptics,
+        )
+        await viewModel.load()
+
+        await viewModel.toggleDone(viewModel.tasks[0])
+        #expect(haptics.played == [.success])
+
+        await viewModel.toggleDone(viewModel.tasks[0])
+        #expect(haptics.played == [.success])
+    }
+
+    @Test
     func `delete removes the task and shows A success toast`() async {
         let repository = FakeTaskRepository()
         repository.tasks = [

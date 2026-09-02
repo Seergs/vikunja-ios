@@ -100,6 +100,14 @@ final class FakeToastPresenter: ToastPresenting, @unchecked Sendable {
     }
 }
 
+final class FakeHapticPresenter: HapticFeedbackPresenting, @unchecked Sendable {
+    private(set) var played: [HapticStyle] = []
+
+    func play(_ style: HapticStyle) {
+        played.append(style)
+    }
+}
+
 @MainActor
 final class FakeQuickAddContext: QuickAddContextTracking {
     private(set) var scopes: [Int] = []
