@@ -26,6 +26,14 @@ final class AppContainer {
     /// needs to surface a toast (e.g. `toastPresenter:` in a `make...ViewModel`
     /// factory below); it never needs to import `VikunjaDesignSystem` itself.
     let toastCenter = ToastCenter()
+    /// The app's single Taptic Engine — see `HapticFeedbackCenter`. Pass this
+    /// as `HapticFeedbackPresenting` to any ViewModel that needs to fire a
+    /// haptic from its own logic (e.g. add a `hapticPresenter:` parameter to
+    /// the relevant `make...ViewModel` factory below, exactly like
+    /// `toastPresenter:`); the ViewModel never imports `VikunjaDesignSystem`.
+    /// A purely view-driven tap should use `View.vikunjaHaptic(_:trigger:)`
+    /// instead and needs nothing from here.
+    let hapticCenter = HapticFeedbackCenter()
     /// Tracks which project (if any) the visible screen represents, so the
     /// tab-bar quick-add sheet defaults to it — see `QuickAddContext`.
     let quickAddContext = QuickAddContext()
