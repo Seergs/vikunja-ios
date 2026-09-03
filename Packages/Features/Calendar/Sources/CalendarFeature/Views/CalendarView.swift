@@ -144,7 +144,7 @@ struct CalendarView: View {
                     }
                 }
             }
-            .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.lg, style: .continuous))
+            .background(VikuColor.Surface.card, in: cardShape)
             .padding(.horizontal, VikuSpacing.md)
         }
     }
