@@ -54,7 +54,7 @@ public struct GlyphTimelineProvider: TimelineProvider {
 struct GlyphWidgetView: View {
     var body: some View {
         GeometryReader { geo in
-            let d = min(geo.size.width, geo.size.height)
+            let side = min(geo.size.width, geo.size.height)
             ZStack {
                 // Explicit disc: `AccessoryWidgetBackground` on its own doesn't
                 // reliably show on the Lock Screen here, so draw the frosted
@@ -63,9 +63,9 @@ struct GlyphWidgetView: View {
                 Circle().fill(.white.opacity(0.16))
                 VikuGlyphMark()
                     .widgetAccentable()
-                    .frame(width: d * 0.46, height: d * 0.46)
+                    .frame(width: side * 0.46, height: side * 0.46)
             }
-            .frame(width: d, height: d)
+            .frame(width: side, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .widgetURL(URL(string: "\(VikuWidgetConfig.urlScheme)://today"))
@@ -81,20 +81,20 @@ struct GlyphWidgetView: View {
 struct VikuGlyphMark: View {
     var body: some View {
         GeometryReader { geo in
-            let s = min(geo.size.width, geo.size.height)
-            RoundedRectangle(cornerRadius: s * 0.235, style: .continuous)
+            let side = min(geo.size.width, geo.size.height)
+            RoundedRectangle(cornerRadius: side * 0.235, style: .continuous)
                 .overlay {
                     ZStack {
                         GlyphCheckmark()
-                            .stroke(style: StrokeStyle(lineWidth: s * 0.125, lineCap: .round, lineJoin: .round))
+                            .stroke(style: StrokeStyle(lineWidth: side * 0.125, lineCap: .round, lineJoin: .round))
                         Circle()
-                            .frame(width: s * 0.11, height: s * 0.11)
-                            .position(x: s * 0.23, y: s * 0.19)
+                            .frame(width: side * 0.11, height: side * 0.11)
+                            .position(x: side * 0.23, y: side * 0.19)
                     }
                     .blendMode(.destinationOut)
                 }
                 .compositingGroup()
-                .frame(width: s, height: s)
+                .frame(width: side, height: side)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -102,10 +102,10 @@ struct VikuGlyphMark: View {
 
 private struct GlyphCheckmark: Shape {
     func path(in rect: CGRect) -> Path {
-        let s = min(rect.width, rect.height)
-        let ox = rect.minX + (rect.width - s) / 2
-        let oy = rect.minY + (rect.height - s) / 2
-        func p(_ fx: CGFloat, _ fy: CGFloat) -> CGPoint { CGPoint(x: ox + fx * s, y: oy + fy * s) }
+        let side = min(rect.width, rect.height)
+        let ox = rect.minX + (rect.width - side) / 2
+        let oy = rect.minY + (rect.height - side) / 2
+        func p(_ fx: CGFloat, _ fy: CGFloat) -> CGPoint { CGPoint(x: ox + fx * side, y: oy + fy * side) }
         var path = Path()
         path.move(to: p(0.29, 0.52))
         path.addLine(to: p(0.44, 0.67))
