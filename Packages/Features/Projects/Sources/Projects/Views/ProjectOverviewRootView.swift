@@ -52,6 +52,13 @@ public struct ProjectOverviewRootView: View {
             },
             onEditProject: { editingProject = $0 },
         )
+        // Pushed from a `.inline`-titled screen (Tasks' `TaskDetailView`), a
+        // pushed screen inherits that inline mode by default — force the large
+        // title so this looks the same as reaching the project from its own
+        // tab.
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.large)
+        #endif
         // Concrete-typed content (another `ProjectOverviewRootView`), so this
         // one doesn't need the box treatment below — see
         // `TaskDestinationBox`'s doc comment.
