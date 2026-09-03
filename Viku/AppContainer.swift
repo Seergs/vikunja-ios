@@ -1,3 +1,4 @@
+import CalendarFeature
 import Foundation
 import Home
 import Onboarding
@@ -113,6 +114,21 @@ final class AppContainer {
                 tokenProvider: tokenProvider,
             ),
             toastPresenter: toastCenter,
+            hapticPresenter: hapticCenter,
+        )
+    }
+
+    func makeCalendarViewModel(account: InstanceAccount) -> CalendarViewModel {
+        let accountStore = accountStore
+        let tokenProvider: @Sendable () async -> String? = {
+            try? await accountStore.token(forAccountID: account.id)
+        }
+        return CalendarViewModel(
+            taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
+            projectRepository: clientFactory.makeProjectRepository(
+                baseURL: account.baseURL,
+                tokenProvider: tokenProvider,
+            ),
             hapticPresenter: hapticCenter,
         )
     }
