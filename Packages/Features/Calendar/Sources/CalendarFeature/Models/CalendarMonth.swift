@@ -24,7 +24,9 @@ public struct CalendarMonth: Equatable, Sendable {
         /// ascending by due date, ties broken by id.
         public let tasks: [VikunjaTask]
 
-        public var id: Date { date }
+        public var id: Date {
+            date
+        }
 
         public var pendingTasks: [VikunjaTask] {
             tasks.filter { !$0.isDone }
@@ -44,7 +46,9 @@ public struct CalendarMonth: Equatable, Sendable {
             for task in pendingTasks where !seen.contains(task.projectID) {
                 seen.insert(task.projectID)
                 result.append(task.projectID)
-                if result.count == 3 { break }
+                if result.count == 3 {
+                    break
+                }
             }
             return result
         }
@@ -108,7 +112,9 @@ public struct CalendarMonth: Equatable, Sendable {
                 week = []
             }
         }
-        if !week.isEmpty { weeks.append(week) }
+        if !week.isEmpty {
+            weeks.append(week)
+        }
         self.weeks = weeks
     }
 
@@ -127,10 +133,14 @@ public struct CalendarMonth: Equatable, Sendable {
 
     private static func sorted(_ tasks: [VikunjaTask]) -> [VikunjaTask] {
         tasks.sorted { lhs, rhs in
-            if lhs.isDone != rhs.isDone { return !lhs.isDone }
+            if lhs.isDone != rhs.isDone {
+                return !lhs.isDone
+            }
             let lhsDate = lhs.dueDate ?? .distantFuture
             let rhsDate = rhs.dueDate ?? .distantFuture
-            if lhsDate != rhsDate { return lhsDate < rhsDate }
+            if lhsDate != rhsDate {
+                return lhsDate < rhsDate
+            }
             return lhs.id < rhs.id
         }
     }

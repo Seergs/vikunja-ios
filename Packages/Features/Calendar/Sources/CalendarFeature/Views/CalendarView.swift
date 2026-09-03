@@ -150,7 +150,9 @@ struct CalendarView: View {
     }
 
     private var selectedDayTitle: String {
-        if calendar.isDateInToday(selectedDay) { return "Today" }
+        if calendar.isDateInToday(selectedDay) {
+            return "Today"
+        }
         return selectedDay.formatted(.dateTime.weekday(.wide).month(.wide).day())
     }
 
@@ -186,7 +188,7 @@ private struct MonthGrid: View {
                     .padding(.bottom, VikuSpacing.xs)
             }
 
-            ForEach(month.weeks.flatMap { $0 }) { day in
+            ForEach(month.weeks.flatMap(\.self)) { day in
                 DayCell(
                     day: day,
                     isSelected: calendar.isDate(day.date, inSameDayAs: selectedDay),
@@ -209,9 +211,15 @@ private struct DayCell: View {
     let onTap: () -> Void
 
     private var numberColor: Color {
-        if isSelected { return .white }
-        if day.hasOverduePending { return VikuColor.Priority.urgent }
-        if !day.isInMonth { return VikuColor.textTertiary }
+        if isSelected {
+            return .white
+        }
+        if day.hasOverduePending {
+            return VikuColor.Priority.urgent
+        }
+        if !day.isInMonth {
+            return VikuColor.textTertiary
+        }
         return .primary
     }
 
