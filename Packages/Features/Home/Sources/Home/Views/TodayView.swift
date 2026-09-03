@@ -248,11 +248,15 @@ struct TodaySection: Identifiable {
         title
     }
 
-    static func sections(from tasks: [VikunjaTask], filter: TodayFilter) -> [TodaySection] {
+    static func sections(
+        from tasks: [VikunjaTask],
+        filter: TodayFilter,
+        now: Date = Date(),
+    ) -> [TodaySection] {
         // Bucketing/sorting lives in `VikunjaCore.TodayDigest` so the Today
         // widget shares the exact same rule; this just maps the buckets the
         // current filter keeps onto titled sections.
-        let digest = TodayDigest(tasks: tasks)
+        let digest = TodayDigest(tasks: tasks, now: now)
 
         let buckets: [(String, [VikunjaTask])] = switch filter {
         case .all:
