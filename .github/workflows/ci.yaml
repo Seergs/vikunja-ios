@@ -63,20 +63,35 @@ jobs:
 
 
   test:
-    name: Unit + UI Tests
+    name: Test (${{ matrix.scheme }})
     runs-on: macos-26
     needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        scheme:
+          - Home
+          - Onboarding
+          - Projects
+          - Settings
+          - Tasks
+          - VikuAuth
+          - VikuDesignSystem
+          - VikuNavigation
+          - VikunjaCore
+          - VikunjaNetworking
+          - VikuWidgetKit
     steps:
       - uses: actions/checkout@v7
 
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Run tests
+      - name: Run tests ${{ matrix.scheme }}
         run: |
           xcodebuild test \
           -project ${{ env.PROJECT }} \
-          -scheme ${{ env.SCHEME }} \
+          -scheme ${{ matrix.scheme }} \
           -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
           -resultBundlePath TestResults.xcresult \
           CODE_SIGNING_ALLOWED=NO
