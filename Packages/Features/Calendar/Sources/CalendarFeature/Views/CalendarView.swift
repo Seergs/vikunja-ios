@@ -41,6 +41,10 @@ struct CalendarView: View {
         }
     }
 
+    private var cardShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: VikuRadius.lg, style: .continuous)
+    }
+
     private var month: CalendarMonth {
         CalendarMonth(containing: monthAnchor, tasks: viewModel.tasks, calendar: calendar)
     }
@@ -60,7 +64,7 @@ struct CalendarView: View {
                     onSelect: { selectedDay = $0 },
                 )
                 .padding(VikuSpacing.md)
-                .background(VikuColor.Surface.card, in: RoundedRectangle(cornerRadius: VikuRadius.lg, style: .continuous))
+                .background(VikuColor.Surface.card, in: cardShape)
                 .padding(.horizontal, VikuSpacing.md)
 
                 selectedDaySection
