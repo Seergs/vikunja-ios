@@ -155,6 +155,9 @@ struct MainTabView: View {
                 makeOverviewViewModel: { node in
                     container.makeProjectOverviewViewModel(node: node, account: account)
                 },
+                makeEditProjectViewModel: { project in
+                    container.makeEditProjectViewModel(project: project, account: account)
+                },
                 taskDetailDestination: taskDetailDestination,
             ),
         )

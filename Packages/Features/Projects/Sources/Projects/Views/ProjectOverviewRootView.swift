@@ -22,17 +22,21 @@ import VikunjaCore
 public struct ProjectOverviewRootView: View {
     private let viewModel: ProjectOverviewViewModel
     private let makeOverviewViewModel: (ProjectNode) -> ProjectOverviewViewModel
+    private let makeEditProjectViewModel: (Project) -> EditProjectViewModel
     private let taskDetailDestination: (VikunjaTask, Project) -> AnyView
     @State private var subprojectDestination: ProjectNode?
     @State private var taskDestinationBox: TaskDestinationBox?
+    @State private var editingProject: Project?
 
     public init(
         viewModel: ProjectOverviewViewModel,
         makeOverviewViewModel: @escaping (ProjectNode) -> ProjectOverviewViewModel,
+        makeEditProjectViewModel: @escaping (Project) -> EditProjectViewModel,
         taskDetailDestination: @escaping (VikunjaTask, Project) -> AnyView,
     ) {
         self.viewModel = viewModel
         self.makeOverviewViewModel = makeOverviewViewModel
+        self.makeEditProjectViewModel = makeEditProjectViewModel
         self.taskDetailDestination = taskDetailDestination
     }
 
@@ -46,7 +50,7 @@ public struct ProjectOverviewRootView: View {
                     content: taskDetailDestination(task, viewModel.project),
                 )
             },
-            onEditProject: { _ in },
+            onEditProject: { editingProject = $0 },
         )
         // Concrete-typed content (another `ProjectOverviewRootView`), so this
         // one doesn't need the box treatment below — see
@@ -55,11 +59,19 @@ public struct ProjectOverviewRootView: View {
             ProjectOverviewRootView(
                 viewModel: makeOverviewViewModel(node),
                 makeOverviewViewModel: makeOverviewViewModel,
+                makeEditProjectViewModel: makeEditProjectViewModel,
                 taskDetailDestination: taskDetailDestination,
             )
         }
         .navigationDestination(item: $taskDestinationBox) { box in
             box.content
+        }
+        // `EditProjectSheetView` is a `.sheet` (not a route push), so this
+        // screen can present it without owning a `Router` — matching how
+        // `ProjectsRootView` wires the same edit button on its own stack.
+        .sheet(item: $editingProject) { project in
+            EditProjectSheetView(viewModel: makeEditProjectViewModel(project))
+                .presentationCompactAdaptation(.sheet)
         }
     }
 }
