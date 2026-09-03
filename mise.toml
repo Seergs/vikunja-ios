@@ -2,6 +2,7 @@
 [tools]
 swiftlint   = "0.65.1"
 swiftformat = "0.63.0"
+lefthook    = "2.1.12"
 
 [tasks.format]
 description = "Autoformat and autofix in place"
