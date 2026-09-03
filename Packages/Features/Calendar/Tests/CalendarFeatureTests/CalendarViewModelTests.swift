@@ -1,5 +1,5 @@
-import Foundation
 @testable import CalendarFeature
+import Foundation
 import Testing
 import VikunjaCore
 

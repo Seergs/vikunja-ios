@@ -105,7 +105,9 @@ private struct GlyphCheckmark: Shape {
         let side = min(rect.width, rect.height)
         let ox = rect.minX + (rect.width - side) / 2
         let oy = rect.minY + (rect.height - side) / 2
-        func p(_ fx: CGFloat, _ fy: CGFloat) -> CGPoint { CGPoint(x: ox + fx * side, y: oy + fy * side) }
+        func p(_ fx: CGFloat, _ fy: CGFloat) -> CGPoint {
+            CGPoint(x: ox + fx * side, y: oy + fy * side)
+        }
         var path = Path()
         path.move(to: p(0.29, 0.52))
         path.addLine(to: p(0.44, 0.67))
