@@ -6,6 +6,7 @@ import Foundation
 enum AppTab: Hashable, CaseIterable, Identifiable {
     case home
     case projects
+    case calendar
     case search
     case settings
 
@@ -17,6 +18,7 @@ enum AppTab: Hashable, CaseIterable, Identifiable {
         switch self {
         case .home: "Today"
         case .projects: "Projects"
+        case .calendar: "Calendar"
         case .search: "Search"
         case .settings: "Settings"
         }
@@ -26,6 +28,7 @@ enum AppTab: Hashable, CaseIterable, Identifiable {
         switch self {
         case .home: "calendar.badge.checkmark"
         case .projects: "square.grid.2x2"
+        case .calendar: "calendar"
         case .search: "magnifyingglass"
         case .settings: "gearshape"
         }

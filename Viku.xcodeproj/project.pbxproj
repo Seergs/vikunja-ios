@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0344D01DB80D7B74123FBB44 /* Projects in Frameworks */ = {isa = PBXBuildFile; productRef = 937703EA6DF786A17BC41E96 /* Projects */; };
 		062B1577A762434EAAEEAEAE /* Home in Frameworks */ = {isa = PBXBuildFile; productRef = 166A7A7237924DFA8CF44351 /* Home */; };
+		CA1EDA0000000000000000B2 /* CalendarFeature in Frameworks */ = {isa = PBXBuildFile; productRef = CA1EDA0000000000000000C3 /* CalendarFeature */; };
 		3C9B0F98E67BE7DBE14B395C /* Search in Frameworks */ = {isa = PBXBuildFile; productRef = DF94C158DB50FABAA1B462AE /* Search */; };
 		638AD6AC5148FFCCE7C85848 /* VikunjaNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = E2386D937B2547F27D7735C9 /* VikunjaNetworking */; };
 		6ACFD68581C4ED4510656534 /* Tasks in Frameworks */ = {isa = PBXBuildFile; productRef = CB1292EB9627A6D204BBA18B /* Tasks */; };
@@ -109,6 +110,7 @@
 				AF1A9958F7144C64A26AE7DE /* VikuAuth in Frameworks */,
 				EB2D2DA5CFF441EFB4450EF5 /* Onboarding in Frameworks */,
 				062B1577A762434EAAEEAEAE /* Home in Frameworks */,
+				CA1EDA0000000000000000B2 /* CalendarFeature in Frameworks */,
 				86F840DFA96537DF891EAEB6 /* VikuNavigation in Frameworks */,
 				0344D01DB80D7B74123FBB44 /* Projects in Frameworks */,
 				3C9B0F98E67BE7DBE14B395C /* Search in Frameworks */,
@@ -207,6 +209,7 @@
 				1EDAB22A2783416BA9F0AC6D /* VikuAuth */,
 				691135973B8B496295E14896 /* Onboarding */,
 				166A7A7237924DFA8CF44351 /* Home */,
+				CA1EDA0000000000000000C3 /* CalendarFeature */,
 				DE514324E51E7BE04FBC43F0 /* VikuNavigation */,
 				937703EA6DF786A17BC41E96 /* Projects */,
 				DF94C158DB50FABAA1B462AE /* Search */,
@@ -249,6 +252,7 @@
 				06F83FC1F5114AB2B901D1D6 /* XCLocalSwiftPackageReference "Packages/VikuAuth" */,
 				F4ED8517F32D4805BA91B284 /* XCLocalSwiftPackageReference "Packages/Features/Onboarding" */,
 				FE450F8737274DC4914D99E8 /* XCLocalSwiftPackageReference "Packages/Features/Home" */,
+				CA1EDA0000000000000000A1 /* XCLocalSwiftPackageReference "Packages/Features/Calendar" */,
 				D146E576D31867FAEE64F3E3 /* XCLocalSwiftPackageReference "Packages/VikuNavigation" */,
 				FB9B84FD97A6B958D6347015 /* XCLocalSwiftPackageReference "Packages/Features/Projects" */,
 				630BB56C29B87B52911E4F21 /* XCLocalSwiftPackageReference "Packages/Features/Search" */,
@@ -658,6 +662,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Features/Home;
 		};
+		CA1EDA0000000000000000A1 /* XCLocalSwiftPackageReference "Packages/Features/Calendar" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Features/Calendar;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -665,6 +673,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FE450F8737274DC4914D99E8 /* XCLocalSwiftPackageReference "Packages/Features/Home" */;
 			productName = Home;
+		};
+		CA1EDA0000000000000000C3 /* CalendarFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CA1EDA0000000000000000A1 /* XCLocalSwiftPackageReference "Packages/Features/Calendar" */;
+			productName = CalendarFeature;
 		};
 		1EDAB22A2783416BA9F0AC6D /* VikuAuth */ = {
 			isa = XCSwiftPackageProductDependency;

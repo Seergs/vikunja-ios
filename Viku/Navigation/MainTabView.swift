@@ -1,3 +1,4 @@
+import CalendarFeature
 import Home
 import Projects
 import Search
@@ -39,6 +40,7 @@ struct MainTabView: View {
     // tick) — which flashed a loading spinner on the tab being switched to.
     @State private var todayViewModel: TodayViewModel
     @State private var projectsViewModel: ProjectsListViewModel
+    @State private var calendarViewModel: CalendarViewModel
     @State private var searchViewModel: SearchViewModel
 
     init(account: InstanceAccount, container: AppContainer, onAccountsChanged: @escaping () -> Void) {
@@ -47,6 +49,7 @@ struct MainTabView: View {
         self.onAccountsChanged = onAccountsChanged
         _todayViewModel = State(initialValue: container.makeTodayViewModel(account: account))
         _projectsViewModel = State(initialValue: container.makeProjectsListViewModel(account: account))
+        _calendarViewModel = State(initialValue: container.makeCalendarViewModel(account: account))
         _searchViewModel = State(initialValue: container.makeSearchViewModel(account: account))
     }
 
@@ -71,6 +74,13 @@ struct MainTabView: View {
                     makeEditProjectViewModel: { project in
                         container.makeEditProjectViewModel(project: project, account: account)
                     },
+                    taskDetailDestination: taskDetailDestination,
+                )
+            }
+
+            Tab(AppTab.calendar.title, systemImage: AppTab.calendar.systemImage, value: .calendar) {
+                CalendarRootView(
+                    viewModel: calendarViewModel,
                     taskDetailDestination: taskDetailDestination,
                 )
             }
