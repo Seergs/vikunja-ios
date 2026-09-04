@@ -14,6 +14,7 @@ import WidgetKit
 struct VikuWidgetsBundle: WidgetBundle {
     var body: some Widget {
         TodayWidget()
+        CalendarWidget()
         QuickAddWidget()
         GlyphWidget()
         if #available(iOS 18.0, *) {
