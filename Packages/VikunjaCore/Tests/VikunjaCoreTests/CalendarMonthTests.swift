@@ -1,7 +1,6 @@
-@testable import CalendarFeature
 import Foundation
 import Testing
-import VikunjaCore
+@testable import VikunjaCore
 
 struct CalendarMonthTests {
     /// Monday-first Gregorian calendar in a fixed zone, so the grid layout is
@@ -50,10 +49,10 @@ struct CalendarMonthTests {
         let dueToday = Self.task(id: 1, due: Self.now)
         let month = CalendarMonth(containing: Self.anchor, tasks: [dueToday], now: Self.now, calendar: Self.calendar)
 
-        let todayCell = month.weeks.flatMap(\.self).first { $0.isToday }
+        let todayCell = month.weeks.flatMap { $0 }.first { $0.isToday }
         #expect(todayCell?.dayNumber == 15)
         #expect(todayCell?.tasks.map(\.id) == [1])
-        #expect(month.weeks.flatMap(\.self).filter(\.isToday).count == 1)
+        #expect(month.weeks.flatMap { $0 }.filter(\.isToday).count == 1)
     }
 
     @Test
@@ -66,7 +65,7 @@ struct CalendarMonthTests {
             now: Self.now,
             calendar: Self.calendar,
         )
-        let cells = month.weeks.flatMap(\.self)
+        let cells = month.weeks.flatMap { $0 }
 
         #expect(cells.first { $0.dayNumber == 10 && $0.isInMonth }?.hasOverduePending == true)
         #expect(cells.first { $0.dayNumber == 11 && $0.isInMonth }?.hasOverduePending == false)
@@ -84,7 +83,7 @@ struct CalendarMonthTests {
             Self.task(id: 6, due: due, done: true, project: 50),
         ]
         let month = CalendarMonth(containing: Self.anchor, tasks: tasks, now: Self.now, calendar: Self.calendar)
-        let cell = month.weeks.flatMap(\.self).first { $0.dayNumber == 20 && $0.isInMonth }
+        let cell = month.weeks.flatMap { $0 }.first { $0.dayNumber == 20 && $0.isInMonth }
 
         #expect(cell?.dotProjectIDs == [10, 20, 30])
     }
@@ -112,7 +111,8 @@ struct CalendarMonthTests {
         let noDue = VikunjaTask(id: 1, title: "Someday", projectID: 1)
         let month = CalendarMonth(containing: Self.anchor, tasks: [noDue], now: Self.now, calendar: Self.calendar)
 
-        #expect(month.weeks.flatMap(\.self).allSatisfy(\.tasks.isEmpty))
+        let everyCellEmpty = month.weeks.flatMap { $0 }.allSatisfy { $0.tasks.isEmpty }
+        #expect(everyCellEmpty)
         #expect(CalendarMonth.tasks(on: Self.now, from: [noDue], calendar: Self.calendar).isEmpty)
     }
 
