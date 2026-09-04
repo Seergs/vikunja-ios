@@ -1,0 +1,13 @@
+import VikunjaCore
+
+/// User-facing copy for the appearance picker, kept out of `VikunjaCore` the
+/// same way `VikunjaError+DisplayMessage.swift` keeps error copy out of it.
+extension AppTheme {
+    var displayName: String {
+        switch self {
+        case .system: "Automatic"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+}
