@@ -1,10 +1,11 @@
 import Foundation
-import VikunjaCore
 
-/// The pure month-grid model behind the Calendar screen: given the month to
-/// show plus the account's dated tasks, it produces the weeks of day cells the
-/// view renders, each already carrying that day's tasks. No SwiftUI, no
-/// networking, no `Color` — unit-tested like `VikunjaCore.TodayDigest`.
+/// The pure month-grid model behind the Calendar screen and the Calendar
+/// widget: given the month to show plus the account's dated tasks, it produces
+/// the weeks of day cells the view renders, each already carrying that day's
+/// tasks. No SwiftUI, no networking, no `Color` — unit-tested like `TodayDigest`.
+/// Lives in `VikunjaCore` (not `CalendarFeature`) so the screen and the widget
+/// share one grid rule, the same way both build on `TodayDigest`.
 ///
 /// A task lands on a day when its `dueDate` falls on that calendar day. Tasks
 /// with no `dueDate` never appear on the calendar (same rule as the Today
