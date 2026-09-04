@@ -21,6 +21,11 @@ public final class SearchViewModel {
     private var lastSearchQuery = ""
     private var searchTask: Task<Void, Never>?
 
+    /// Set once the "could not load project details" toast has been shown, so a
+    /// burst of searches against a failing `/projects` endpoint doesn't queue
+    /// one identical error toast per keystroke. Reset on the next success.
+    private var didWarnProjectLoadFailure = false
+
     public init(
         taskRepository: TaskRepositoryProtocol,
         projectRepository: ProjectRepositoryProtocol,
@@ -54,7 +59,6 @@ public final class SearchViewModel {
 
     private func performSearch(_ trimmedQuery: String) async {
         guard trimmedQuery != lastSearchQuery || !state.isLoaded else { return }
-        lastSearchQuery = trimmedQuery
 
         // Keep the current results on screen while re-searching; only fall back
         // to the full-screen spinner when there's nothing to show yet. This is
@@ -71,6 +75,10 @@ public final class SearchViewModel {
             await loadProjects(ids: Array(projectIDs))
             guard !Task.isCancelled else { return }
 
+            // Only advance `lastSearchQuery` once the search actually landed, so
+            // a cancelled or failed query can be retried instead of being
+            // suppressed by the dedupe guard above while stale results show.
+            lastSearchQuery = trimmedQuery
             state = .loaded(tasks)
         } catch {
             guard !Task.isCancelled else { return }
@@ -117,8 +125,13 @@ public final class SearchViewModel {
             for project in projects {
                 projectsByID[project.id] = project
             }
+            didWarnProjectLoadFailure = false
         } catch {
-            toastPresenter.show("Could not load project details", style: .error)
+            guard !Task.isCancelled else { return }
+            if !didWarnProjectLoadFailure {
+                toastPresenter.show("Could not load project details", style: .error)
+                didWarnProjectLoadFailure = true
+            }
         }
     }
 }
