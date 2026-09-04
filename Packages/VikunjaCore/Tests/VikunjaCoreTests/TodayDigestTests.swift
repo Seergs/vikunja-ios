@@ -4,7 +4,13 @@ import Testing
 
 struct TodayDigestTests {
     private static let calendar = Calendar.current
-    private static let now = Date()
+    /// Anchored to noon today rather than `Date()` directly: several cases
+    /// below add a couple of hours to `now` to stay "later today", which
+    /// would cross into tomorrow (and flip bucket) if the suite happened to
+    /// run late at night.
+    private static let now = calendar.date(
+        bySettingHour: 12, minute: 0, second: 0, of: Date(),
+    ) ?? Date()
     private static let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: now) ?? now
     private static let yesterday = calendar.date(byAdding: .day, value: -1, to: now) ?? now
     private static let laterToday = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
