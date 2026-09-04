@@ -18,13 +18,13 @@ struct VikuApp: App {
             RootView(container: container)
         }
         .onChange(of: scenePhase) { _, phase in
-            // Refresh the Today widget's shared snapshot whenever the app
-            // leaves the foreground — the user may have just added or
-            // completed a task. The app fetches with its own credentials and
-            // writes the App Group cache the widget renders, so this works
-            // even where the widget can't read the keychain itself.
+            // Refresh the widgets' shared snapshots whenever the app leaves
+            // the foreground — the user may have just added or completed a
+            // task. The app fetches with its own credentials and writes the
+            // App Group caches the widgets render, so this works even where
+            // the widgets can't read the keychain themselves.
             if phase == .background {
-                Task { await container.refreshTodayWidgetSnapshot() }
+                Task { await container.refreshWidgetSnapshots() }
             }
         }
     }

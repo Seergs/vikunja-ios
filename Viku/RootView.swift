@@ -54,10 +54,11 @@ struct RootView: View {
             // until this resolves.
             await refreshActiveAccount()
             hasCheckedForSavedAccount = true
-            // Seed the widget's shared snapshot on launch, so the Today
-            // widget has data even before the app is next backgrounded.
+            // Seed the widgets' shared snapshots on launch, so the Today and
+            // Calendar widgets have data even before the app is next
+            // backgrounded.
             if connectedAccount != nil {
-                Task { await container.refreshTodayWidgetSnapshot() }
+                Task { await container.refreshWidgetSnapshots() }
             }
         }
         .onOpenURL { url in
