@@ -41,6 +41,14 @@ struct SettingsView: View {
                 ) {
                     router.push(.manageLabels)
                 }
+
+                SettingsNavigationRow(
+                    icon: "info.circle",
+                    title: "About",
+                    subtitle: "Version, links, and privacy",
+                ) {
+                    router.push(.about)
+                }
             }
         }
         .settingsListStyle()
@@ -91,7 +99,8 @@ private struct SettingsNavigationRow: View {
 }
 
 /// The tinted icon tile shared by every settings row, plain or navigating.
-private struct SettingsRowIcon: View {
+/// Not file-private: `AboutView` reuses it for its own rows.
+struct SettingsRowIcon: View {
     let systemName: String
 
     var body: some View {
@@ -106,7 +115,8 @@ private struct SettingsRowIcon: View {
     }
 }
 
-private extension View {
+/// Not file-private: `AboutView` uses the same list styling.
+extension View {
     @ViewBuilder
     func settingsListStyle() -> some View {
         #if os(iOS)

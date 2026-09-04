@@ -6,4 +6,6 @@ public enum SettingsRoute: Hashable, Sendable {
     case connectionForm(ConnectionFormMode)
     /// The account-wide label management screen.
     case manageLabels
+    /// App version/build, external links, privacy note, and licensing.
+    case about
 }

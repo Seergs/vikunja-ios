@@ -45,6 +45,8 @@ public struct SettingsRootView: View {
                         ConnectionFormView(makeViewModel: { makeConnectionFormViewModel(mode) }, router: router)
                     case .manageLabels:
                         ManageLabelsView(makeViewModel: makeManageLabelsViewModel)
+                    case .about:
+                        AboutView()
                     }
                 }
         }
