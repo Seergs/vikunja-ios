@@ -207,7 +207,7 @@ enum RichTextInline {
         }
 
         if run.styles.contains(.code) {
-            piece.font = .system(.callout, design: .monospaced)
+            piece.font = baseFont.monospaced()
             piece.backgroundColor = VikuColor.Surface.field
         }
 
