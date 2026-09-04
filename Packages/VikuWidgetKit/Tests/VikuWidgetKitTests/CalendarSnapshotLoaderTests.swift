@@ -4,8 +4,14 @@ import VikunjaCore
 @testable import VikuWidgetKit
 
 struct CalendarSnapshotLoaderTests {
-    private static let now = Date()
     private static let calendar = Calendar.current
+    /// Anchored to noon today rather than `Date()` directly: several cases
+    /// below add a couple of hours to `now` to stay "later today", which
+    /// would cross into tomorrow (and flip bucket) if the suite happened to
+    /// run late at night.
+    private static let now = calendar.date(
+        bySettingHour: 12, minute: 0, second: 0, of: Date(),
+    ) ?? Date()
     private static let laterToday = calendar.date(byAdding: .hour, value: 1, to: now) ?? now
     private static let nextWeek = calendar.date(byAdding: .day, value: 5, to: now) ?? now
 
