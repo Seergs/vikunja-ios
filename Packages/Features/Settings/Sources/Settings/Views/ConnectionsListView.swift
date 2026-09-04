@@ -189,7 +189,7 @@ private struct ConnectionRow: View {
                     Spacer(minLength: 0)
 
                     if let serverVersion {
-                        Text("v\(serverVersion)")
+                        Text(serverVersion.hasPrefix("v") ? serverVersion : "v\(serverVersion)")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(VikuColor.textTertiary)
                             .lineLimit(1)
