@@ -11,6 +11,7 @@ import SwiftUI
 struct VikuApp: App {
     private let container = AppContainer()
 
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
