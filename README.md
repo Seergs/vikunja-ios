@@ -1,4 +1,5 @@
 <div align="center">
+
 # Viku
 
 **Native iOS client for Vikunja with beautiful design and great user experience.**
