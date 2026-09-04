@@ -212,7 +212,7 @@ private struct ConnectionRow: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Edit \(account.displayName)")
         }
-        .padding(.vertical, VikuSpacing.xxs)
+        .padding(.vertical, VikuSpacing.sm)
     }
 }
 
