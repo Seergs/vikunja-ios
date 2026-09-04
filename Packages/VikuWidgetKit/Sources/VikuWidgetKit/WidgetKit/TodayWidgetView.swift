@@ -227,17 +227,34 @@ private struct TodayWidgetHeader: View {
                     .foregroundStyle(VikuColor.textTertiary)
                     .accessibilityLabel("Showing saved data")
             }
-            // `Link` is inert in `.systemSmall` (the whole widget is one tap
-            // target there, handled by `.widgetURL`), so only offer the
-            // add button where it actually works.
-            if family != .systemSmall, let url = quickAddURL {
-                Link(destination: url) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(VikuColor.brandPrimary)
-                }
-                .accessibilityLabel("Add task")
+            quickAddButton
+        }
+    }
+
+    @ViewBuilder
+    private var quickAddButton: some View {
+        if family == .systemSmall {
+            // `Link` only claims one tap target per `.systemSmall` widget,
+            // already spoken for by `.widgetURL` on the whole card. An
+            // App Intent-backed `Button` opens its own tap region instead, so
+            // it works here too — and with the extra room this size has, the
+            // glyph can afford to be bigger than the `Link` version below.
+            #if os(iOS)
+            Button(intent: QuickAddControlIntent()) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(VikuColor.brandPrimary)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Add task")
+            #endif
+        } else if let url = quickAddURL {
+            Link(destination: url) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(VikuColor.brandPrimary)
+            }
+            .accessibilityLabel("Add task")
         }
     }
 
