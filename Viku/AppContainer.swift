@@ -275,6 +275,7 @@ final class AppContainer {
     func makeConnectionsListViewModel(onActiveAccountChanged: @escaping () -> Void) -> ConnectionsListViewModel {
         ConnectionsListViewModel(
             accountStore: accountStore,
+            clientFactory: clientFactory,
             toastPresenter: toastCenter,
             onActiveAccountChanged: onActiveAccountChanged,
         )

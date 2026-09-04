@@ -11,11 +11,13 @@ struct ConnectionsListViewModelTests {
 
     private func makeViewModel(
         store: FakeAccountStore,
+        clientFactory: FakeInstanceClientFactory = FakeInstanceClientFactory(),
         toastPresenter: FakeToastPresenter = FakeToastPresenter(),
         onActiveAccountChanged: @escaping () -> Void = {},
     ) -> ConnectionsListViewModel {
         ConnectionsListViewModel(
             accountStore: store,
+            clientFactory: clientFactory,
             toastPresenter: toastPresenter,
             onActiveAccountChanged: onActiveAccountChanged,
         )
@@ -46,6 +48,37 @@ struct ConnectionsListViewModelTests {
         await viewModel.load()
 
         #expect(viewModel.loadState == .failure("Couldn't reach that server. Check the address and your connection."))
+    }
+
+    @Test
+    func `load populates each account's server version`() async throws {
+        let store = FakeAccountStore()
+        let first = makeAccount(displayName: "Home")
+        let second = makeAccount(displayName: "Work")
+        try await store.addAccount(first, token: "first-token")
+        try await store.addAccount(second, token: "second-token")
+        let clientFactory = FakeInstanceClientFactory()
+        let viewModel = makeViewModel(store: store, clientFactory: clientFactory)
+
+        await viewModel.load()
+
+        #expect(viewModel.serverVersions[first.id] == "0.24.6")
+        #expect(viewModel.serverVersions[second.id] == "0.24.6")
+    }
+
+    @Test
+    func `a failed version probe leaves that account without an entry`() async throws {
+        let store = FakeAccountStore()
+        let account = makeAccount()
+        try await store.addAccount(account, token: "token")
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.result = .failure(.network("offline"))
+        let viewModel = makeViewModel(store: store, clientFactory: clientFactory)
+
+        await viewModel.load()
+
+        #expect(viewModel.loadState == .loaded)
+        #expect(viewModel.serverVersions[account.id] == nil)
     }
 
     @Test
