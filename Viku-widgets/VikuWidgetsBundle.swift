@@ -16,7 +16,6 @@ struct VikuWidgetsBundle: WidgetBundle {
         TodayWidget()
         CalendarWidget()
         QuickAddWidget()
-        GlyphWidget()
         if #available(iOS 18.0, *) {
             QuickAddControl()
         }

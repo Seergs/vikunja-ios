@@ -4,10 +4,13 @@
 import SwiftUI
 import WidgetKit
 
-/// A minimal Lock Screen / StandBy accessory widget: a single "+" that opens
-/// the app's quick-add sheet — the Lock Screen counterpart of `QuickAddControl`
-/// in Control Center. Static: no data, no network, never refreshes. Opens via
-/// the `viku://quick-add` deep link rather than an App Intent, the same way
+/// A minimal Lock Screen / StandBy accessory widget: the Viku glyph (with its
+/// small "add" cutout, `VikuGlyphMark`) as a one-tap quick-add launcher — the
+/// Lock Screen's only affordance now that the plain "Open Viku" `GlyphWidget`
+/// has been folded into this one, so Lock Screen and Control Center
+/// (`QuickAddControl`) both offer just "Add Task", drawn with the same
+/// glyph. Static: no data, no network, never refreshes. Opens via the
+/// `viku://quick-add` deep link rather than an App Intent, the same way
 /// `TodayWidget` deep-links to `viku://today`. Add `QuickAddWidget()` to the
 /// extension's `WidgetBundle`.
 public struct QuickAddWidget: Widget {
@@ -17,8 +20,8 @@ public struct QuickAddWidget: Widget {
         StaticConfiguration(kind: VikuWidgetConfig.quickAddWidgetKind, provider: QuickAddTimelineProvider()) { _ in
             QuickAddWidgetView()
         }
-        .configurationDisplayName("Quick Add")
-        .description("Add a task in one tap.")
+        .configurationDisplayName("Add Task")
+        .description("The Viku glyph as a one-tap shortcut to add a task.")
         .supportedFamilies([.accessoryCircular])
     }
 }
@@ -50,13 +53,25 @@ public struct QuickAddTimelineProvider: TimelineProvider {
 
 struct QuickAddWidgetView: View {
     var body: some View {
-        Image(systemName: "plus")
-            .font(.system(size: 20, weight: .bold))
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .widgetURL(URL(string: "\(VikuWidgetConfig.urlScheme)://quick-add"))
-            .containerBackground(for: .widget) {
-                AccessoryWidgetBackground()
+        GeometryReader { geo in
+            let side = min(geo.size.width, geo.size.height)
+            ZStack {
+                // Explicit disc: `AccessoryWidgetBackground` on its own doesn't
+                // reliably show on the Lock Screen here, so draw the frosted
+                // ring ourselves. Not accentable, so it stays a faint backing
+                // rather than a bright fill.
+                Circle().fill(.white.opacity(0.16))
+                VikuGlyphMark()
+                    .widgetAccentable()
+                    .frame(width: side * 0.46, height: side * 0.46)
             }
+            .frame(width: side, height: side)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .widgetURL(URL(string: "\(VikuWidgetConfig.urlScheme)://quick-add"))
+        .containerBackground(for: .widget) {
+            AccessoryWidgetBackground()
+        }
     }
 }
 
