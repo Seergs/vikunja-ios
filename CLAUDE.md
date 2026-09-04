@@ -703,3 +703,15 @@ behind each one.
 - Packages declare `iOS(.v17)` as their platform floor (for portability); the app
   target itself currently deploys at `IPHONEOS_DEPLOYMENT_TARGET = 26.2`, well
   above that floor.
+- **Tests that build a `now` fixture and then add hours to stay "later today" must
+  anchor `now` to noon, never use `Date()` directly.** Otherwise the suite flakes
+  when it happens to run late at night: `now + a few hours` crosses midnight,
+  flips the expected due-date bucket, and the assertion fails in CI without any
+  code change. Pattern (see `TodayDigestTests.swift`,
+  `TodaySnapshotLoaderTests.swift`, `CalendarSnapshotLoaderTests.swift`):
+  ```swift
+  private static let calendar = Calendar.current
+  private static let now = calendar.date(
+      bySettingHour: 12, minute: 0, second: 0, of: Date(),
+  ) ?? Date()
+  ```
