@@ -248,7 +248,12 @@ public struct TaskDetailView: View {
     }
 
     private func beginEditingDescription() {
-        descriptionDraft = viewModel.task.description ?? ""
+        // The stored value is the web editor's HTML. Editing it as rich text
+        // isn't supported yet, so an empty description (often `<p></p>`) opens
+        // a blank field rather than showing that markup; a non-empty one still
+        // opens its raw HTML (see `commitDescriptionEdit`).
+        let stored = viewModel.task.description ?? ""
+        descriptionDraft = RichText.isEmpty(stored) ? "" : stored
         isEditingDescription = true
         focusedField = .description
     }
@@ -258,6 +263,11 @@ public struct TaskDetailView: View {
         let trimmed = descriptionDraft.trimmingCharacters(in: .whitespacesAndNewlines)
         let newDescription = trimmed.isEmpty ? nil : trimmed
         guard newDescription != viewModel.task.description else { return }
+        // Don't fire a write when both the draft and the stored value are
+        // effectively empty (stored is often the editor's `<p></p>`).
+        if newDescription == nil, RichText.isEmpty(viewModel.task.description ?? "") {
+            return
+        }
         Task { await viewModel.setDescription(newDescription) }
     }
 
@@ -331,9 +341,11 @@ public struct TaskDetailView: View {
                 .foregroundStyle(VikuColor.textSecondary)
                 .focused($focusedField, equals: .description)
                 .padding(.top, VikuSpacing.md)
-        } else if let description = task.description, !description.isEmpty {
-            Text(description)
-                .font(VikuFont.callout)
+        } else if let description = task.description, !RichText.isEmpty(description) {
+            // Vikunja stores the description as its web editor's HTML output;
+            // render it, don't show the raw markup. Tapping still opens the
+            // inline editor (which edits plain text, see `beginEditingDescription`).
+            RichTextView(html: description)
                 .foregroundStyle(VikuColor.textSecondary)
                 .contentShape(Rectangle())
                 .onTapGesture { beginEditingDescription() }
