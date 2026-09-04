@@ -67,19 +67,25 @@ final class AppContainer {
         try? await store.migrateToAccessGroup()
     }
 
-    /// Fetches the Today data with the app's own (always-working) account
-    /// store and writes it to the shared App Group cache, then reloads the
-    /// widget. This is what makes the Today widget work even where keychain
-    /// sharing with the extension doesn't (the iOS Simulator, an
-    /// un-provisioned build): the widget renders this cache when it can't
-    /// authenticate itself. Call on launch and whenever the app backgrounds.
-    func refreshTodayWidgetSnapshot() async {
-        let loader = TodaySnapshotLoader(
+    /// Fetches the Today and Calendar data with the app's own (always-working)
+    /// account store and writes them to the shared App Group caches, then
+    /// reloads every widget. This is what makes the widgets work even where
+    /// keychain sharing with the extension doesn't (the iOS Simulator, an
+    /// un-provisioned build): they render these caches when they can't
+    /// authenticate themselves. Call on launch and whenever the app backgrounds.
+    func refreshWidgetSnapshots() async {
+        let todayLoader = TodaySnapshotLoader(
             accountStore: accountStore,
             clientFactory: clientFactory,
             cache: TodaySnapshotCache(appGroupIdentifier: VikuWidgetConfig.appGroupIdentifier),
         )
-        _ = await loader.loadState()
+        let calendarLoader = CalendarSnapshotLoader(
+            accountStore: accountStore,
+            clientFactory: clientFactory,
+            cache: CalendarSnapshotCache(appGroupIdentifier: VikuWidgetConfig.appGroupIdentifier),
+        )
+        _ = await todayLoader.loadState()
+        _ = await calendarLoader.loadState()
         WidgetCenter.shared.reloadAllTimelines()
     }
 
