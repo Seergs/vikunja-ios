@@ -38,6 +38,9 @@ public enum VikuWidgetConfig {
     /// `kind` string tying `TodayWidget` to `WidgetCenter.reloadTimelines(ofKind:)`.
     public static let todayWidgetKind = "TodayWidget"
 
+    /// `kind` string for the large month-grid calendar widget (`CalendarWidget`).
+    public static let calendarWidgetKind = "CalendarWidget"
+
     /// `kind` string for the Control Center quick-add control (`QuickAddControl`).
     public static let quickAddControlKind = "QuickAddControl"
 
@@ -60,6 +63,10 @@ public enum VikuWidgetConfig {
     /// How many task rows the snapshot carries — enough for `.systemLarge`,
     /// keeping the cached payload and the extension's memory footprint small.
     public static let taskLimit = 8
+
+    /// How many of the current day's task rows the calendar widget lists under
+    /// its month grid — the large family only has room for a few.
+    public static let calendarTaskLimit = 4
 
     /// Minimum spacing between timeline refreshes. WidgetKit only grants a
     /// bounded number of refreshes per day, so this stays coarse.
