@@ -19,11 +19,23 @@ public enum VikuWidgetEnvironment {
         TodaySnapshotCache(appGroupIdentifier: VikuWidgetConfig.appGroupIdentifier)
     }
 
+    public static func makeCalendarSnapshotCache() -> CalendarSnapshotCache {
+        CalendarSnapshotCache(appGroupIdentifier: VikuWidgetConfig.appGroupIdentifier)
+    }
+
     public static func makeSnapshotLoader() -> TodaySnapshotLoader {
         TodaySnapshotLoader(
             accountStore: makeAccountStore(),
             clientFactory: VikunjaInstanceClientFactory(),
             cache: makeSnapshotCache(),
+        )
+    }
+
+    public static func makeCalendarSnapshotLoader() -> CalendarSnapshotLoader {
+        CalendarSnapshotLoader(
+            accountStore: makeAccountStore(),
+            clientFactory: VikunjaInstanceClientFactory(),
+            cache: makeCalendarSnapshotCache(),
         )
     }
 
