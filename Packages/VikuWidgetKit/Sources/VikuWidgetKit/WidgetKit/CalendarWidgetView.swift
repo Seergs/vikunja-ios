@@ -77,7 +77,7 @@ private struct CalendarWidgetBody: View {
             if let url = URL(string: "\(VikuWidgetConfig.urlScheme)://quick-add") {
                 Link(destination: url) {
                     Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(VikuColor.brandPrimary)
                 }
                 .accessibilityLabel("Add task")
