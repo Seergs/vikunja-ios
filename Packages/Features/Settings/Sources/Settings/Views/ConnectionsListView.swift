@@ -73,6 +73,7 @@ struct ConnectionsListView: View {
                             ConnectionRow(
                                 account: account,
                                 isActive: account.id == viewModel.activeAccountID,
+                                serverVersion: viewModel.serverVersions[account.id],
                                 onSelect: { Task { await viewModel.setActive(account) } },
                                 onEdit: { router.push(.connectionForm(.edit(account))) },
                             )
@@ -143,6 +144,7 @@ private struct AddConnectionButton: View {
 private struct ConnectionRow: View {
     let account: InstanceAccount
     let isActive: Bool
+    let serverVersion: String?
     let onSelect: () -> Void
     let onEdit: () -> Void
 
@@ -185,6 +187,16 @@ private struct ConnectionRow: View {
                     }
 
                     Spacer(minLength: 0)
+
+                    if let serverVersion {
+                        Text("v\(serverVersion)")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(VikuColor.textTertiary)
+                            .lineLimit(1)
+                            .padding(.horizontal, VikuSpacing.xs + VikuSpacing.xxs)
+                            .padding(.vertical, VikuSpacing.xxs)
+                            .background(VikuColor.Surface.field, in: Capsule())
+                    }
                 }
                 .contentShape(Rectangle())
             }
