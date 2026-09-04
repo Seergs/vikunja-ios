@@ -69,6 +69,10 @@ struct RootView: View {
             container.deepLinkRouter.open(link)
         }
         .toastHost(container.toastCenter)
+        // Applied at the root so every screen — onboarding, tabs, sheets —
+        // follows the user's theme preference. `nil` (the `.system` case)
+        // leaves the view hierarchy following the device setting.
+        .preferredColorScheme(container.themeCenter.colorScheme)
     }
 
     /// Re-reads the active account from the store and updates

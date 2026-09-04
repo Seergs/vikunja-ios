@@ -88,6 +88,7 @@ struct MainTabView: View {
             Tab(AppTab.settings.title, systemImage: AppTab.settings.systemImage, value: .settings) {
                 SettingsRootView(
                     account: account,
+                    themeStore: container.themeCenter,
                     makeConnectionsListViewModel: {
                         container.makeConnectionsListViewModel(onActiveAccountChanged: onAccountsChanged)
                     },
