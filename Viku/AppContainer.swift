@@ -38,6 +38,10 @@ final class AppContainer {
     /// Tracks which project (if any) the visible screen represents, so the
     /// tab-bar quick-add sheet defaults to it — see `QuickAddContext`.
     let quickAddContext = QuickAddContext()
+    /// The app's single theme preference (light/dark/automatic), read
+    /// directly by `RootView` to drive `.preferredColorScheme(_:)` and passed
+    /// to `Settings` as `AppThemeStoring` so it can offer the picker.
+    let themeCenter = ThemeCenter()
     /// Carries a `viku://` deep link (or an `OpenQuickAddIntent`) from
     /// `RootView`'s `.onOpenURL` to the screen that acts on it. The shared
     /// instance, so the App Intent's `perform()` reaches the same router.

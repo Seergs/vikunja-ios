@@ -1,16 +1,31 @@
 import SwiftUI
 import VikuDesignSystem
 import VikuNavigation
+import VikunjaCore
 
-/// The Settings tab's landing screen. Real preferences aren't built yet — the
-/// entry points here today are connection management and label management.
+/// The Settings tab's landing screen. The entry points here today are
+/// appearance, connection management, and label management.
 struct SettingsView: View {
     let activeAccountName: String
+    let themeStore: AppThemeStoring
     let router: Router<SettingsRoute>
 
     var body: some View {
         List {
+            // One section, not three, so these render as a single grouped
+            // card (matching Settings.app) instead of one card per row.
             Section {
+                Picker(selection: themeBinding) {
+                    ForEach(AppTheme.allCases, id: \.self) { theme in
+                        Text(theme.displayName).tag(theme)
+                    }
+                } label: {
+                    HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
+                        SettingsRowIcon(systemName: "circle.lefthalf.filled")
+                        Text("Appearance")
+                    }
+                }
+
                 SettingsNavigationRow(
                     icon: "server.rack",
                     title: "Connections",
@@ -18,9 +33,7 @@ struct SettingsView: View {
                 ) {
                     router.push(.connections)
                 }
-            }
 
-            Section {
                 SettingsNavigationRow(
                     icon: "tag",
                     title: "Manage Labels",
@@ -32,6 +45,10 @@ struct SettingsView: View {
         }
         .settingsListStyle()
         .navigationTitle("Settings")
+    }
+
+    private var themeBinding: Binding<AppTheme> {
+        Binding(get: { themeStore.theme }, set: { themeStore.setTheme($0) })
     }
 }
 
@@ -46,14 +63,7 @@ private struct SettingsNavigationRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: VikuSpacing.sm + VikuSpacing.xxs) {
-                RoundedRectangle(cornerRadius: VikuRadius.sm - VikuSpacing.xs, style: .continuous)
-                    .fill(VikuColor.brandPrimary.opacity(0.14))
-                    .frame(width: 34, height: 34)
-                    .overlay {
-                        Image(systemName: icon)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(VikuColor.brandPrimary)
-                    }
+                SettingsRowIcon(systemName: icon)
 
                 VStack(alignment: .leading, spacing: VikuSpacing.xxs) {
                     Text(title)
@@ -77,6 +87,22 @@ private struct SettingsNavigationRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// The tinted icon tile shared by every settings row, plain or navigating.
+private struct SettingsRowIcon: View {
+    let systemName: String
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: VikuRadius.sm - VikuSpacing.xs, style: .continuous)
+            .fill(VikuColor.brandPrimary.opacity(0.14))
+            .frame(width: 34, height: 34)
+            .overlay {
+                Image(systemName: systemName)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(VikuColor.brandPrimary)
+            }
     }
 }
 
