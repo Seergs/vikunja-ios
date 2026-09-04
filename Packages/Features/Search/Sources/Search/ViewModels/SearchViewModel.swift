@@ -21,6 +21,12 @@ public final class SearchViewModel {
     private var lastSearchQuery = ""
     private var searchTask: Task<Void, Never>?
 
+    /// Whether the account's project list has been fetched at least once this
+    /// view-model lifetime. Projects only feed each row's name/color badge and
+    /// barely change during a search session, so the list is fetched once and
+    /// reused instead of re-downloaded on every debounced search.
+    private var projectsLoaded = false
+
     /// Set once the "could not load project details" toast has been shown, so a
     /// burst of searches against a failing `/projects` endpoint doesn't queue
     /// one identical error toast per keystroke. Reset on the next success.
@@ -57,6 +63,12 @@ public final class SearchViewModel {
         }
     }
 
+    /// Warms the project cache when the Search screen appears, so the first
+    /// search doesn't have to wait on the project list at all.
+    public func preload() async {
+        await loadProjects()
+    }
+
     private func performSearch(_ trimmedQuery: String) async {
         guard trimmedQuery != lastSearchQuery || !state.isLoaded else { return }
 
@@ -68,12 +80,22 @@ public final class SearchViewModel {
         }
 
         do {
+            // Load the project list concurrently with the search rather than
+            // after it. Once cached, `loadProjects()` returns immediately, so
+            // repeat searches only cost the one task-search request.
+            async let projectsReady: Void = loadProjects()
             let tasks = try await taskRepository.searchTasks(query: trimmedQuery)
             guard !Task.isCancelled else { return }
-
-            let projectIDs = Set(tasks.map(\.projectID))
-            await loadProjects(ids: Array(projectIDs))
+            await projectsReady
             guard !Task.isCancelled else { return }
+
+            // A task pointing at a project created since the list was cached:
+            // refresh once so its row can render instead of being dropped by
+            // the `if let project` lookup in the view.
+            if tasks.contains(where: { projectsByID[$0.projectID] == nil }) {
+                await loadProjects(force: true)
+                guard !Task.isCancelled else { return }
+            }
 
             // Only advance `lastSearchQuery` once the search actually landed, so
             // a cancelled or failed query can be retried instead of being
@@ -119,12 +141,17 @@ public final class SearchViewModel {
         }
     }
 
-    private func loadProjects(ids _: [Int]) async {
+    /// Fetches the account's project list into `projectsByID`. A no-op once the
+    /// list has been loaded, unless `force` is set (used when a search result
+    /// references a project the cache hasn't seen yet).
+    private func loadProjects(force: Bool = false) async {
+        guard force || !projectsLoaded else { return }
         do {
             let projects = try await projectRepository.fetchProjects()
             for project in projects {
                 projectsByID[project.id] = project
             }
+            projectsLoaded = true
             didWarnProjectLoadFailure = false
         } catch {
             guard !Task.isCancelled else { return }
