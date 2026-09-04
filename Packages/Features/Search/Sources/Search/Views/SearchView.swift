@@ -10,6 +10,7 @@ struct SearchView: View {
 
     var body: some View {
         searchContent
+            .task { await viewModel.preload() }
             .animation(.easeInOut(duration: 0.2), value: viewModel.state.value?.map(\.id))
             .searchListStyle()
             .scrollContentBackground(.hidden)
