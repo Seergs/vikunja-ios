@@ -182,7 +182,7 @@ public struct TaskDetailView: View {
             Button("Cancel", role: .cancel) {}
         }
         .sheet(item: $commentPendingEdit) { comment in
-            EditCommentSheet(initialText: CommentTextFormatter.plainText(from: comment.comment)) { newText in
+            EditCommentSheet(initialText: RichText.plainText(from: comment.comment)) { newText in
                 Task { await viewModel.editComment(comment, newText: newText) }
             }
         }
@@ -1735,8 +1735,7 @@ private struct CommentRow: View {
                         .font(.system(size: 12))
                         .foregroundStyle(VikuColor.textTertiary)
                 }
-                Text(CommentTextFormatter.plainText(from: comment.comment))
-                    .font(.system(size: 14.5))
+                RichTextView(html: comment.comment, baseFont: VikuFont.subheadline)
                     .foregroundStyle(VikuColor.textSecondary)
             }
             .padding(.horizontal, VikuSpacing.sm + VikuSpacing.xxs)
@@ -1795,9 +1794,9 @@ private struct CommentComposer: View {
 /// button, matching `DueDatePickerSheet`'s pattern rather than the inline
 /// edit the task title/description use — `CommentRow` is a nested private
 /// view with no toolbar of its own to host a commit affordance. The field
-/// starts from the comment's plain-text form (Vikunja stores the body as
-/// HTML; see `CommentTextFormatter`), and `onSave` sends plain text back the
-/// same way the composer does for a new comment.
+/// starts from the comment's plain-text form (Vikunja stores the body as the
+/// web editor's HTML; see `RichText.plainText(from:)`), and `onSave` sends
+/// plain text back the same way the composer does for a new comment.
 private struct EditCommentSheet: View {
     @State private var draft: String
     private let initialText: String
@@ -1849,23 +1848,6 @@ private struct EditCommentSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-    }
-}
-
-/// Vikunja stores a comment's body as the rich-text editor's HTML output;
-/// this feature has no rich-text renderer yet, so comments render as plain
-/// text — stripped of markup rather than shown as raw `<p>...</p>`.
-private enum CommentTextFormatter {
-    static func plainText(from html: String) -> String {
-        let stripped = html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
-        return stripped
-            .replacingOccurrences(of: "&nbsp;", with: " ")
-            .replacingOccurrences(of: "&amp;", with: "&")
-            .replacingOccurrences(of: "&lt;", with: "<")
-            .replacingOccurrences(of: "&gt;", with: ">")
-            .replacingOccurrences(of: "&quot;", with: "\"")
-            .replacingOccurrences(of: "&#39;", with: "'")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 
