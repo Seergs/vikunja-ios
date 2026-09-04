@@ -47,9 +47,6 @@ public enum VikuWidgetConfig {
     /// `kind` string for the Lock Screen quick-add accessory widget (`QuickAddWidget`).
     public static let quickAddWidgetKind = "QuickAddWidget"
 
-    /// `kind` string for the Lock Screen app-glyph accessory widget (`GlyphWidget`).
-    public static let glyphWidgetKind = "GlyphWidget"
-
     // URL scheme the widget deep-links back into the app with
     // (`viku://today`, `viku://quick-add`). Registered under the app
     // target's URL Types as `$(VIKU_URL_SCHEME)`; split per build config so
