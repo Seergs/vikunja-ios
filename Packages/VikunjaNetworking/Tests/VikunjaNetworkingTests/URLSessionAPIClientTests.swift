@@ -360,4 +360,213 @@ struct URLSessionAPIClientTests {
         let sentBody = try #require(request.httpBody)
         #expect(String(data: sentBody, encoding: .utf8)?.contains(#"name="files"; filename="a.txt""#) == true)
     }
+
+    // `VikunjaAuthService` and `PasswordSessionRefresher` are tested here for
+    // the same reason as `VikunjaLabelRepository` above — they share
+    // `MockURLProtocol`'s static state with this `.serialized` suite.
+
+    @Test
+    func `login with no refresh cookie stores A credential with no refresh token`() async throws {
+        let (session, _) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"token":"pre-2.0-jwt"}"#)
+        let baseURL = try #require(URL(string: "https://vikunja.example.com"))
+        let apiClient = URLSessionAPIClient(baseURL: baseURL, session: session)
+        let service = VikunjaAuthService(client: apiClient, baseURL: baseURL)
+
+        let authSession = try await service.login(LoginCredentials(username: "sergio", password: "hunter2"))
+
+        let credential = try JSONDecoder().decode(PasswordSessionCredential.self, from: Data(authSession.token.utf8))
+        #expect(credential.accessToken == "pre-2.0-jwt")
+        #expect(credential.refreshToken == nil)
+    }
+
+    @Test
+    func `login with A refresh cookie captures the refresh token`() async throws {
+        let (session, _) = MockURLProtocol.makeSession(
+            statusCode: 200,
+            body: #"{"token":"v2-jwt"}"#,
+            headers: ["Set-Cookie": "vikunja_refresh_token=refresh-abc; Path=/api/v1/user/token/refresh; HttpOnly"],
+        )
+        let baseURL = try #require(URL(string: "https://vikunja.example.com"))
+        let apiClient = URLSessionAPIClient(baseURL: baseURL, session: session)
+        let service = VikunjaAuthService(client: apiClient, baseURL: baseURL)
+
+        let authSession = try await service.login(LoginCredentials(username: "sergio", password: "hunter2"))
+
+        let credential = try JSONDecoder().decode(PasswordSessionCredential.self, from: Data(authSession.token.utf8))
+        #expect(credential.accessToken == "v2-jwt")
+        #expect(credential.refreshToken == "refresh-abc")
+    }
+
+    @Test
+    func `login with A 412 response surfaces as totpRequired`() async throws {
+        let (session, _) = MockURLProtocol.makeSession(statusCode: 412, body: #"{"message":"Invalid totp passcode."}"#)
+        let baseURL = try #require(URL(string: "https://vikunja.example.com"))
+        let apiClient = URLSessionAPIClient(baseURL: baseURL, session: session)
+        let service = VikunjaAuthService(client: apiClient, baseURL: baseURL)
+
+        await #expect(throws: VikunjaError.totpRequired) {
+            _ = try await service.login(LoginCredentials(username: "sergio", password: "hunter2"))
+        }
+    }
+
+    @Test
+    func `password refresher passes an api token account through with no refresh attempt`() async throws {
+        let account = try PasswordRefresherFixtures.makeAccount(authMethod: .apiToken)
+        let store = PasswordRefresherFixtures.FakeAccountStore(tokens: [account.id: "raw-api-token"])
+        let refresher = PasswordSessionRefresher(accountStore: store)
+
+        let token = await refresher.validToken(for: account)
+
+        #expect(token == "raw-api-token")
+    }
+
+    @Test
+    func `password refresher returns A not yet expired token with no network call`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"token":"new"}"#)
+        let jwt = PasswordRefresherFixtures.makeJWT(exp: Date().addingTimeInterval(3600).timeIntervalSince1970)
+        let account = try PasswordRefresherFixtures.makeAccount(authMethod: .password)
+        let store = try PasswordRefresherFixtures.FakeAccountStore(
+            tokens: [account.id: PasswordRefresherFixtures.encode(accessToken: jwt, refreshToken: nil)],
+        )
+        let refresher = PasswordSessionRefresher(accountStore: store, session: session)
+
+        let token = await refresher.validToken(for: account)
+
+        #expect(token == jwt)
+        #expect(await capture.requests.isEmpty)
+    }
+
+    @Test
+    func `password refresher renews an expiring token with no refresh token via the bearer endpoint`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"token":"renewed-jwt"}"#)
+        let expiringJWT = PasswordRefresherFixtures.makeJWT(exp: Date().addingTimeInterval(10).timeIntervalSince1970)
+        let account = try PasswordRefresherFixtures.makeAccount(authMethod: .password)
+        let store = try PasswordRefresherFixtures.FakeAccountStore(
+            tokens: [account.id: PasswordRefresherFixtures.encode(accessToken: expiringJWT, refreshToken: nil)],
+        )
+        let refresher = PasswordSessionRefresher(accountStore: store, session: session)
+
+        let token = await refresher.validToken(for: account)
+
+        #expect(token == "renewed-jwt")
+        let request = try #require(await capture.lastRequest)
+        #expect(request.url?.path == "/api/v1/user/token")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer \(expiringJWT)")
+        let updated = try await store.token(forAccountID: account.id)
+        #expect(try PasswordRefresherFixtures.decode(updated).accessToken == "renewed-jwt")
+    }
+
+    @Test
+    func `password refresher renews an expiring token with A refresh token via the cookie endpoint`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(
+            statusCode: 200,
+            body: #"{"token":"rotated-jwt"}"#,
+            headers: ["Set-Cookie": "vikunja_refresh_token=rotated-refresh"],
+        )
+        let expiringJWT = PasswordRefresherFixtures.makeJWT(exp: Date().addingTimeInterval(10).timeIntervalSince1970)
+        let account = try PasswordRefresherFixtures.makeAccount(authMethod: .password)
+        let credential = try PasswordRefresherFixtures.encode(accessToken: expiringJWT, refreshToken: "old-refresh")
+        let store = PasswordRefresherFixtures.FakeAccountStore(tokens: [account.id: credential])
+        let refresher = PasswordSessionRefresher(accountStore: store, session: session)
+
+        let token = await refresher.validToken(for: account)
+
+        #expect(token == "rotated-jwt")
+        let request = try #require(await capture.lastRequest)
+        #expect(request.url?.path == "/api/v1/user/token/refresh")
+        #expect(request.value(forHTTPHeaderField: "Cookie") == "vikunja_refresh_token=old-refresh")
+        let updated = try await store.token(forAccountID: account.id)
+        let decoded = try PasswordRefresherFixtures.decode(updated)
+        #expect(decoded.accessToken == "rotated-jwt")
+        #expect(decoded.refreshToken == "rotated-refresh")
+    }
+
+    @Test
+    func `password refresher single flights concurrent refreshes for the same account`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"token":"renewed-jwt"}"#)
+        let expiringJWT = PasswordRefresherFixtures.makeJWT(exp: Date().addingTimeInterval(10).timeIntervalSince1970)
+        let account = try PasswordRefresherFixtures.makeAccount(authMethod: .password)
+        let store = try PasswordRefresherFixtures.FakeAccountStore(
+            tokens: [account.id: PasswordRefresherFixtures.encode(accessToken: expiringJWT, refreshToken: nil)],
+        )
+        let refresher = PasswordSessionRefresher(accountStore: store, session: session)
+
+        async let first = refresher.validToken(for: account)
+        async let second = refresher.validToken(for: account)
+        async let third = refresher.validToken(for: account)
+        let results = await [first, second, third]
+
+        #expect(results.allSatisfy { $0 == "renewed-jwt" })
+        #expect(await capture.requests.count == 1)
+    }
+}
+
+/// Shared helpers for the `PasswordSessionRefresher` tests above.
+private enum PasswordRefresherFixtures {
+    static func makeAccount(authMethod: InstanceAccount.AuthMethod) throws -> InstanceAccount {
+        try InstanceAccount(
+            displayName: "Home",
+            baseURL: #require(URL(string: "https://vikunja.example.com")),
+            authMethod: authMethod,
+        )
+    }
+
+    static func makeJWT(exp: Double) -> String {
+        let header = base64URL(Data(#"{"alg":"HS256"}"#.utf8))
+        let payload = base64URL(Data(#"{"exp":\#(exp)}"#.utf8))
+        return "\(header).\(payload).signature"
+    }
+
+    static func base64URL(_ data: Data) -> String {
+        data.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    static func encode(accessToken: String, refreshToken: String?) throws -> String {
+        let credential = PasswordSessionCredential(accessToken: accessToken, refreshToken: refreshToken)
+        let data = try JSONEncoder().encode(credential)
+        return String(data: data, encoding: .utf8) ?? ""
+    }
+
+    static func decode(_ token: String?) throws -> PasswordSessionCredential {
+        try JSONDecoder().decode(PasswordSessionCredential.self, from: Data((token ?? "").utf8))
+    }
+
+    actor FakeAccountStore: AccountStoreProtocol {
+        private var tokens: [InstanceAccount.ID: String]
+
+        init(tokens: [InstanceAccount.ID: String]) {
+            self.tokens = tokens
+        }
+
+        func fetchAccounts() async throws -> [InstanceAccount] {
+            []
+        }
+
+        func activeAccount() async throws -> InstanceAccount? {
+            nil
+        }
+
+        func addAccount(_ account: InstanceAccount, token: String) async throws {
+            tokens[account.id] = token
+        }
+
+        func updateAccount(_ account: InstanceAccount, token: String?) async throws {
+            if let token {
+                tokens[account.id] = token
+            }
+        }
+
+        func removeAccount(id: InstanceAccount.ID) async throws {
+            tokens[id] = nil
+        }
+
+        func setActiveAccount(id: InstanceAccount.ID) async throws {}
+
+        func token(forAccountID id: InstanceAccount.ID) async throws -> String? {
+            tokens[id]
+        }
+    }
 }

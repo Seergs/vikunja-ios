@@ -8,6 +8,7 @@ enum ServerInfoMapper {
             totpEnabled: dto.totpEnabled ?? false,
             registrationEnabled: dto.registrationEnabled ?? false,
             maxFileSizeBytes: MaxFileSizeParser.bytes(from: dto.maxFileSize),
+            localAuthEnabled: dto.auth?.local?.enabled ?? true,
         )
     }
 }

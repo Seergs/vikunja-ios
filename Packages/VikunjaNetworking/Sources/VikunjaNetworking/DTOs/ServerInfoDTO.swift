@@ -9,6 +9,9 @@ struct ServerInfoDTO: Codable {
     /// `MaxFileSizeParser` turns it into a byte count. Absent on older
     /// servers.
     let maxFileSize: String?
+    /// Which login methods are enabled. Absent entirely on servers old
+    /// enough to predate this field — see `AuthInfoDTO`.
+    let auth: AuthInfoDTO?
 
     enum CodingKeys: String, CodingKey {
         case version
@@ -16,5 +19,25 @@ struct ServerInfoDTO: Codable {
         case totpEnabled = "totp_enabled"
         case registrationEnabled = "registration_enabled"
         case maxFileSize = "max_file_size"
+        case auth
     }
+}
+
+/// Not modeled: `openid_connect.providers` (OIDC is out of scope for now).
+struct AuthInfoDTO: Codable {
+    let local: LocalAuthInfoDTO?
+    let openidConnect: OpenIDAuthInfoDTO?
+
+    enum CodingKeys: String, CodingKey {
+        case local
+        case openidConnect = "openid_connect"
+    }
+}
+
+struct LocalAuthInfoDTO: Codable {
+    let enabled: Bool?
+}
+
+struct OpenIDAuthInfoDTO: Codable {
+    let enabled: Bool?
 }

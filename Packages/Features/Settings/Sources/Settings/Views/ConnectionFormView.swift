@@ -11,6 +11,7 @@ struct ConnectionFormView: View {
     @State private var viewModel: ConnectionFormViewModel
     let router: Router<SettingsRoute>
     @State private var isTokenVisible = false
+    @State private var isPasswordVisible = false
     @State private var isConfirmingDelete = false
     @FocusState private var isNameFocused: Bool
 
@@ -36,7 +37,17 @@ struct ConnectionFormView: View {
                         #endif
                         .autocorrectionDisabled()
 
-                    tokenField
+                    CredentialModePicker(
+                        selection: $viewModel.credentialMode,
+                        isPasswordEnabled: viewModel.localAuthAvailable,
+                    )
+
+                    switch viewModel.credentialMode {
+                    case .apiToken:
+                        tokenField
+                    case .password:
+                        passwordFields
+                    }
                 }
 
                 testConnectionButton
@@ -75,6 +86,11 @@ struct ConnectionFormView: View {
             await viewModel.load()
             isNameFocused = viewModel.displayName.isEmpty
         }
+        .task(id: viewModel.urlText) {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            await viewModel.checkLocalAuthAvailability()
+        }
         .onChange(of: viewModel.savedAccount) { _, savedAccount in
             if savedAccount != nil {
                 router.pop()
@@ -93,6 +109,59 @@ struct ConnectionFormView: View {
                 }
             }
             Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private var passwordFields: some View {
+        VStack(alignment: .leading, spacing: VikuSpacing.md) {
+            FormField(label: "Username", placeholder: "your-username", text: $viewModel.username)
+                #if os(iOS)
+                .textInputAutocapitalization(.never)
+                #endif
+                .autocorrectionDisabled()
+
+            passwordField
+
+            if viewModel.awaitingTOTP {
+                FormField(label: "Two-Factor Code", placeholder: "123456", text: $viewModel.totpPasscode)
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+                    .autocorrectionDisabled()
+            }
+        }
+    }
+
+    private var passwordField: some View {
+        VStack(alignment: .leading, spacing: VikuSpacing.sm - VikuSpacing.xxs) {
+            FieldLabel("Password")
+
+            HStack(spacing: VikuSpacing.sm) {
+                Group {
+                    if isPasswordVisible {
+                        TextField("••••••••", text: $viewModel.password)
+                    } else {
+                        SecureField("••••••••", text: $viewModel.password)
+                    }
+                }
+                .font(VikuFont.body)
+                #if os(iOS)
+                .textInputAutocapitalization(.never)
+                #endif
+                .autocorrectionDisabled()
+
+                Button {
+                    isPasswordVisible.toggle()
+                } label: {
+                    Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                        .foregroundStyle(VikuColor.textTertiary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isPasswordVisible ? "Hide password" : "Show password")
+            }
+            .padding(.horizontal, VikuSpacing.md - VikuSpacing.xxs)
+            .padding(.vertical, VikuSpacing.sm + VikuSpacing.xxs)
+            .background(VikuColor.Surface.field, in: RoundedRectangle(cornerRadius: VikuRadius.sm, style: .continuous))
         }
     }
 

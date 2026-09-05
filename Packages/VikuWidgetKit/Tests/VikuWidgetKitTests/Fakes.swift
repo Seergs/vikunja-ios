@@ -143,6 +143,10 @@ struct FakeClientFactory: InstanceClientFactoryProtocol {
         fatalError("unused")
     }
 
+    func makeAuthService(baseURL _: URL) -> AuthServiceProtocol {
+        fatalError("unused")
+    }
+
     func makeProjectRepository(
         baseURL _: URL, tokenProvider _: @escaping @Sendable () async -> String?,
     ) -> ProjectRepositoryProtocol {

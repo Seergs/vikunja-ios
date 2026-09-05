@@ -185,9 +185,18 @@ public actor KeychainAccountStore: AccountStoreProtocol {
         try Keychain.delete(service: service, account: account, accessGroup: activeAccessGroup())
     }
 
+    /// A stored index that can't be decoded (corrupted, or written by an
+    /// incompatible earlier build of the app) is treated as "no accounts"
+    /// rather than left to fail every future account operation — the
+    /// unreadable item is dropped so the next save starts clean.
     private func loadIndex() throws -> [InstanceAccount] {
         guard let data = try read(account: indexAccount) else { return [] }
-        return try decoder.decode([InstanceAccount].self, from: data)
+        do {
+            return try decoder.decode([InstanceAccount].self, from: data)
+        } catch {
+            try? delete(account: indexAccount)
+            return []
+        }
     }
 
     private func saveIndex(_ accounts: [InstanceAccount]) throws {

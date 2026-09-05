@@ -15,6 +15,11 @@ public struct TodaySnapshotLoader: Sendable {
     private let cache: TodaySnapshotCache
     private let taskLimit: Int
     private let now: @Sendable () -> Date
+    /// Resolves a currently-valid bearer credential for `account`. Defaults
+    /// to a direct Keychain read (today's behavior); `VikuWidgetEnvironment`
+    /// passes one backed by `PasswordSessionRefresher` so a password
+    /// account's JWT gets refreshed here too, not just from the app.
+    private let tokenResolver: @Sendable (InstanceAccount) async -> String?
 
     public init(
         accountStore: AccountStoreProtocol,
@@ -22,19 +27,21 @@ public struct TodaySnapshotLoader: Sendable {
         cache: TodaySnapshotCache,
         taskLimit: Int = VikuWidgetConfig.taskLimit,
         now: @escaping @Sendable () -> Date = { Date() },
+        tokenResolver: (@Sendable (InstanceAccount) async -> String?)? = nil,
     ) {
         self.accountStore = accountStore
         self.clientFactory = clientFactory
         self.cache = cache
         self.taskLimit = taskLimit
         self.now = now
+        self.tokenResolver = tokenResolver ?? { try? await accountStore.token(forAccountID: $0.id) }
     }
 
     public func loadState() async -> TodayWidgetState {
         let account = try? await accountStore.activeAccount()
         var token: String?
         if let account {
-            token = try? await accountStore.token(forAccountID: account.id)
+            token = await tokenResolver(account)
         }
 
         guard let account, let token, !token.isEmpty else {

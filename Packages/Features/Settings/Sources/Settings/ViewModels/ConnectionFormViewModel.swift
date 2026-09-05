@@ -4,10 +4,11 @@ import VikunjaCore
 
 /// Drives the "add/edit connection" screen (`ConnectionFormMode.create` or
 /// `.edit`). Mirrors `Onboarding`'s `InstanceSetupViewModel` — same
-/// normalize-then-probe-`/api/v1/info` flow — but assumes at least one
-/// connection already exists (there's always a `ConnectionsListView` to
-/// return to), and additionally supports editing and deleting an existing
-/// connection.
+/// normalize-then-probe-`/api/v1/info` flow, and the same choice between an
+/// API token and username/password (plus TOTP) login when the instance
+/// supports it — but assumes at least one connection already exists (there's
+/// always a `ConnectionsListView` to return to), and additionally supports
+/// editing and deleting an existing connection.
 ///
 /// Saving always re-probes the server, in both modes: editing a connection
 /// is exactly as likely to introduce a typo'd URL as creating one, so there's
@@ -20,12 +21,25 @@ public final class ConnectionFormViewModel {
     public var displayName: String = ""
     public var urlText: String = ""
     public var apiToken: String = ""
+    public var credentialMode: InstanceAccount.AuthMethod = .apiToken
+    public var username: String = ""
+    public var password: String = ""
+    public var totpPasscode: String = ""
 
     public private(set) var validationState: ConnectionValidationState = .idle
     /// The account `save()` most recently persisted — distinct from
     /// `validationState == .success`, which `testConnection()` also reports
     /// on a successful probe. Drives post-save dismissal.
     public private(set) var savedAccount: InstanceAccount?
+    /// Whether the probed server reports local (username/password) login as
+    /// enabled — known only after a probe has resolved (see
+    /// `checkLocalAuthAvailability()`, called automatically as the user
+    /// types the address); defaults to `false` so the password option starts
+    /// disabled rather than hidden.
+    public private(set) var localAuthAvailable = false
+    /// Set when a password login was rejected pending a TOTP code — the view
+    /// reveals a code field and `save()` retries with it filled in.
+    public private(set) var awaitingTOTP = false
 
     public var isSaving: Bool {
         validationState == .validating
@@ -40,7 +54,13 @@ public final class ConnectionFormViewModel {
     }
 
     public var canSave: Bool {
-        !trimmedDisplayName.isEmpty && !trimmedURLText.isEmpty && !trimmedToken.isEmpty && !isSaving
+        guard !trimmedDisplayName.isEmpty, !trimmedURLText.isEmpty, !isSaving else { return false }
+        switch credentialMode {
+        case .apiToken:
+            return !trimmedToken.isEmpty
+        case .password:
+            return awaitingTOTP ? !trimmedTOTP.isEmpty : (!trimmedUsername.isEmpty && !trimmedPassword.isEmpty)
+        }
     }
 
     public var canTestConnection: Bool {
@@ -72,16 +92,31 @@ public final class ConnectionFormViewModel {
         if case let .edit(account) = mode {
             self.displayName = account.displayName
             self.urlText = account.baseURL.absoluteString
+            self.credentialMode = account.authMethod
         }
     }
 
     /// Fills in the existing token for `.edit` mode. Separate from `init`
     /// since reading it is async (Keychain) — the form renders immediately
     /// with name/URL already populated and the token field fills in a moment
-    /// later, same as any other server-backed load in this app.
+    /// later, same as any other server-backed load in this app. A password
+    /// account's stored credential is opaque, so this only fills the token
+    /// field for API-token accounts.
     public func load() async {
-        guard case let .edit(account) = mode else { return }
+        guard case let .edit(account) = mode, account.authMethod == .apiToken else { return }
         apiToken = await (try? accountStore.token(forAccountID: account.id)) ?? ""
+    }
+
+    /// Silently probes the typed address to learn whether it supports local
+    /// auth, without touching `validationState` — called as the user types
+    /// the URL (debounced by the view) so the password option can enable
+    /// itself before the user ever taps "Test Connection". Any failure
+    /// (unreachable host, still mid-type) just leaves it unavailable.
+    public func checkLocalAuthAvailability() async {
+        guard !trimmedURLText.isEmpty, let baseURL = try? InstanceURL.normalize(urlText) else { return }
+        let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
+        guard await (try? provider.serverInfo()) != nil else { return }
+        await updateLocalAuthAvailable(provider.supports(.localAuth))
     }
 
     /// Probes the typed address without persisting anything — backs a
@@ -91,7 +126,9 @@ public final class ConnectionFormViewModel {
         validationState = .validating
         do {
             let baseURL = try InstanceURL.normalize(urlText)
-            _ = try await clientFactory.makeCapabilityProvider(baseURL: baseURL).serverInfo()
+            let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
+            _ = try await provider.serverInfo()
+            await updateLocalAuthAvailable(provider.supports(.localAuth))
             validationState = .success
         } catch let error as VikunjaError {
             validationState = .failure(error.displayMessage)
@@ -103,26 +140,22 @@ public final class ConnectionFormViewModel {
     public func save() async {
         guard canSave else { return }
         validationState = .validating
+        // Deliberately doesn't call `updateLocalAuthAvailable` here — this
+        // save is already committed to whichever mode the user picked (and
+        // filled in the matching fields for), so a flaky re-probe result
+        // must not silently switch `credentialMode` out from under it.
         do {
             let baseURL = try InstanceURL.normalize(urlText)
-            _ = try await clientFactory.makeCapabilityProvider(baseURL: baseURL).serverInfo()
+            let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
+            _ = try await provider.serverInfo()
+            localAuthAvailable = await provider.supports(.localAuth)
 
-            switch mode {
-            case .create:
-                let account = InstanceAccount(displayName: trimmedDisplayName, baseURL: baseURL)
-                try await accountStore.addAccount(account, token: trimmedToken)
-                savedAccount = account
-                toastPresenter.show("Connection added", style: .success)
-            case let .edit(original):
-                var account = original
-                account.displayName = trimmedDisplayName
-                account.baseURL = baseURL
-                try await accountStore.updateAccount(account, token: trimmedToken)
-                savedAccount = account
-                toastPresenter.show("Connection updated", style: .success)
+            switch credentialMode {
+            case .apiToken:
+                try await saveAPITokenAccount(baseURL: baseURL)
+            case .password:
+                await savePasswordAccount(baseURL: baseURL)
             }
-            validationState = .success
-            onActiveAccountChanged()
         } catch let error as VikunjaError {
             validationState = .failure(error.displayMessage)
         } catch {
@@ -159,6 +192,80 @@ public final class ConnectionFormViewModel {
         }
     }
 
+    private func saveAPITokenAccount(baseURL: URL) async throws {
+        switch mode {
+        case .create:
+            let account = InstanceAccount(displayName: trimmedDisplayName, baseURL: baseURL, authMethod: .apiToken)
+            try await accountStore.addAccount(account, token: trimmedToken)
+            finishSaving(account, toast: "Connection added")
+        case let .edit(original):
+            var account = original
+            account.displayName = trimmedDisplayName
+            account.baseURL = baseURL
+            account.authMethod = .apiToken
+            try await accountStore.updateAccount(account, token: trimmedToken)
+            finishSaving(account, toast: "Connection updated")
+        }
+    }
+
+    private func savePasswordAccount(baseURL: URL) async {
+        let coordinator = PasswordLoginCoordinator(authService: clientFactory.makeAuthService(baseURL: baseURL))
+        let state = if awaitingTOTP {
+            await coordinator.retryWithTOTP(trimmedTOTP, username: trimmedUsername, password: trimmedPassword)
+        } else {
+            await coordinator.attempt(username: trimmedUsername, password: trimmedPassword)
+        }
+
+        switch state {
+        case let .success(session):
+            do {
+                switch mode {
+                case .create:
+                    let account = InstanceAccount(
+                        displayName: trimmedDisplayName, baseURL: baseURL, authMethod: .password,
+                    )
+                    try await accountStore.addAccount(account, token: session.token)
+                    finishSaving(account, toast: "Connection added")
+                case let .edit(original):
+                    var account = original
+                    account.displayName = trimmedDisplayName
+                    account.baseURL = baseURL
+                    account.authMethod = .password
+                    try await accountStore.updateAccount(account, token: session.token)
+                    finishSaving(account, toast: "Connection updated")
+                }
+            } catch let error as VikunjaError {
+                validationState = .failure(error.displayMessage)
+            } catch {
+                validationState = .failure(error.localizedDescription)
+            }
+        case .awaitingTOTP:
+            awaitingTOTP = true
+            validationState = .idle
+        case let .failure(error):
+            validationState = .failure(error.displayMessage)
+        case .idle, .authenticating:
+            validationState = .idle
+        }
+    }
+
+    /// Snaps back to `.apiToken` if the currently-selected password mode
+    /// just became unavailable (e.g. the user edited the URL to point at a
+    /// different server) so the form never sits on a disabled option.
+    private func updateLocalAuthAvailable(_ available: Bool) {
+        localAuthAvailable = available
+        if !available, credentialMode == .password {
+            credentialMode = .apiToken
+        }
+    }
+
+    private func finishSaving(_ account: InstanceAccount, toast: String) {
+        savedAccount = account
+        toastPresenter.show(toast, style: .success)
+        validationState = .success
+        onActiveAccountChanged()
+    }
+
     private var trimmedDisplayName: String {
         displayName.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -169,5 +276,17 @@ public final class ConnectionFormViewModel {
 
     private var trimmedToken: String {
         apiToken.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedUsername: String {
+        username.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedPassword: String {
+        password.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedTOTP: String {
+        totpPasscode.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

@@ -29,6 +29,8 @@ public actor VikunjaCapabilityProvider: CapabilityProvider {
             return info.totpEnabled
         case .registration:
             return info.registrationEnabled
+        case .localAuth:
+            return info.localAuthEnabled
         }
     }
 }

@@ -6,11 +6,33 @@ enum VikunjaEndpoints {
         Endpoint(path: "/api/v1/info")
     }
 
-    static func login(username: String, password: String) throws -> Endpoint {
+    static func login(_ credentials: LoginCredentials) throws -> Endpoint {
         try .encoding(
             path: "/api/v1/login",
             method: .post,
-            body: LoginRequestDTO(username: username, password: password),
+            body: LoginRequestDTO(
+                username: credentials.username,
+                password: credentials.password,
+                totpPasscode: credentials.totpPasscode,
+                longToken: credentials.longToken,
+            ),
+        )
+    }
+
+    /// Renews a still-valid JWT on pre-2.0 servers — Bearer-authed with that
+    /// JWT itself, no body. On v2.0+ servers this rejects user tokens; use
+    /// `userTokenRefresh(refreshToken:)` instead.
+    static func userTokenRenew() -> Endpoint {
+        Endpoint(path: "/api/v1/user/token", method: .post)
+    }
+
+    /// Renews a v2.0+ session using its refresh-token cookie (no Bearer
+    /// header — the cookie itself is the credential, and rotates on use).
+    static func userTokenRefresh(refreshToken: String) -> Endpoint {
+        Endpoint(
+            path: "/api/v1/user/token/refresh",
+            method: .post,
+            additionalHeaders: ["Cookie": "vikunja_refresh_token=\(refreshToken)"],
         )
     }
 

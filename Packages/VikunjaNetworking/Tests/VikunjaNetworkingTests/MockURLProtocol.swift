@@ -16,14 +16,15 @@ final class MockURLProtocol: URLProtocol {
     private struct Response {
         let statusCode: Int
         let body: Data
+        let headers: [String: String]
     }
 
     private nonisolated(unsafe) static var responses: [Response] = []
     nonisolated(unsafe) static var capture: RequestCapture?
 
     /// Single canned response reused for every request the session makes.
-    static func makeSession(statusCode: Int, body: String) -> (URLSession, RequestCapture) {
-        makeSession(responses: [(statusCode, body)])
+    static func makeSession(statusCode: Int, body: String, headers: [String: String] = [:]) -> (URLSession, RequestCapture) {
+        makeSession(responses: [Response(statusCode: statusCode, body: Data(body.utf8), headers: headers)])
     }
 
     /// One response per request, consumed in order — for a call that issues
@@ -31,8 +32,13 @@ final class MockURLProtocol: URLProtocol {
     /// GET-then-POST safe-update) and each leg needs its own reply. The last
     /// queued response repeats if more requests arrive than were queued.
     static func makeSession(responses: [(statusCode: Int, body: String)]) -> (URLSession, RequestCapture) {
+        let mapped = responses.map { Response(statusCode: $0.statusCode, body: Data($0.body.utf8), headers: [:]) }
+        return makeSession(responses: mapped)
+    }
+
+    private static func makeSession(responses: [Response]) -> (URLSession, RequestCapture) {
         let capture = RequestCapture()
-        Self.responses = responses.map { Response(statusCode: $0.statusCode, body: Data($0.body.utf8)) }
+        Self.responses = responses
         Self.capture = capture
 
         let configuration = URLSessionConfiguration.ephemeral
@@ -73,7 +79,7 @@ final class MockURLProtocol: URLProtocol {
         } else if let only = Self.responses.first {
             only
         } else {
-            Response(statusCode: 200, body: Data())
+            Response(statusCode: 200, body: Data(), headers: [:])
         }
 
         guard let url = request.url,
@@ -81,7 +87,7 @@ final class MockURLProtocol: URLProtocol {
                   url: url,
                   statusCode: response.statusCode,
                   httpVersion: "HTTP/1.1",
-                  headerFields: nil,
+                  headerFields: response.headers,
               )
         else {
             client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
