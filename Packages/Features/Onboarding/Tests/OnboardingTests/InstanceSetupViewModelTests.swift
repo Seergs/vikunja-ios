@@ -230,6 +230,32 @@ struct InstanceSetupViewModelTests {
     }
 
     @Test
+    func `checking local auth availability enables the password option without touching validation state`() async {
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.supportsLocalAuth = true
+        let viewModel = makeViewModel(clientFactory: clientFactory)
+        viewModel.urlText = "tasks.example.com"
+
+        await viewModel.checkLocalAuthAvailability()
+
+        #expect(viewModel.localAuthAvailable == true)
+        #expect(viewModel.validationState == .idle)
+    }
+
+    @Test
+    func `ing connection reverts away from password mode once local auth becomes unavailable`() async {
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.supportsLocalAuth = false
+        let viewModel = makeViewModel(clientFactory: clientFactory)
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+
+        await viewModel.testConnection()
+
+        #expect(viewModel.credentialMode == .apiToken)
+    }
+
+    @Test
     func `saving in password mode logs in and persists A password account`() async throws {
         let accountStore = FakeAccountStore()
         let clientFactory = FakeInstanceClientFactory()

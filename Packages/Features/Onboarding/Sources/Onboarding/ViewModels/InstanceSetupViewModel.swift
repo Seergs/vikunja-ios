@@ -23,8 +23,10 @@ public final class InstanceSetupViewModel {
     public private(set) var validationState: InstanceSetupValidationState = .idle
     public private(set) var savedAccounts: [InstanceAccount] = []
     /// Whether the probed server reports local (username/password) login as
-    /// enabled — known only after `testConnection()`/`saveConnection()` has
-    /// run once; defaults to `false` so the picker stays hidden until then.
+    /// enabled — known only after a probe has resolved (see
+    /// `checkLocalAuthAvailability()`, called automatically as the user
+    /// types the address); defaults to `false` so the password option starts
+    /// disabled rather than hidden.
     public private(set) var localAuthAvailable = false
     /// Set when a password login was rejected pending a TOTP code — the view
     /// reveals a code field and `saveConnection()` retries with it filled in.
@@ -65,6 +67,18 @@ public final class InstanceSetupViewModel {
         savedAccounts = await (try? accountStore.fetchAccounts()) ?? []
     }
 
+    /// Silently probes the typed address to learn whether it supports local
+    /// auth, without touching `validationState` — called as the user types
+    /// the URL (debounced by the view) so the password option can enable
+    /// itself before the user ever taps "Test Connection". Any failure
+    /// (unreachable host, still mid-type) just leaves it unavailable.
+    public func checkLocalAuthAvailability() async {
+        guard !trimmedURLText.isEmpty, let baseURL = try? InstanceURL.normalize(urlText) else { return }
+        let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
+        guard await (try? provider.serverInfo()) != nil else { return }
+        await updateLocalAuthAvailable(provider.supports(.localAuth))
+    }
+
     /// Probes the typed address without persisting anything — backs a
     /// standalone "test connection" action, distinct from `saveConnection()`.
     public func testConnection() async {
@@ -75,7 +89,7 @@ public final class InstanceSetupViewModel {
             let baseURL = try InstanceURL.normalize(urlText)
             let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
             _ = try await provider.serverInfo()
-            localAuthAvailable = await provider.supports(.localAuth)
+            await updateLocalAuthAvailable(provider.supports(.localAuth))
             validationState = .success
         } catch let error as VikunjaError {
             validationState = .failure(Self.message(for: error))
@@ -88,6 +102,10 @@ public final class InstanceSetupViewModel {
         guard canSave, !isSaving else { return }
         validationState = .validating
 
+        // Deliberately doesn't call `updateLocalAuthAvailable` here — this
+        // save is already committed to whichever mode the user picked (and
+        // filled in the matching fields for), so a flaky re-probe result
+        // must not silently switch `credentialMode` out from under it.
         do {
             let baseURL = try InstanceURL.normalize(urlText)
             let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
@@ -135,6 +153,16 @@ public final class InstanceSetupViewModel {
             validationState = .failure(Self.message(for: error))
         case .idle, .authenticating:
             validationState = .idle
+        }
+    }
+
+    /// Snaps back to `.apiToken` if the currently-selected password mode
+    /// just became unavailable (e.g. the user edited the URL to point at a
+    /// different server) so the form never sits on a disabled option.
+    private func updateLocalAuthAvailable(_ available: Bool) {
+        localAuthAvailable = available
+        if !available, credentialMode == .password {
+            credentialMode = .apiToken
         }
     }
 

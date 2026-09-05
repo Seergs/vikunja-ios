@@ -35,6 +35,11 @@ public struct InstanceSetupView: View {
         .scrollDismissesKeyboard(.interactively)
         .hideNavigationBar()
         .task { await viewModel.loadSavedAccounts() }
+        .task(id: viewModel.urlText) {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            await viewModel.checkLocalAuthAvailability()
+        }
         .onChange(of: viewModel.savedAccount) { _, savedAccount in
             if let savedAccount {
                 onConnectionSaved(savedAccount)
@@ -78,9 +83,7 @@ public struct InstanceSetupView: View {
                 .autocorrectionDisabled()
                 .keyboardTypeURL()
 
-            if viewModel.localAuthAvailable {
-                credentialModePicker
-            }
+            CredentialModePicker(selection: $viewModel.credentialMode, isPasswordEnabled: viewModel.localAuthAvailable)
 
             switch viewModel.credentialMode {
             case .apiToken:
@@ -89,14 +92,6 @@ public struct InstanceSetupView: View {
                 passwordFields
             }
         }
-    }
-
-    private var credentialModePicker: some View {
-        Picker("Sign in with", selection: $viewModel.credentialMode) {
-            Text("API Token").tag(InstanceAccount.AuthMethod.apiToken)
-            Text("Username & Password").tag(InstanceAccount.AuthMethod.password)
-        }
-        .pickerStyle(.segmented)
     }
 
     private var apiTokenField: some View {
