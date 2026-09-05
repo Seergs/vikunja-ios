@@ -12,8 +12,8 @@
         {
           "name": "Authentik",
           "key": "authentik",
-          "authUrl": "https://auth.example.com/application/o/authorize/",
-          "clientId": "vikunja-client-id",
+          "auth_url": "https://auth.example.com/application/o/authorize/",
+          "client_id": "vikunja-client-id",
           "scope": "openid email profile"
         }
       ]
