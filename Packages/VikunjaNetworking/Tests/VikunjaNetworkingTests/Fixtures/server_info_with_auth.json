@@ -1,0 +1,11 @@
+{
+  "version": "0.24.6",
+  "caldav_enabled": true,
+  "totp_enabled": true,
+  "registration_enabled": false,
+  "max_file_size": "20MB",
+  "auth": {
+    "local": { "enabled": false },
+    "openid_connect": { "enabled": true, "providers": [] }
+  }
+}

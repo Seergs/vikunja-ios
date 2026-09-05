@@ -16,6 +16,23 @@ struct ServerInfoDTOTests {
         #expect(info.totpEnabled == true)
         #expect(info.registrationEnabled == false)
         #expect(info.maxFileSizeBytes == 20 * 1024 * 1024)
+        #expect(info.localAuthEnabled == true)
+    }
+
+    @Test
+    func `defaults localAuthEnabled to true when the auth key is absent`() throws {
+        let url = try #require(Bundle.module.url(forResource: "server_info", withExtension: "json"))
+        let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(contentsOf: url))
+
+        #expect(ServerInfoMapper.toDomain(dto).localAuthEnabled == true)
+    }
+
+    @Test
+    func `reads localAuthEnabled from the auth key when present`() throws {
+        let url = try #require(Bundle.module.url(forResource: "server_info_with_auth", withExtension: "json"))
+        let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(contentsOf: url))
+
+        #expect(ServerInfoMapper.toDomain(dto).localAuthEnabled == false)
     }
 
     @Test(arguments: [
