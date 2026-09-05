@@ -17,6 +17,8 @@ extension VikunjaError {
             message.isEmpty ? "Server error (\(statusCode))." : message
         case let .unsupportedServerVersion(minimumRequired, actual):
             "Server version \(actual) is not supported. Minimum required: \(minimumRequired)."
+        case .totpRequired:
+            "This account needs a two-factor code."
         }
     }
 }
