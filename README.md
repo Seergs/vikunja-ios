@@ -40,6 +40,7 @@ You can find this app in the App Store
 ### Planned
 
 - Offline Support
+- Native Push Notifications
 
 
 ### Vikunja API Coverage
