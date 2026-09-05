@@ -60,6 +60,10 @@ public final class ConnectionFormViewModel {
             return !trimmedToken.isEmpty
         case .password:
             return awaitingTOTP ? !trimmedTOTP.isEmpty : (!trimmedUsername.isEmpty && !trimmedPassword.isEmpty)
+        case .oidc:
+            // Not selectable from this screen yet — no UI sets `credentialMode`
+            // to `.oidc` until the OIDC flow is wired in.
+            return false
         }
     }
 
@@ -155,6 +159,10 @@ public final class ConnectionFormViewModel {
                 try await saveAPITokenAccount(baseURL: baseURL)
             case .password:
                 await savePasswordAccount(baseURL: baseURL)
+            case .oidc:
+                // Unreachable until the OIDC flow is wired in — `canSave`
+                // already refuses to reach this branch.
+                break
             }
         } catch let error as VikunjaError {
             validationState = .failure(error.displayMessage)
