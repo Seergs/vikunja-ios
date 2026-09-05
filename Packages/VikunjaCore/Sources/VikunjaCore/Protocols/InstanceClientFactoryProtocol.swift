@@ -7,6 +7,10 @@ import Foundation
 public protocol InstanceClientFactoryProtocol: Sendable {
     func makeCapabilityProvider(baseURL: URL) -> CapabilityProvider
 
+    /// Builds a service for logging in against `baseURL` — no `tokenProvider`,
+    /// since login itself is what produces the credential.
+    func makeAuthService(baseURL: URL) -> AuthServiceProtocol
+
     /// - Parameter tokenProvider: resolves the account's bearer token per
     ///   request, so the repository never caches a token that's since been
     ///   rotated or removed.
