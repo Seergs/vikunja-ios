@@ -22,6 +22,13 @@ import WidgetKit
 final class AppContainer {
     let accountStore: AccountStoreProtocol
     let clientFactory: InstanceClientFactoryProtocol
+    /// Resolves a currently-valid bearer credential per account, transparently
+    /// refreshing a password-based session's JWT before it expires — every
+    /// `tokenProvider` closure below goes through this instead of reading
+    /// `accountStore.token(forAccountID:)` directly, so a password account's
+    /// session stays alive without any screen needing to know about it. A
+    /// no-op passthrough for API-token accounts.
+    let sessionRefresher: PasswordSessionRefresher
     /// The single toast host for the whole app — see `RootView`'s
     /// `.toastHost(_:)`. Pass this as `ToastPresenting` to any ViewModel that
     /// needs to surface a toast (e.g. `toastPresenter:` in a `make...ViewModel`
@@ -60,6 +67,7 @@ final class AppContainer {
     ) {
         self.accountStore = accountStore
         self.clientFactory = clientFactory
+        self.sessionRefresher = PasswordSessionRefresher(accountStore: accountStore)
     }
 
     /// One-time move of Keychain items written before the shared
@@ -100,10 +108,10 @@ final class AppContainer {
     /// network every time its sheet opens. A failed fetch leaves the previous
     /// cached value untouched.
     func refreshDefaultProject(account: InstanceAccount) async {
-        let accountStore = accountStore
-        let userRepository = clientFactory.makeUserRepository(baseURL: account.baseURL) {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let userRepository = clientFactory.makeUserRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider(for: account),
+        )
         guard let user = try? await userRepository.fetchCurrentUser() else { return }
         defaultProjectStore.setProjectID(user.defaultProjectID, forAccountID: account.id)
     }
@@ -113,10 +121,7 @@ final class AppContainer {
     }
 
     func makeTodayViewModel(account: InstanceAccount) -> TodayViewModel {
-        let accountStore = accountStore
-        let tokenProvider: @Sendable () async -> String? = {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let tokenProvider = tokenProvider(for: account)
         return TodayViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(
@@ -129,10 +134,7 @@ final class AppContainer {
     }
 
     func makeCalendarViewModel(account: InstanceAccount) -> CalendarViewModel {
-        let accountStore = accountStore
-        let tokenProvider: @Sendable () async -> String? = {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let tokenProvider = tokenProvider(for: account)
         return CalendarViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(
@@ -144,10 +146,7 @@ final class AppContainer {
     }
 
     func makeProjectsListViewModel(account: InstanceAccount) -> ProjectsListViewModel {
-        let accountStore = accountStore
-        let tokenProvider: @Sendable () async -> String? = {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let tokenProvider = tokenProvider(for: account)
         let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let taskRepository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         return ProjectsListViewModel(
@@ -158,10 +157,10 @@ final class AppContainer {
     }
 
     func makeCreateProjectViewModel(parentProjectID: Int? = nil, account: InstanceAccount) -> CreateProjectViewModel {
-        let accountStore = accountStore
-        let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL) {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let repository = clientFactory.makeProjectRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider(for: account),
+        )
         return CreateProjectViewModel(
             parentProjectID: parentProjectID,
             repository: repository,
@@ -170,18 +169,15 @@ final class AppContainer {
     }
 
     func makeEditProjectViewModel(project: Project, account: InstanceAccount) -> EditProjectViewModel {
-        let accountStore = accountStore
-        let repository = clientFactory.makeProjectRepository(baseURL: account.baseURL) {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let repository = clientFactory.makeProjectRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider(for: account),
+        )
         return EditProjectViewModel(project: project, repository: repository, toastPresenter: toastCenter)
     }
 
     func makeProjectOverviewViewModel(node: ProjectNode, account: InstanceAccount) -> ProjectOverviewViewModel {
-        let accountStore = accountStore
-        let tokenProvider: @Sendable () async -> String? = {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let tokenProvider = tokenProvider(for: account)
         let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let projectRepository = clientFactory.makeProjectRepository(
             baseURL: account.baseURL,
@@ -207,10 +203,7 @@ final class AppContainer {
     }
 
     func makeTaskDetailViewModel(task: VikunjaTask, project: Project, account: InstanceAccount) -> TaskDetailViewModel {
-        let accountStore = accountStore
-        let tokenProvider: @Sendable () async -> String? = {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let tokenProvider = tokenProvider(for: account)
         let repository = clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let labelRepository = clientFactory.makeLabelRepository(baseURL: account.baseURL, tokenProvider: tokenProvider)
         let relationRepository = clientFactory.makeTaskRelationRepository(
@@ -252,10 +245,7 @@ final class AppContainer {
         preselectedProjectID: Int?,
         account: InstanceAccount,
     ) -> QuickAddTaskViewModel {
-        let accountStore = accountStore
-        let tokenProvider: @Sendable () async -> String? = {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let tokenProvider = tokenProvider(for: account)
         return QuickAddTaskViewModel(
             preselectedProjectID: preselectedProjectID,
             accountDefaultProjectID: defaultProjectStore.projectID(forAccountID: account.id),
@@ -269,10 +259,10 @@ final class AppContainer {
     }
 
     func makeManageLabelsViewModel(account: InstanceAccount) -> ManageLabelsViewModel {
-        let accountStore = accountStore
-        let repository = clientFactory.makeLabelRepository(baseURL: account.baseURL) {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let repository = clientFactory.makeLabelRepository(
+            baseURL: account.baseURL,
+            tokenProvider: tokenProvider(for: account),
+        )
         return ManageLabelsViewModel(repository: repository, toastPresenter: toastCenter)
     }
 
@@ -299,10 +289,7 @@ final class AppContainer {
     }
 
     func makeSearchViewModel(account: InstanceAccount) -> SearchViewModel {
-        let accountStore = accountStore
-        let tokenProvider: @Sendable () async -> String? = {
-            try? await accountStore.token(forAccountID: account.id)
-        }
+        let tokenProvider = tokenProvider(for: account)
         return SearchViewModel(
             taskRepository: clientFactory.makeTaskRepository(baseURL: account.baseURL, tokenProvider: tokenProvider),
             projectRepository: clientFactory.makeProjectRepository(
@@ -312,5 +299,14 @@ final class AppContainer {
             toastPresenter: toastCenter,
             hapticPresenter: hapticCenter,
         )
+    }
+
+    /// Builds the `tokenProvider` closure every `make*Repository` call takes
+    /// — routes through `sessionRefresher` so a password account's JWT is
+    /// refreshed transparently, and an API-token account passes through with
+    /// no behavior change.
+    private func tokenProvider(for account: InstanceAccount) -> @Sendable () async -> String? {
+        let sessionRefresher = sessionRefresher
+        return { await sessionRefresher.validToken(for: account) }
     }
 }
