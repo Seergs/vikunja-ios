@@ -31,24 +31,4 @@ public struct InstanceAccount: Identifiable, Hashable, Sendable, Codable {
         self.createdAt = createdAt
         self.authMethod = authMethod
     }
-
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case displayName
-        case baseURL
-        case createdAt
-        case authMethod
-    }
-
-    /// Custom decoding so accounts already saved to a user's Keychain before
-    /// `authMethod` existed (JSON with no such key) decode as `.apiToken`
-    /// instead of failing.
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try container.decode(UUID.self, forKey: .id)
-        self.displayName = try container.decode(String.self, forKey: .displayName)
-        self.baseURL = try container.decode(URL.self, forKey: .baseURL)
-        self.createdAt = try container.decode(Date.self, forKey: .createdAt)
-        self.authMethod = try container.decodeIfPresent(AuthMethod.self, forKey: .authMethod) ?? .apiToken
-    }
 }
