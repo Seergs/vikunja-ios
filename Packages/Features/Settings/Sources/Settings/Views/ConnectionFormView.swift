@@ -1,7 +1,6 @@
 import SwiftUI
 import VikuDesignSystem
 import VikuNavigation
-import VikunjaCore
 
 /// The add/edit connection screen: name, instance URL, API token, a "Test
 /// Connection" probe, and — only in edit mode — a "Delete Connection" action.
@@ -38,9 +37,10 @@ struct ConnectionFormView: View {
                         #endif
                         .autocorrectionDisabled()
 
-                    if viewModel.localAuthAvailable {
-                        credentialModePicker
-                    }
+                    CredentialModePicker(
+                        selection: $viewModel.credentialMode,
+                        isPasswordEnabled: viewModel.localAuthAvailable,
+                    )
 
                     switch viewModel.credentialMode {
                     case .apiToken:
@@ -86,6 +86,11 @@ struct ConnectionFormView: View {
             await viewModel.load()
             isNameFocused = viewModel.displayName.isEmpty
         }
+        .task(id: viewModel.urlText) {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            await viewModel.checkLocalAuthAvailability()
+        }
         .onChange(of: viewModel.savedAccount) { _, savedAccount in
             if savedAccount != nil {
                 router.pop()
@@ -105,14 +110,6 @@ struct ConnectionFormView: View {
             }
             Button("Cancel", role: .cancel) {}
         }
-    }
-
-    private var credentialModePicker: some View {
-        Picker("Sign in with", selection: $viewModel.credentialMode) {
-            Text("API Token").tag(InstanceAccount.AuthMethod.apiToken)
-            Text("Username & Password").tag(InstanceAccount.AuthMethod.password)
-        }
-        .pickerStyle(.segmented)
     }
 
     private var passwordFields: some View {

@@ -200,6 +200,32 @@ struct ConnectionFormViewModelTests {
     // MARK: - password login
 
     @Test
+    func `checking local auth availability enables the password option without touching validation state`() async {
+        let factory = FakeInstanceClientFactory()
+        factory.supportsLocalAuth = true
+        let viewModel = makeViewModel(mode: .create, factory: factory)
+        viewModel.urlText = "tasks.example.com"
+
+        await viewModel.checkLocalAuthAvailability()
+
+        #expect(viewModel.localAuthAvailable == true)
+        #expect(viewModel.validationState == .idle)
+    }
+
+    @Test
+    func `ing connection reverts away from password mode once local auth becomes unavailable`() async {
+        let factory = FakeInstanceClientFactory()
+        factory.supportsLocalAuth = false
+        let viewModel = makeViewModel(mode: .create, factory: factory)
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+
+        await viewModel.testConnection()
+
+        #expect(viewModel.credentialMode == .apiToken)
+    }
+
+    @Test
     func `saving in create mode with password credentials logs in and persists`() async throws {
         let store = FakeAccountStore()
         let factory = FakeInstanceClientFactory()
