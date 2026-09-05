@@ -90,6 +90,10 @@ public struct InstanceSetupView: View {
                 apiTokenField
             case .password:
                 passwordFields
+            case .oidc:
+                // Unreachable until the OIDC flow is wired in —
+                // `CredentialModePicker` has no segment for it yet.
+                EmptyView()
             }
         }
     }

@@ -6,6 +6,17 @@
   "max_file_size": "20MB",
   "auth": {
     "local": { "enabled": false },
-    "openid_connect": { "enabled": true, "providers": [] }
+    "openid_connect": {
+      "enabled": true,
+      "providers": [
+        {
+          "name": "Authentik",
+          "key": "authentik",
+          "authUrl": "https://auth.example.com/application/o/authorize/",
+          "clientId": "vikunja-client-id",
+          "scope": "openid email profile"
+        }
+      ]
+    }
   }
 }

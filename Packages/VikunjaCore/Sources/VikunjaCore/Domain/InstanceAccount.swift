@@ -6,10 +6,10 @@ import Foundation
 /// behind `AccountStoreProtocol`.
 public struct InstanceAccount: Identifiable, Hashable, Sendable, Codable {
     /// Which login method produced this account's stored credential.
-    /// `.oidc` will join this once OIDC support lands.
     public enum AuthMethod: String, Sendable, Codable {
         case apiToken
         case password
+        case oidc
     }
 
     public let id: UUID

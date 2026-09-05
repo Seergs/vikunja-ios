@@ -23,7 +23,6 @@ struct ServerInfoDTO: Codable {
     }
 }
 
-/// Not modeled: `openid_connect.providers` (OIDC is out of scope for now).
 struct AuthInfoDTO: Codable {
     let local: LocalAuthInfoDTO?
     let openidConnect: OpenIDAuthInfoDTO?
@@ -40,4 +39,25 @@ struct LocalAuthInfoDTO: Codable {
 
 struct OpenIDAuthInfoDTO: Codable {
     let enabled: Bool?
+    let providers: [OIDCProviderDTO]?
+}
+
+/// One entry of `auth.openid_connect.providers`. Field names are best-effort
+/// (mirrored from Vikunja's frontend config shape) and **must be verified
+/// against a live instance's swagger docs (`/api/v1/docs`)** before pointing
+/// this at a real server.
+struct OIDCProviderDTO: Codable {
+    let name: String?
+    let key: String?
+    let authURL: String?
+    let clientID: String?
+    let scope: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case key
+        case authURL = "authUrl"
+        case clientID = "clientId"
+        case scope
+    }
 }

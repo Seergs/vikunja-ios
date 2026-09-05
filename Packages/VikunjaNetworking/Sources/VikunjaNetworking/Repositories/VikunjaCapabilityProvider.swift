@@ -31,6 +31,8 @@ public actor VikunjaCapabilityProvider: CapabilityProvider {
             return info.registrationEnabled
         case .localAuth:
             return info.localAuthEnabled
+        case .openIDConnect:
+            return !info.oidcProviders.isEmpty
         }
     }
 }
