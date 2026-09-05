@@ -39,18 +39,7 @@ public final class OIDCAuthCoordinator: OIDCAuthenticating {
             throw OIDCAuthError.presentationUnavailable
         }
 
-        let configuration = OIDServiceConfiguration(
-            authorizationEndpoint: provider.authURL,
-            tokenEndpoint: provider.authURL,
-        )
-        let request = OIDAuthorizationRequest(
-            configuration: configuration,
-            clientId: provider.clientID,
-            scopes: provider.scope.split(separator: " ").map(String.init),
-            redirectURL: redirectURI,
-            responseType: OIDResponseTypeCode,
-            additionalParameters: nil,
-        )
+        let request = Self.makeAuthorizationRequest(provider: provider, redirectURI: redirectURI)
 
         return try await withCheckedThrowingContinuation { continuation in
             currentSession = OIDAuthorizationService.present(
@@ -89,4 +78,22 @@ public final class OIDCAuthCoordinator: OIDCAuthenticating {
             .rootViewController
     }
     #endif
+
+    /// Pulled out of `authenticate` so it's testable without UIKit —
+    /// `OIDAuthorizationRequest`/`OIDServiceConfiguration` come from
+    /// `AppAuthCore`, which has no platform gating.
+    nonisolated static func makeAuthorizationRequest(provider: OIDCProvider, redirectURI: URL) -> OIDAuthorizationRequest {
+        let configuration = OIDServiceConfiguration(
+            authorizationEndpoint: provider.authURL,
+            tokenEndpoint: provider.authURL,
+        )
+        return OIDAuthorizationRequest(
+            configuration: configuration,
+            clientId: provider.clientID,
+            scopes: provider.scope.split(separator: " ").map(String.init),
+            redirectURL: redirectURI,
+            responseType: OIDResponseTypeCode,
+            additionalParameters: nil,
+        )
+    }
 }
