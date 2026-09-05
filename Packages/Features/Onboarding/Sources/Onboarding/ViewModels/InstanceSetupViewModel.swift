@@ -3,19 +3,32 @@ import Observation
 import VikunjaCore
 
 /// Drives the "add a connection" screen: the user names an instance, types its
-/// address (a bare domain or a full URL, either works) and an API token. On
-/// save, the address is normalized and probed with `GET /api/v1/info` to
-/// confirm it's really a Vikunja instance before the connection is persisted
-/// and made active — the token itself isn't validated against the server yet.
+/// address (a bare domain or a full URL, either works) and connects either
+/// with an API token or, when the instance reports local auth is enabled,
+/// with a username and password (plus a TOTP code, if that account has
+/// two-factor enabled). On save, the address is normalized and probed with
+/// `GET /api/v1/info` to confirm it's really a Vikunja instance before the
+/// connection is persisted and made active.
 @MainActor
 @Observable
 public final class InstanceSetupViewModel {
     public var displayName: String = ""
     public var urlText: String = ""
     public var apiToken: String = ""
+    public var credentialMode: InstanceAccount.AuthMethod = .apiToken
+    public var username: String = ""
+    public var password: String = ""
+    public var totpPasscode: String = ""
 
     public private(set) var validationState: InstanceSetupValidationState = .idle
     public private(set) var savedAccounts: [InstanceAccount] = []
+    /// Whether the probed server reports local (username/password) login as
+    /// enabled — known only after `testConnection()`/`saveConnection()` has
+    /// run once; defaults to `false` so the picker stays hidden until then.
+    public private(set) var localAuthAvailable = false
+    /// Set when a password login was rejected pending a TOTP code — the view
+    /// reveals a code field and `saveConnection()` retries with it filled in.
+    public private(set) var awaitingTOTP = false
 
     /// The account `saveConnection()` most recently persisted — distinct from
     /// `validationState == .success`, which `testConnection()` also reports on
@@ -35,7 +48,13 @@ public final class InstanceSetupViewModel {
     }
 
     public var canSave: Bool {
-        !trimmedDisplayName.isEmpty && !trimmedURLText.isEmpty && !trimmedToken.isEmpty
+        guard !trimmedDisplayName.isEmpty, !trimmedURLText.isEmpty, !isSaving else { return false }
+        switch credentialMode {
+        case .apiToken:
+            return !trimmedToken.isEmpty
+        case .password:
+            return awaitingTOTP ? !trimmedTOTP.isEmpty : (!trimmedUsername.isEmpty && !trimmedPassword.isEmpty)
+        }
     }
 
     public var canTestConnection: Bool {
@@ -54,7 +73,9 @@ public final class InstanceSetupViewModel {
 
         do {
             let baseURL = try InstanceURL.normalize(urlText)
-            _ = try await clientFactory.makeCapabilityProvider(baseURL: baseURL).serverInfo()
+            let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
+            _ = try await provider.serverInfo()
+            localAuthAvailable = await provider.supports(.localAuth)
             validationState = .success
         } catch let error as VikunjaError {
             validationState = .failure(Self.message(for: error))
@@ -69,20 +90,59 @@ public final class InstanceSetupViewModel {
 
         do {
             let baseURL = try InstanceURL.normalize(urlText)
-            _ = try await clientFactory.makeCapabilityProvider(baseURL: baseURL).serverInfo()
+            let provider = clientFactory.makeCapabilityProvider(baseURL: baseURL)
+            _ = try await provider.serverInfo()
+            localAuthAvailable = await provider.supports(.localAuth)
 
-            let account = InstanceAccount(displayName: trimmedDisplayName, baseURL: baseURL)
-            try await accountStore.addAccount(account, token: trimmedToken)
-
-            validationState = .success
-            savedAccount = account
-            resetInputs()
-            await loadSavedAccounts()
+            switch credentialMode {
+            case .apiToken:
+                let account = InstanceAccount(displayName: trimmedDisplayName, baseURL: baseURL, authMethod: .apiToken)
+                try await accountStore.addAccount(account, token: trimmedToken)
+                await finishSaving(account)
+            case .password:
+                await savePasswordAccount(baseURL: baseURL)
+            }
         } catch let error as VikunjaError {
             validationState = .failure(Self.message(for: error))
         } catch {
             validationState = .failure(error.localizedDescription)
         }
+    }
+
+    private func savePasswordAccount(baseURL: URL) async {
+        let coordinator = PasswordLoginCoordinator(authService: clientFactory.makeAuthService(baseURL: baseURL))
+        let state = if awaitingTOTP {
+            await coordinator.retryWithTOTP(trimmedTOTP, username: trimmedUsername, password: trimmedPassword)
+        } else {
+            await coordinator.attempt(username: trimmedUsername, password: trimmedPassword)
+        }
+
+        switch state {
+        case let .success(session):
+            let account = InstanceAccount(displayName: trimmedDisplayName, baseURL: baseURL, authMethod: .password)
+            do {
+                try await accountStore.addAccount(account, token: session.token)
+                await finishSaving(account)
+            } catch let error as VikunjaError {
+                validationState = .failure(Self.message(for: error))
+            } catch {
+                validationState = .failure(error.localizedDescription)
+            }
+        case .awaitingTOTP:
+            awaitingTOTP = true
+            validationState = .idle
+        case let .failure(error):
+            validationState = .failure(Self.message(for: error))
+        case .idle, .authenticating:
+            validationState = .idle
+        }
+    }
+
+    private func finishSaving(_ account: InstanceAccount) async {
+        validationState = .success
+        savedAccount = account
+        resetInputs()
+        await loadSavedAccounts()
     }
 
     private var trimmedDisplayName: String {
@@ -97,10 +157,27 @@ public final class InstanceSetupViewModel {
         apiToken.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    private var trimmedUsername: String {
+        username.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedPassword: String {
+        password.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedTOTP: String {
+        totpPasscode.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func resetInputs() {
         displayName = ""
         urlText = ""
         apiToken = ""
+        username = ""
+        password = ""
+        totpPasscode = ""
+        awaitingTOTP = false
+        credentialMode = .apiToken
     }
 
     private static func message(for error: VikunjaError) -> String {

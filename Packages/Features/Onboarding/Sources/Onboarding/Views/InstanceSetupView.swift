@@ -8,6 +8,7 @@ import VikunjaCore
 public struct InstanceSetupView: View {
     @Bindable private var viewModel: InstanceSetupViewModel
     @State private var isTokenVisible = false
+    @State private var isPasswordVisible = false
     private let onConnectionSaved: (InstanceAccount) -> Void
 
     public init(viewModel: InstanceSetupViewModel, onConnectionSaved: @escaping (InstanceAccount) -> Void) {
@@ -77,17 +78,68 @@ public struct InstanceSetupView: View {
                 .autocorrectionDisabled()
                 .keyboardTypeURL()
 
+            if viewModel.localAuthAvailable {
+                credentialModePicker
+            }
+
+            switch viewModel.credentialMode {
+            case .apiToken:
+                apiTokenField
+            case .password:
+                passwordFields
+            }
+        }
+    }
+
+    private var credentialModePicker: some View {
+        Picker("Sign in with", selection: $viewModel.credentialMode) {
+            Text("API Token").tag(InstanceAccount.AuthMethod.apiToken)
+            Text("Username & Password").tag(InstanceAccount.AuthMethod.password)
+        }
+        .pickerStyle(.segmented)
+    }
+
+    private var apiTokenField: some View {
+        OnboardingField(
+            label: "API token",
+            text: $viewModel.apiToken,
+            placeholder: "vkj_...",
+            isSecure: !isTokenVisible,
+            hint: "Generate one on your Vikunja instance: Settings → API Tokens.",
+            trailingSystemImage: isTokenVisible ? "eye.slash" : "eye",
+            trailingAction: { isTokenVisible.toggle() },
+        )
+        .autocapitalized(.never)
+        .autocorrectionDisabled()
+    }
+
+    private var passwordFields: some View {
+        VStack(spacing: VikuSpacing.md) {
+            OnboardingField(label: "Username", text: $viewModel.username, placeholder: "your-username")
+                .autocapitalized(.never)
+                .autocorrectionDisabled()
+
             OnboardingField(
-                label: "API token",
-                text: $viewModel.apiToken,
-                placeholder: "vkj_...",
-                isSecure: !isTokenVisible,
-                hint: "Generate one on your Vikunja instance: Settings → API Tokens.",
-                trailingSystemImage: isTokenVisible ? "eye.slash" : "eye",
-                trailingAction: { isTokenVisible.toggle() },
+                label: "Password",
+                text: $viewModel.password,
+                placeholder: "••••••••",
+                isSecure: !isPasswordVisible,
+                trailingSystemImage: isPasswordVisible ? "eye.slash" : "eye",
+                trailingAction: { isPasswordVisible.toggle() },
             )
             .autocapitalized(.never)
             .autocorrectionDisabled()
+
+            if viewModel.awaitingTOTP {
+                OnboardingField(
+                    label: "Two-factor code",
+                    text: $viewModel.totpPasscode,
+                    placeholder: "123456",
+                    hint: "Enter the current code from your authenticator app.",
+                )
+                .autocapitalized(.never)
+                .autocorrectionDisabled()
+            }
         }
     }
 

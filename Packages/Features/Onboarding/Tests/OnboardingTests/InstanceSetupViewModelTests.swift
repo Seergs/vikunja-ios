@@ -216,4 +216,96 @@ struct InstanceSetupViewModelTests {
 
         #expect(viewModel.savedAccounts == [existing])
     }
+
+    @Test
+    func `ing connection reports whether local auth is available`() async {
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.supportsLocalAuth = true
+        let viewModel = makeViewModel(clientFactory: clientFactory)
+        viewModel.urlText = "tasks.example.com"
+
+        await viewModel.testConnection()
+
+        #expect(viewModel.localAuthAvailable == true)
+    }
+
+    @Test
+    func `saving in password mode logs in and persists A password account`() async throws {
+        let accountStore = FakeAccountStore()
+        let clientFactory = FakeInstanceClientFactory()
+        let session = AuthSession(token: "opaque-blob", user: User(id: 1, username: "sergio"))
+        clientFactory.authService.loginResult = .success(session)
+        let viewModel = makeViewModel(accountStore: accountStore, clientFactory: clientFactory)
+        viewModel.displayName = "Home"
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+        viewModel.username = "sergio"
+        viewModel.password = "hunter2"
+
+        await viewModel.saveConnection()
+
+        #expect(viewModel.validationState == .success)
+        #expect(accountStore.accounts.first?.authMethod == .password)
+        #expect(try accountStore.tokens[#require(accountStore.accounts.first?.id)] == "opaque-blob")
+        #expect(clientFactory.authService.loginCredentials.first?.username == "sergio")
+    }
+
+    @Test
+    func `saving in password mode with A totpRequired response awaits A code instead of failing`() async {
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.authService.loginResult = .failure(.totpRequired)
+        let viewModel = makeViewModel(clientFactory: clientFactory)
+        viewModel.displayName = "Home"
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+        viewModel.username = "sergio"
+        viewModel.password = "hunter2"
+
+        await viewModel.saveConnection()
+
+        #expect(viewModel.awaitingTOTP == true)
+        #expect(viewModel.validationState == .idle)
+        #expect(viewModel.savedAccount == nil)
+    }
+
+    @Test
+    func `saving in password mode retries with the totp code once awaiting one`() async {
+        let accountStore = FakeAccountStore()
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.authService.loginResult = .failure(.totpRequired)
+        let viewModel = makeViewModel(accountStore: accountStore, clientFactory: clientFactory)
+        viewModel.displayName = "Home"
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+        viewModel.username = "sergio"
+        viewModel.password = "hunter2"
+        await viewModel.saveConnection()
+        #expect(viewModel.awaitingTOTP == true)
+
+        let session = AuthSession(token: "opaque-blob", user: User(id: 1, username: "sergio"))
+        clientFactory.authService.loginResult = .success(session)
+        viewModel.totpPasscode = "123456"
+        await viewModel.saveConnection()
+
+        #expect(viewModel.validationState == .success)
+        #expect(accountStore.accounts.count == 1)
+        #expect(clientFactory.authService.loginCredentials.last?.totpPasscode == "123456")
+    }
+
+    @Test
+    func `saving in password mode surfaces A wrong password as A failure`() async {
+        let clientFactory = FakeInstanceClientFactory()
+        clientFactory.authService.loginResult = .failure(.unauthorized)
+        let viewModel = makeViewModel(clientFactory: clientFactory)
+        viewModel.displayName = "Home"
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+        viewModel.username = "sergio"
+        viewModel.password = "wrong"
+
+        await viewModel.saveConnection()
+
+        #expect(viewModel.validationState == .failure("That server rejected the request."))
+        #expect(viewModel.savedAccount == nil)
+    }
 }
