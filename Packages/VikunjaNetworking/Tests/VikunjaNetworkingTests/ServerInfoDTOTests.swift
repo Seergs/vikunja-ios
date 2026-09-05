@@ -67,7 +67,7 @@ struct ServerInfoDTOTests {
             "openid_connect": {
               "enabled": false,
               "providers": [
-                { "name": "Authentik", "key": "authentik", "authUrl": "https://auth.example.com/o/authorize/", "clientId": "id" }
+                { "name": "Authentik", "key": "authentik", "auth_url": "https://auth.example.com/o/authorize/", "client_id": "id" }
               ]
             }
           }
@@ -87,8 +87,8 @@ struct ServerInfoDTOTests {
             "openid_connect": {
               "enabled": true,
               "providers": [
-                { "name": "Authentik", "key": "authentik", "authUrl": "https://auth.example.com/o/authorize/", "clientId": "id" },
-                { "name": "Missing Auth URL", "key": "broken", "clientId": "id" }
+                { "name": "Authentik", "key": "authentik", "auth_url": "https://auth.example.com/o/authorize/", "client_id": "id" },
+                { "name": "Missing Auth URL", "key": "broken", "client_id": "id" }
               ]
             }
           }
@@ -111,7 +111,7 @@ struct ServerInfoDTOTests {
             "openid_connect": {
               "enabled": true,
               "providers": [
-                { "name": "Authentik", "key": "authentik", "authUrl": "https://auth.example.com/o/authorize/", "clientId": "id" }
+                { "name": "Authentik", "key": "authentik", "auth_url": "https://auth.example.com/o/authorize/", "client_id": "id" }
               ]
             }
           }
