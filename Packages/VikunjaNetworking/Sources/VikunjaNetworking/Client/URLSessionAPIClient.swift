@@ -50,7 +50,20 @@ public actor URLSessionAPIClient: APIClient {
         try await sendRaw(endpoint)
     }
 
+    public func sendWithResponse<Response: Decodable & Sendable>(_ endpoint: Endpoint) async throws -> (Response, HTTPURLResponse) {
+        let (data, response) = try await sendRawWithResponse(endpoint)
+        do {
+            return try (decoder.decode(Response.self, from: data), response)
+        } catch {
+            throw VikunjaError.decoding(String(describing: error))
+        }
+    }
+
     private func sendRaw(_ endpoint: Endpoint) async throws -> Data {
+        try await sendRawWithResponse(endpoint).0
+    }
+
+    private func sendRawWithResponse(_ endpoint: Endpoint) async throws -> (Data, HTTPURLResponse) {
         guard let url = makeURL(for: endpoint) else {
             throw VikunjaError.invalidInstanceURL
         }
@@ -63,6 +76,9 @@ public actor URLSessionAPIClient: APIClient {
         }
         if let token = await authTokenProvider() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        for (field, value) in endpoint.additionalHeaders {
+            request.setValue(value, forHTTPHeaderField: field)
         }
 
         let data: Data
@@ -79,12 +95,14 @@ public actor URLSessionAPIClient: APIClient {
 
         switch httpResponse.statusCode {
         case 200 ... 299:
-            return data
+            return (data, httpResponse)
         case 401:
             Self.logResponseBody(data, statusCode: 401, endpoint: endpoint)
             throw VikunjaError.unauthorized
         case 404:
             throw VikunjaError.notFound
+        case 412:
+            throw VikunjaError.totpRequired
         default:
             let message = String(data: data, encoding: .utf8) ?? "Unknown error"
             Self.logResponseBody(data, statusCode: httpResponse.statusCode, endpoint: endpoint)

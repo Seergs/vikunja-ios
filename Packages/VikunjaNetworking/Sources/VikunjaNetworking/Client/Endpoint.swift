@@ -16,6 +16,11 @@ public struct Endpoint: Sendable {
     /// `application/json` (the shape `.encoding(...)` produces); a multipart
     /// upload sets it explicitly to carry its boundary.
     public let contentType: String?
+    /// Extra headers merged onto the request alongside `Content-Type` and the
+    /// bearer `Authorization` header — used by the password-session refresh
+    /// flow to attach a `Cookie` header, since login itself has no prior
+    /// bearer token to authenticate with.
+    public let additionalHeaders: [String: String]
 
     public init(
         path: String,
@@ -23,12 +28,14 @@ public struct Endpoint: Sendable {
         queryItems: [URLQueryItem] = [],
         body: Data? = nil,
         contentType: String? = nil,
+        additionalHeaders: [String: String] = [:],
     ) {
         self.path = path
         self.method = method
         self.queryItems = queryItems
         self.body = body
         self.contentType = contentType
+        self.additionalHeaders = additionalHeaders
     }
 
     static func encoding(
