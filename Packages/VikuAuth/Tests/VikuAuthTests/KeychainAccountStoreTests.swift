@@ -36,6 +36,25 @@ struct KeychainAccountStoreTests {
     }
 
     @Test
+    func `an unreadable stored index self heals to no accounts instead of failing every call`() async throws {
+        let service = "dev.sergiosuarez.viku.tests.\(UUID().uuidString)"
+        // Simulates data written by an incompatible earlier build (or plain
+        // corruption) — garbage where the account index JSON should be.
+        try Keychain.save(Data("not valid json".utf8), service: service, account: "instance-accounts-index")
+        let store = KeychainAccountStore(service: service)
+
+        let accounts = try await store.fetchAccounts()
+
+        #expect(accounts.isEmpty)
+
+        // The unreadable item was dropped, so a fresh save works cleanly
+        // afterward rather than the corruption blocking every future call.
+        let account = makeAccount()
+        try await store.addAccount(account, token: "secret-token")
+        #expect(try await store.fetchAccounts() == [account])
+    }
+
+    @Test
     func `starts with no accounts`() async throws {
         let store = makeStore()
 
