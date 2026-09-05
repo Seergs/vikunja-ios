@@ -409,6 +409,75 @@ struct URLSessionAPIClientTests {
         }
     }
 
+    private static let oidcProvider = OIDCProvider(
+        key: "authentik",
+        name: "Authentik",
+        authURL: URL(string: "https://auth.example.com/o/authorize/")!,
+        clientID: "vikunja-client-id",
+        scope: "openid email profile",
+    )
+
+    @Test
+    func `login with oidc PO STs the provider key code scope and redirect url`() async throws {
+        let (session, capture) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"token":"oidc-jwt"}"#)
+        let baseURL = try #require(URL(string: "https://vikunja.example.com"))
+        let apiClient = URLSessionAPIClient(baseURL: baseURL, session: session)
+        let service = VikunjaAuthService(client: apiClient, baseURL: baseURL)
+        let redirectURI = try #require(URL(string: "viku://oidc-callback"))
+
+        _ = try await service.loginWithOIDC(provider: Self.oidcProvider, code: "auth-code", redirectURI: redirectURI)
+
+        let request = await capture.lastRequest
+        #expect(request?.url?.path == "/api/v1/auth/openid/authentik/callback")
+        let sentBody = try #require(request?.httpBody)
+        let json = try #require(JSONSerialization.jsonObject(with: sentBody) as? [String: Any])
+        #expect(json["code"] as? String == "auth-code")
+        #expect(json["scope"] as? String == "openid email profile")
+        #expect(json["redirect_url"] as? String == "viku://oidc-callback")
+    }
+
+    @Test
+    func `login with oidc and no refresh cookie stores A credential with no refresh token`() async throws {
+        let (session, _) = MockURLProtocol.makeSession(statusCode: 200, body: #"{"token":"oidc-jwt"}"#)
+        let baseURL = try #require(URL(string: "https://vikunja.example.com"))
+        let apiClient = URLSessionAPIClient(baseURL: baseURL, session: session)
+        let service = VikunjaAuthService(client: apiClient, baseURL: baseURL)
+        let redirectURI = try #require(URL(string: "viku://oidc-callback"))
+
+        let authSession = try await service.loginWithOIDC(
+            provider: Self.oidcProvider,
+            code: "auth-code",
+            redirectURI: redirectURI,
+        )
+
+        let credential = try JSONDecoder().decode(PasswordSessionCredential.self, from: Data(authSession.token.utf8))
+        #expect(credential.accessToken == "oidc-jwt")
+        #expect(credential.refreshToken == nil)
+    }
+
+    @Test
+    func `login with oidc and A refresh cookie captures the refresh token`() async throws {
+        let (session, _) = MockURLProtocol.makeSession(
+            statusCode: 200,
+            body: #"{"token":"oidc-jwt"}"#,
+            headers: ["Set-Cookie": "vikunja_refresh_token=refresh-abc; Path=/api/v1/user/token/refresh; HttpOnly"],
+        )
+        let baseURL = try #require(URL(string: "https://vikunja.example.com"))
+        let apiClient = URLSessionAPIClient(baseURL: baseURL, session: session)
+        let service = VikunjaAuthService(client: apiClient, baseURL: baseURL)
+        let redirectURI = try #require(URL(string: "viku://oidc-callback"))
+
+        let authSession = try await service.loginWithOIDC(
+            provider: Self.oidcProvider,
+            code: "auth-code",
+            redirectURI: redirectURI,
+        )
+
+        let credential = try JSONDecoder().decode(PasswordSessionCredential.self, from: Data(authSession.token.utf8))
+        #expect(credential.accessToken == "oidc-jwt")
+        #expect(credential.refreshToken == "refresh-abc")
+    }
+
     @Test
     func `password refresher passes an api token account through with no refresh attempt`() async throws {
         let account = try PasswordRefresherFixtures.makeAccount(authMethod: .apiToken)

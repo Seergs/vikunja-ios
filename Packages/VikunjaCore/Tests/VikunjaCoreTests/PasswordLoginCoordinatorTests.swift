@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import VikunjaCore
 
@@ -57,6 +58,10 @@ private final class FakeAuthService: AuthServiceProtocol, @unchecked Sendable {
     }
 
     func loginWithAPIToken(_ token: String) async throws -> AuthSession {
+        try result.get()
+    }
+
+    func loginWithOIDC(provider _: OIDCProvider, code _: String, redirectURI _: URL) async throws -> AuthSession {
         try result.get()
     }
 

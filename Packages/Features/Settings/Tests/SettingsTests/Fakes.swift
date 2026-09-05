@@ -98,6 +98,10 @@ final class FakeAuthService: AuthServiceProtocol, @unchecked Sendable {
         AuthSession(token: token, user: User(id: 0, username: ""))
     }
 
+    func loginWithOIDC(provider _: OIDCProvider, code _: String, redirectURI _: URL) async throws -> AuthSession {
+        try loginResult.get()
+    }
+
     func logout() async {}
 }
 

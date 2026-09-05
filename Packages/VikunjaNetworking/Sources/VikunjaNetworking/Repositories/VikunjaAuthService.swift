@@ -42,5 +42,27 @@ public final class VikunjaAuthService: AuthServiceProtocol {
         AuthSession(token: token, user: User(id: 0, username: ""))
     }
 
+    /// Same opaque-credential handling as `login(_:)` — see its doc comment.
+    public func loginWithOIDC(provider: OIDCProvider, code: String, redirectURI: URL) async throws -> AuthSession {
+        let (tokenDTO, response): (AuthTokenDTO, HTTPURLResponse) = try await client.sendWithResponse(
+            VikunjaEndpoints.oidcCallback(
+                providerKey: provider.key,
+                code: code,
+                scope: provider.scope,
+                redirectURL: redirectURI,
+            ),
+        )
+
+        let refreshToken = HTTPCookie.cookies(
+            withResponseHeaderFields: (response.allHeaderFields as? [String: String]) ?? [:],
+            for: baseURL,
+        ).first { $0.name == "vikunja_refresh_token" }?.value
+
+        let sessionCredential = PasswordSessionCredential(accessToken: tokenDTO.token, refreshToken: refreshToken)
+        let encoded = try JSONEncoder().encode(sessionCredential)
+        let opaqueToken = String(data: encoded, encoding: .utf8) ?? ""
+        return AuthSession(token: opaqueToken, user: User(id: 0, username: ""))
+    }
+
     public func logout() async {}
 }
