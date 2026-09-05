@@ -196,4 +196,66 @@ struct ConnectionFormViewModelTests {
 
         #expect(didDelete == false)
     }
+
+    // MARK: - password login
+
+    @Test
+    func `saving in create mode with password credentials logs in and persists`() async throws {
+        let store = FakeAccountStore()
+        let factory = FakeInstanceClientFactory()
+        let session = AuthSession(token: "opaque-blob", user: User(id: 1, username: "sergio"))
+        factory.authService.loginResult = .success(session)
+        let viewModel = makeViewModel(mode: .create, store: store, factory: factory)
+        viewModel.displayName = "Home"
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+        viewModel.username = "sergio"
+        viewModel.password = "hunter2"
+
+        await viewModel.save()
+
+        #expect(viewModel.validationState == .success)
+        let accounts = try await store.fetchAccounts()
+        #expect(accounts.first?.authMethod == .password)
+        #expect(try await store.token(forAccountID: #require(accounts.first?.id)) == "opaque-blob")
+    }
+
+    @Test
+    func `saving with password credentials and A totpRequired response awaits A code`() async {
+        let factory = FakeInstanceClientFactory()
+        factory.authService.loginResult = .failure(.totpRequired)
+        let viewModel = makeViewModel(mode: .create, factory: factory)
+        viewModel.displayName = "Home"
+        viewModel.urlText = "tasks.example.com"
+        viewModel.credentialMode = .password
+        viewModel.username = "sergio"
+        viewModel.password = "hunter2"
+
+        await viewModel.save()
+
+        #expect(viewModel.awaitingTOTP == true)
+        #expect(viewModel.validationState == .idle)
+        #expect(viewModel.savedAccount == nil)
+    }
+
+    @Test
+    func `editing an api token account to password credentials logs in and switches auth method`() async throws {
+        let store = FakeAccountStore()
+        let account = makeAccount()
+        try await store.addAccount(account, token: "old-token")
+        let factory = FakeInstanceClientFactory()
+        let session = AuthSession(token: "opaque-blob", user: User(id: 1, username: "sergio"))
+        factory.authService.loginResult = .success(session)
+        let viewModel = makeViewModel(mode: .edit(account), store: store, factory: factory)
+        viewModel.credentialMode = .password
+        viewModel.username = "sergio"
+        viewModel.password = "hunter2"
+
+        await viewModel.save()
+
+        #expect(viewModel.validationState == .success)
+        let updated = try await store.fetchAccounts().first { $0.id == account.id }
+        #expect(updated?.authMethod == .password)
+        #expect(try await store.token(forAccountID: account.id) == "opaque-blob")
+    }
 }
