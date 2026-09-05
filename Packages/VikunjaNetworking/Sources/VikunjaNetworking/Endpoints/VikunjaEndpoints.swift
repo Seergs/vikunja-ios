@@ -19,6 +19,19 @@ enum VikunjaEndpoints {
         )
     }
 
+    /// Exchanges an OIDC authorization code for a Vikunja session. Mirrors
+    /// Vikunja's Go `openid.Callback` struct (`code`, `scope`, `redirect_url`)
+    /// — `redirectURL` must be the exact URI used in the authorization
+    /// request that produced `code`; Vikunja's backend forwards it verbatim
+    /// to the provider's token endpoint, which requires an exact match.
+    static func oidcCallback(providerKey: String, code: String, scope: String, redirectURL: URL) throws -> Endpoint {
+        try .encoding(
+            path: "/api/v1/auth/openid/\(providerKey)/callback",
+            method: .post,
+            body: OIDCCallbackRequestDTO(code: code, scope: scope, redirectURL: redirectURL.absoluteString),
+        )
+    }
+
     /// Renews a still-valid JWT on pre-2.0 servers — Bearer-authed with that
     /// JWT itself, no body. On v2.0+ servers this rejects user tokens; use
     /// `userTokenRefresh(refreshToken:)` instead.
