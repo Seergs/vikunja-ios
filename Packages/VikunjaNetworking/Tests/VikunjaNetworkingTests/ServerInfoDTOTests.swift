@@ -28,11 +28,98 @@ struct ServerInfoDTOTests {
     }
 
     @Test
+    func `defaults oidcProviders to empty when the auth key is absent`() throws {
+        let url = try #require(Bundle.module.url(forResource: "server_info", withExtension: "json"))
+        let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(contentsOf: url))
+
+        #expect(ServerInfoMapper.toDomain(dto).oidcProviders.isEmpty)
+    }
+
+    @Test
     func `reads localAuthEnabled from the auth key when present`() throws {
         let url = try #require(Bundle.module.url(forResource: "server_info_with_auth", withExtension: "json"))
         let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(contentsOf: url))
 
         #expect(ServerInfoMapper.toDomain(dto).localAuthEnabled == false)
+    }
+
+    @Test
+    func `maps oidc providers when openid connect is enabled`() throws {
+        let url = try #require(Bundle.module.url(forResource: "server_info_with_auth", withExtension: "json"))
+        let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(contentsOf: url))
+
+        let providers = ServerInfoMapper.toDomain(dto).oidcProviders
+
+        #expect(providers.count == 1)
+        #expect(providers.first?.key == "authentik")
+        #expect(providers.first?.name == "Authentik")
+        #expect(providers.first?.authURL == URL(string: "https://auth.example.com/application/o/authorize/"))
+        #expect(providers.first?.clientID == "vikunja-client-id")
+        #expect(providers.first?.scope == "openid email profile")
+    }
+
+    @Test
+    func `ignores configured oidc providers when openid connect is disabled`() throws {
+        let json = """
+        {
+          "version": "0.24.6",
+          "auth": {
+            "openid_connect": {
+              "enabled": false,
+              "providers": [
+                { "name": "Authentik", "key": "authentik", "authUrl": "https://auth.example.com/o/authorize/", "clientId": "id" }
+              ]
+            }
+          }
+        }
+        """
+        let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(json.utf8))
+
+        #expect(ServerInfoMapper.toDomain(dto).oidcProviders.isEmpty)
+    }
+
+    @Test
+    func `drops an oidc provider missing a required field`() throws {
+        let json = """
+        {
+          "version": "0.24.6",
+          "auth": {
+            "openid_connect": {
+              "enabled": true,
+              "providers": [
+                { "name": "Authentik", "key": "authentik", "authUrl": "https://auth.example.com/o/authorize/", "clientId": "id" },
+                { "name": "Missing Auth URL", "key": "broken", "clientId": "id" }
+              ]
+            }
+          }
+        }
+        """
+        let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(json.utf8))
+
+        let providers = ServerInfoMapper.toDomain(dto).oidcProviders
+
+        #expect(providers.count == 1)
+        #expect(providers.first?.key == "authentik")
+    }
+
+    @Test
+    func `defaults an oidc provider's scope when the server omits it`() throws {
+        let json = """
+        {
+          "version": "0.24.6",
+          "auth": {
+            "openid_connect": {
+              "enabled": true,
+              "providers": [
+                { "name": "Authentik", "key": "authentik", "authUrl": "https://auth.example.com/o/authorize/", "clientId": "id" }
+              ]
+            }
+          }
+        }
+        """
+        let dto = try JSONDecoder().decode(ServerInfoDTO.self, from: Data(json.utf8))
+
+        #expect(ServerInfoMapper.toDomain(dto).oidcProviders.first?.scope == "openid email profile")
     }
 
     @Test(arguments: [
