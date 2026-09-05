@@ -42,10 +42,8 @@ struct OpenIDAuthInfoDTO: Codable {
     let providers: [OIDCProviderDTO]?
 }
 
-/// One entry of `auth.openid_connect.providers`. Field names are best-effort
-/// (mirrored from Vikunja's frontend config shape) and **must be verified
-/// against a live instance's swagger docs (`/api/v1/docs`)** before pointing
-/// this at a real server.
+/// One entry of `auth.openid_connect.providers`, mirroring Vikunja's Go
+/// `openid.Provider` struct (`code.vikunja.io/api/pkg/modules/auth/openid`).
 struct OIDCProviderDTO: Codable {
     let name: String?
     let key: String?
@@ -56,8 +54,8 @@ struct OIDCProviderDTO: Codable {
     enum CodingKeys: String, CodingKey {
         case name
         case key
-        case authURL = "authUrl"
-        case clientID = "clientId"
+        case authURL = "auth_url"
+        case clientID = "client_id"
         case scope
     }
 }
