@@ -3,6 +3,7 @@ public enum VikunjaFeature: Sendable {
     case totp
     case registration
     /// Whether the instance has username/password login enabled.
-    /// `.openIDConnect` will join this once OIDC support lands.
     case localAuth
+    /// Whether the instance has at least one OIDC provider configured.
+    case openIDConnect
 }

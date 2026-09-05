@@ -9,6 +9,9 @@ public struct VikunjaServerInfo: Equatable, Sendable {
     /// `true` — we can't distinguish "explicitly disabled" from "server too
     /// old to say," so we assume it's available rather than hide it.
     public let localAuthEnabled: Bool
+    /// OIDC providers configured on this instance. Empty when OIDC is
+    /// disabled, none are configured, or the server predates this field.
+    public let oidcProviders: [OIDCProvider]
 
     public init(
         version: String,
@@ -17,6 +20,7 @@ public struct VikunjaServerInfo: Equatable, Sendable {
         registrationEnabled: Bool,
         maxFileSizeBytes: Int? = nil,
         localAuthEnabled: Bool = true,
+        oidcProviders: [OIDCProvider] = [],
     ) {
         self.version = version
         self.caldavEnabled = caldavEnabled
@@ -24,5 +28,6 @@ public struct VikunjaServerInfo: Equatable, Sendable {
         self.registrationEnabled = registrationEnabled
         self.maxFileSizeBytes = maxFileSizeBytes
         self.localAuthEnabled = localAuthEnabled
+        self.oidcProviders = oidcProviders
     }
 }
