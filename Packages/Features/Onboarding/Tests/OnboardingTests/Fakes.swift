@@ -50,25 +50,53 @@ final class FakeAccountStore: AccountStoreProtocol, @unchecked Sendable {
 
 struct FakeCapabilityProvider: CapabilityProvider {
     var result: Result<VikunjaServerInfo, VikunjaError>
+    var supportsLocalAuth = false
 
     func serverInfo() async throws -> VikunjaServerInfo {
         try result.get()
     }
 
-    func supports(_: VikunjaFeature) async -> Bool {
-        false
+    func supports(_ feature: VikunjaFeature) async -> Bool {
+        switch feature {
+        case .localAuth:
+            supportsLocalAuth
+        default:
+            false
+        }
     }
+}
+
+final class FakeAuthService: AuthServiceProtocol, @unchecked Sendable {
+    var loginResult: Result<AuthSession, VikunjaError> = .failure(.network("not configured"))
+    private(set) var loginCredentials: [LoginCredentials] = []
+
+    func login(_ credentials: LoginCredentials) async throws -> AuthSession {
+        loginCredentials.append(credentials)
+        return try loginResult.get()
+    }
+
+    func loginWithAPIToken(_ token: String) async throws -> AuthSession {
+        AuthSession(token: token, user: User(id: 0, username: ""))
+    }
+
+    func logout() async {}
 }
 
 final class FakeInstanceClientFactory: InstanceClientFactoryProtocol, @unchecked Sendable {
     var result: Result<VikunjaServerInfo, VikunjaError> = .success(
         VikunjaServerInfo(version: "0.24.6", caldavEnabled: false, totpEnabled: false, registrationEnabled: false),
     )
+    var supportsLocalAuth = false
+    let authService = FakeAuthService()
     private(set) var requestedBaseURLs: [URL] = []
 
     func makeCapabilityProvider(baseURL: URL) -> CapabilityProvider {
         requestedBaseURLs.append(baseURL)
-        return FakeCapabilityProvider(result: result)
+        return FakeCapabilityProvider(result: result, supportsLocalAuth: supportsLocalAuth)
+    }
+
+    func makeAuthService(baseURL _: URL) -> AuthServiceProtocol {
+        authService
     }
 
     func makeProjectRepository(
